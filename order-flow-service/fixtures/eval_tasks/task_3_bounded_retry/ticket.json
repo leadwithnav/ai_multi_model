@@ -1,0 +1,7 @@
+{
+  "task_id": "TASK-003",
+  "title": "Fix infinite retry loop and add backoff in PaymentGatewayClient",
+  "difficulty": "MEDIUM",
+  "target_file": "src/services/payment_gateway.py",
+  "instructions": "The charge() method loops infinitely on HTTP 5xx errors. Modify it to respect settings.max_retries. If all retry attempts are exhausted, raise a RuntimeError('Payment gateway retries exhausted'). Add exponential backoff between attempts."
+}

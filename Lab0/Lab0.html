@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 0 — Environment Setup & Course Scenario Walkthrough</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        /* Glassmorphism Cards */
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        /* Code Blocks & Terminal */
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        /* Course Journey Roadmap */
+        .journey-flow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .journey-step {
+            flex: 1;
+            min-width: 140px;
+            background: #21262d;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            position: relative;
+        }
+
+        .journey-step.active {
+            border-color: var(--accent-color);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .journey-step .step-number {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .journey-step .step-title {
+            font-size: 0.85rem;
+            color: #ffffff;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Callout Box */
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        /* Checkbox list */
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #1c2128;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checklist-item:hover {
+            border-color: var(--accent-color);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 14px;
+            accent-color: var(--accent-green);
+            cursor: pointer;
+        }
+
+        .progress-bar-custom {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #21262d;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ea043, #58a6ff);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* OS Tab Switcher */
+        .nav-tabs-custom {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-tabs-custom .nav-link {
+            color: var(--text-muted);
+            border: none;
+            padding: 8px 16px;
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            color: var(--accent-color);
+            background: none;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Vendor AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 0 Walkthrough</h5>
+            <small class="text-muted">Environment Setup</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Course Overview</a></li>
+            <li class="nav-item"><a class="nav-link" href="#journey"><i class="bi bi-signpost-split"></i> Course Journey</a></li>
+            <li class="nav-item"><a class="nav-link" href="#architecture"><i class="bi bi-diagram-3"></i> Architecture</a></li>
+            <li class="nav-item"><a class="nav-link" href="#prerequisites"><i class="bi bi-list-check"></i> Prerequisites</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step1"><i class="bi bi-key"></i> Step 1: AWS Access</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step2"><i class="bi bi-box-seam"></i> Step 2: Bedrock Access</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step3"><i class="bi bi-terminal"></i> Step 3: AWS CLI</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step4"><i class="bi bi-python"></i> Step 4: Python Setup</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step5"><i class="bi bi-code-slash"></i> Step 5: Node & OpenCode</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step6"><i class="bi bi-folder-check"></i> Step 6: Repository Check</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step7"><i class="bi bi-gear"></i> Step 7: Config OpenCode</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step8"><i class="bi bi-check-all"></i> Step 8: Validate Env</a></li>
+            <li class="nav-item"><a class="nav-link" href="#checklist"><i class="bi bi-clipboard-check"></i> Success Checklist</a></li>
+            <li class="nav-item"><a class="nav-link" href="#troubleshooting"><i class="bi bi-bug"></i> Troubleshooting</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 0</span>
+                    <h1 class="text-white mt-2 mb-1">Environment Setup & Course Scenario</h1>
+                    <p class="text-white mb-0">Prepare a working AWS Bedrock + OpenCode environment and understand the engineering scenario used throughout the course.</p>
+                </div>
+                <div>
+                    <a href="#checklist" class="btn btn-outline-success btn-sm"><i class="bi bi-check-circle"></i> Jump to Checklist</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: Overview -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-rocket-takeoff text-primary me-2"></i> 1. What This Course Is Really About</h2>
+            <p>Throughout the course, you will work with one application: <code>order-flow-service</code>.</p>
+            <p>It is a small, realistic order-processing service built with <strong>FastAPI</strong> and <strong>SQLAlchemy</strong>. It:</p>
+            <ul class="text-main">
+                <td>Accepts orders</td>
+                <td>Checks and reserves inventory</td>
+                <td>Calls a payment gateway</td>
+                <td>Processes payment webhooks</td>
+                <td>Applies basic rate limiting</td>
+            </ul>
+            <p>The repository contains deliberately planted production-style defects, including examples involving:</p>
+            <div class="row g-2 my-2">
+                <div class="col-md-4"><div class="p-2 bg-dark border rounded text-center"><i class="bi bi-arrow-repeat text-warning me-1"></i> Concurrency</div></div>
+                <div class="col-md-4"><div class="p-2 bg-dark border rounded text-center"><i class="bi bi-arrow-clockwise text-info me-1"></i> Retries & Timeouts</div></div>
+                <div class="col-md-4"><div class="p-2 bg-dark border rounded text-center"><i class="bi bi-shield-lock text-danger me-1"></i> Security Defects</div></div>
+                <div class="col-md-4"><div class="p-2 bg-dark border rounded text-center"><i class="bi bi-currency-dollar text-success me-1"></i> Financial Precision</div></div>
+                <div class="col-md-4"><div class="p-2 bg-dark border rounded text-center"><i class="bi bi-database text-purple me-1"></i> Rollback / State Consistency</div></div>
+            </div>
+
+            <div class="callout callout-warning">
+                <strong><i class="bi bi-exclamation-triangle-fill"></i> Engineering Focus:</strong>
+                The purpose is <em>not</em> to teach basic debugging. A capable coding model can fix individual defects. The harder engineering questions are:
+                <ul class="mb-0 mt-2">
+                    <li>Which model should handle each task?</li>
+                    <li>How do we prove the generated fix actually works?</li>
+                    <li>What does each choice cost in time and budget?</li>
+                    <li>When should we use a stronger model?</li>
+                    <li>What happens when a model or provider fails?</li>
+                    <li>How do we avoid tightly coupling our coding workflow to one vendor?</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 2: Course Journey -->
+        <div class="lab-card" id="journey">
+            <h2><i class="bi bi-signpost-split text-info me-2"></i> 2. Course Journey</h2>
+            <p>Lab 0 is the starting point that prepares your workstation. <strong>No model benchmarking happens here.</strong></p>
+            
+            <div class="journey-flow">
+                <div class="journey-step active">
+                    <div class="step-number">LAB 0</div>
+                    <div class="step-title">Environment Setup</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 1</div>
+                    <div class="step-title">Same Task &rarr; Diff Models</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 2</div>
+                    <div class="step-title">Benchmark Metrics</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 3</div>
+                    <div class="step-title">Evidence Routing</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 4</div>
+                    <div class="step-title">Reasoning Effort</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 5</div>
+                    <div class="step-title">Retry & Failover</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 6</div>
+                    <div class="step-title">Provider Portability</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 7</div>
+                    <div class="step-title">Security Governance</div>
+                </div>
+                <div class="journey-step">
+                    <div class="step-number">LAB 8</div>
+                    <div class="step-title">Multi-Vendor Challenge</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Architecture -->
+        <div class="lab-card" id="architecture">
+            <h2><i class="bi bi-diagram-3 text-success me-2"></i> 3. System Architecture</h2>
+            <p>By the end of Lab 0, your local toolchain will link together cleanly:</p>
+            
+            <div class="p-4 bg-dark border rounded text-center">
+                <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+                    <div class="px-3 py-2 bg-secondary rounded text-white fw-bold"><i class="bi bi-person"></i> YOU</div>
+                    <i class="bi bi-arrow-right fs-4 text-muted"></i>
+                    <div class="px-3 py-2 bg-primary rounded text-white fw-bold"><i class="bi bi-key"></i> AWS IDENTITY</div>
+                    <i class="bi bi-arrow-right fs-4 text-muted"></i>
+                    <div class="px-3 py-2 bg-warning text-dark rounded fw-bold"><i class="bi bi-cloud-upload"></i> AMAZON BEDROCK</div>
+                    <i class="bi bi-arrow-right fs-4 text-muted"></i>
+                    <div class="px-3 py-2 bg-success rounded text-white fw-bold"><i class="bi bi-terminal"></i> OPENCODE</div>
+                    <i class="bi bi-arrow-right fs-4 text-muted"></i>
+                    <div class="px-3 py-2 bg-info text-dark rounded fw-bold"><i class="bi bi-box"></i> order-flow-service</div>
+                    <i class="bi bi-arrow-right fs-4 text-muted"></i>
+                    <div class="px-3 py-2 bg-danger rounded text-white fw-bold"><i class="bi bi-python"></i> Python / Pytest</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Prerequisites -->
+        <div class="lab-card" id="prerequisites">
+            <h2><i class="bi bi-list-check text-warning me-2"></i> 4. Prerequisites</h2>
+            <p>Before executing the setup steps, ensure you have:</p>
+            <ul>
+                <td>AWS Account or instructor-provided AWS training credentials</td>
+                <td>Terminal Access (Bash, Zsh, or Windows PowerShell)</td>
+                <td>Python 3.9+</td>
+                <td>Node.js &amp; npm</td>
+                <td>Git</td>
+            </ul>
+            <div class="callout callout-warning">
+                <strong><i class="bi bi-shield-exclamation"></i> Corporate Classroom Recommendation:</strong>
+                If temporary or pre-provisioned AWS identities are supplied by your instructor, use those credentials instead of creating long-lived IAM access keys on personal AWS accounts.
+            </div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="lab-card" id="step1">
+            <h2><i class="bi bi-1-circle-fill text-primary me-2"></i> Step 1 — Configure AWS Access</h2>
+            <p>Configure a named AWS CLI profile dedicated to the course. Do <strong>not</strong> use the AWS root user.</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span>Terminal / Shell Command</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre>aws configure --profile order-flow-course</pre>
+            </div>
+
+            <p>Provide the following when prompted:</p>
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered">
+                    <thead>
+                        <tr><th>Prompt Key</th><th>Value to Enter</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>AWS Access Key ID</td><td><code>&lt;your access key&gt;</code></td></tr>
+                        <tr><td>AWS Secret Access Key</td><td><code>&lt;your secret key&gt;</code></td></tr>
+                        <tr><td>Default region name</td><td><code>us-east-1</code> (or instructor region)</td></tr>
+                        <tr><td>Default output format</td><td><code>json</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>Verify your authentication identity:</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>Verification Command</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre>aws sts get-caller-identity --profile order-flow-course</pre>
+            </div>
+            <p class="text-success"><i class="bi bi-check-circle-fill"></i> <strong>Expected Result:</strong> AWS returns your account ID, IAM User ARN, and User ID JSON block.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="lab-card" id="step2">
+            <h2><i class="bi bi-2-circle-fill text-primary me-2"></i> Step 2 — Confirm Bedrock Model Access</h2>
+            <p>Open Amazon Bedrock in the AWS Management Console and verify model access.</p>
+            <p>The course utilizes multiple vendor model families via Amazon Bedrock:</p>
+            <div class="row g-3 my-2">
+                <div class="col-md-6">
+                    <div class="p-3 border border-primary rounded bg-dark">
+                        <h5 class="text-primary"><i class="bi bi-cpu"></i> Anthropic Claude</h5>
+                        <p class="small text-muted mb-0">Claude 3.5 Sonnet, Claude 3.5 Haiku, Claude 3 Haiku</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 border border-success rounded bg-dark">
+                        <h5 class="text-success"><i class="bi bi-boxes"></i> Amazon Nova & Open Models</h5>
+                        <p class="small text-muted mb-0">Amazon Nova Pro / Lite / Micro, Meta Llama 3 models</p>
+                    </div>
+                </div>
+            </div>
+            <p class="small text-muted">Model IDs are kept decoupled in <code>COURSE_MODELS.md</code> so workflows remain stable across regional deployments.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="lab-card" id="step3">
+            <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Step 3 — Install &amp; Verify AWS CLI</h2>
+            <p>Confirm that the AWS CLI v2 is properly installed on your machine:</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre>aws --version</pre>
+            </div>
+            <p>Re-verify your course profile credentials:</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre>aws sts get-caller-identity --profile order-flow-course</pre>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="lab-card" id="step4">
+            <h2><i class="bi bi-4-circle-fill text-primary me-2"></i> Step 4 — Create Python Virtual Environment</h2>
+            <p>Create a fresh virtual environment inside your course workspace:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre>python3 -m venv .venv</pre>
+            </div>
+
+            <p>Activate the environment based on your Operating System:</p>
+
+            <ul class="nav nav-tabs nav-tabs-custom mb-3" id="osTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="linux-tab" data-bs-toggle="tab" data-bs-target="#linux-pane" type="button" role="tab"><i class="bi bi-terminal"></i> macOS / Linux</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="windows-tab" data-bs-toggle="tab" data-bs-target="#windows-pane" type="button" role="tab"><i class="bi bi-windows"></i> Windows PowerShell</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="osTabContent">
+                <div class="tab-pane fade show active" id="linux-pane" role="tabpanel">
+                    <div class="code-container">
+                        <div class="code-header"><span>macOS / Linux Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>source .venv/bin/activate</pre>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="windows-pane" role="tabpanel">
+                    <div class="code-container">
+                        <div class="code-header"><span>Windows PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>.\.venv\Scripts\Activate.ps1</pre>
+                    </div>
+                </div>
+            </div>
+
+            <p>Install all required dependencies using <code>requirements.txt</code>:</p>
+            <div class="code-container">
+                <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>pip install -r requirements.txt</pre>
+            </div>
+
+            <p>Verify installation:</p>
+            <div class="code-container">
+                <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>python --version
+pytest --version</pre>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="lab-card" id="step5">
+            <h2><i class="bi bi-5-circle-fill text-primary me-2"></i> Step 5 — Install Node.js &amp; OpenCode</h2>
+            <p>Verify Node.js runtime and npm package manager:</p>
+            <div class="code-container">
+                <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>node --version
+npm --version</pre>
+            </div>
+
+            <p>Install OpenCode CLI globally:</p>
+            <div class="code-container">
+                <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>npm install -g opencode-ai</pre>
+            </div>
+
+            <p>Verify OpenCode CLI installation:</p>
+            <div class="code-container">
+                <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode --version</pre>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="lab-card" id="step6">
+            <h2><i class="bi bi-6-circle-fill text-primary me-2"></i> Step 6 — Navigate &amp; Inspect Repository</h2>
+            <p>The course scenario repository <code>order-flow-service</code> is pre-installed in your lab workspace directory.</p>
+            <p>Navigate to the repository folder and inspect its contents:</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>cd order-flow-service
+ls -la</pre>
+            </div>
+
+            <p>You should see the following application directory structure:</p>
+            <div class="code-container">
+                <div class="code-header"><span>Directory Layout</span></div>
+                <pre>order-flow-service/
+├── src/
+│   ├── config.py
+│   ├── database.py
+│   ├── main.py
+│   ├── models.py
+│   ├── services/
+│   │   ├── order_service.py
+│   │   ├── inventory_service.py
+│   │   └── payment_gateway.py
+│   └── utils/
+│       └── rate_limiter.py
+├── tests/
+├── fixtures/
+│   ├── eval_tasks/
+│   ├── held_out_eval/
+│   ├── historical_prs/
+│   └── hostile_payloads/
+└── pyproject.toml</pre>
+            </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="lab-card" id="step7">
+            <h2><i class="bi bi-7-circle-fill text-primary me-2"></i> Step 7 — Configure OpenCode for Amazon Bedrock</h2>
+            <p>Ensure <code>opencode.json</code> exists in your lab directory with Bedrock provider configuration:</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>opencode.json</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "amazon-bedrock": {
+      "options": {
+        "region": "us-east-1"
+      }
+    }
+  }
+}</pre>
+            </div>
+
+            <p>Set AWS Environment variables in your terminal session:</p>
+
+            <ul class="nav nav-tabs nav-tabs-custom mb-3" id="envTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="env-linux-tab" data-bs-toggle="tab" data-bs-target="#env-linux-pane" type="button" role="tab"><i class="bi bi-terminal"></i> macOS / Linux</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="env-win-tab" data-bs-toggle="tab" data-bs-target="#env-win-pane" type="button" role="tab"><i class="bi bi-windows"></i> Windows PowerShell</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="envTabContent">
+                <div class="tab-pane fade show active" id="env-linux-pane" role="tabpanel">
+                    <div class="code-container">
+                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>export AWS_PROFILE=order-flow-course
+export AWS_REGION=us-east-1</pre>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="env-win-pane" role="tabpanel">
+                    <div class="code-container">
+                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>$env:AWS_PROFILE="order-flow-course"
+$env:AWS_REGION="us-east-1"</pre>
+                    </div>
+                </div>
+            </div>
+
+            <p>Ask OpenCode to list accessible Amazon Bedrock models:</p>
+            <div class="code-container">
+                <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode models</pre>
+            </div>
+        </div>
+
+        <!-- Step 8 -->
+        <div class="lab-card" id="step8">
+            <h2><i class="bi bi-8-circle-fill text-primary me-2"></i> Step 8 — Validate the Entire Environment</h2>
+            <p>Run these validation commands individually to confirm component readiness:</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>Validation Command Matrix</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre># 1. Check AWS identity
+aws sts get-caller-identity --profile order-flow-course
+
+# 2. Check OpenCode CLI
+opencode --version
+
+# 3. Check Bedrock visibility
+opencode models
+
+# 4. Check Repository structure
+test -d order-flow-service/src && echo "Repo OK" || echo "Repo missing"
+
+# 5. Check Python & Pytest
+python --version
+pytest --version</pre>
+            </div>
+        </div>
+
+        <!-- Success Checklist -->
+        <div class="lab-card" id="checklist">
+            <h2><i class="bi bi-clipboard-check text-success me-2"></i> Lab 0 Success Checklist</h2>
+            <p>You are ready for Lab 1 when all checks below are verified:</p>
+
+            <div class="progress-bar-custom">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="text-end small text-muted mb-3" id="progressText">0 of 8 completed (0%)</div>
+
+            <div class="checklist-container">
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>AWS identity resolves correctly (<code>aws sts get-caller-identity</code>)</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>Correct AWS region (e.g., <code>us-east-1</code>) configured</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>Required Amazon Bedrock models are accessible</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>OpenCode starts successfully (<code>opencode --version</code>)</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>OpenCode detects Amazon Bedrock models (<code>opencode models</code>)</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>Python virtual environment is created and activated</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>Dependencies installed (<code>boto3</code>, <code>pytest</code>, <code>httpx</code>, etc.)</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="updateProgress()">
+                    <span>Course repository directory <code>order-flow-service/src</code> exists</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="lab-card" id="troubleshooting">
+            <h2><i class="bi bi-bug text-danger me-2"></i> Troubleshooting &amp; Common Issues</h2>
+            
+            <div class="accordion accordion-flush" id="troubleAccordion">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#issue1">
+                            <i class="bi bi-exclamation-triangle text-warning me-2"></i> AWS Authentication Fails
+                        </button>
+                    </h2>
+                    <div id="issue1" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                        <div class="accordion-body">
+                            <p>Verify your profile configuration with:</p>
+                            <pre class="bg-black p-2 rounded">aws configure list --profile order-flow-course</pre>
+                            <p class="mb-0">Ensure access key and secret key are entered without trailing spaces or quote marks.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#issue2">
+                            <i class="bi bi-eye-slash text-danger me-2"></i> OpenCode Cannot See Bedrock Models
+                        </button>
+                    </h2>
+                    <div id="issue2" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                        <div class="accordion-body">
+                            <p>Check active terminal environment variables:</p>
+                            <pre class="bg-black p-2 rounded">echo $AWS_PROFILE
+echo $AWS_REGION</pre>
+                            <p class="mb-0">Ensure region in <code>opencode.json</code> matches region with Bedrock model access permissions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#issue3">
+                            <i class="bi bi-terminal-x text-info me-2"></i> 'opencode' Command Not Found
+                        </button>
+                    </h2>
+                    <div id="issue3" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                        <div class="accordion-body">
+                            <p>Confirm Node.js npm global bin path is in your system <code>PATH</code>:</p>
+                            <pre class="bg-black p-2 rounded">npm list -g --depth=0</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Takeaway -->
+        <div class="lab-card text-center border-success">
+            <h3 class="text-success"><i class="bi bi-flag-fill me-2"></i> Final Takeaway</h3>
+            <p class="fs-5">Lab 0 answers one core question:</p>
+            <blockquote class="blockquote text-white fs-4 my-3">
+                "Can my coding environment reach multiple AI models through Amazon Bedrock and OpenCode?"
+            </blockquote>
+            <p class="text-muted">If yes, you are ready for <strong>Lab 1 — Same Task &rarr; Different Models</strong>.</p>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap & JS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            const percentage = Math.round((checkedCount / total) * 100);
+
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').innerText = `${checkedCount} of ${total} completed (${percentage}%)`;
+        }
+    </script>
+</body>
+</html>

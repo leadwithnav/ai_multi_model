@@ -1,0 +1,7 @@
+{
+  "task_id": "TASK-002",
+  "title": "Mitigate race condition during stock reservation using atomic updates",
+  "difficulty": "HARD",
+  "target_file": "src/services/inventory_service.py",
+  "instructions": "InventoryService.reserve_stock has a TOCTOU concurrency flaw where parallel requests oversell single-unit stock. Refactor the reservation query to perform an atomic decrement with a condition (stock >= quantity) in a single transactional step, returning True if decremented and False otherwise."
+}

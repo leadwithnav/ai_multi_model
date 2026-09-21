@@ -1,0 +1,7 @@
+{
+  "task_id": "TASK-005",
+  "title": "Implement transactional rollback on partial inventory allocation failure",
+  "difficulty": "HARD",
+  "target_file": "src/services/order_service.py",
+  "instructions": "When creating an order with multiple items, if an item fails reservation, any previously reserved items in that order are currently leaked and not refunded to stock. Implement compensatory rollback logic so that if item N fails, items 1 through N-1 are immediately released back to inventory before raising the ValueError."
+}

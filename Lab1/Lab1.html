@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 1 — Same Task, Different Models Walkthrough</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .nav-tabs-custom {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-tabs-custom .nav-link {
+            color: var(--text-muted);
+            border: none;
+            padding: 8px 16px;
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            color: var(--accent-color);
+            background: none;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .table-input {
+            background-color: #0d1117;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 4px 8px;
+            width: 100%;
+        }
+
+        .table-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 1 Walkthrough</h5>
+            <small class="text-muted">Same Task, Diff Models</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step1-predict"><i class="bi bi-question-circle"></i> Step 1: Make a Prediction</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step2-task"><i class="bi bi-file-earmark-text"></i> Step 2: Task Requirements</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step3-models"><i class="bi bi-cpu"></i> Step 3: Target Models</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step4-manual"><i class="bi bi-play-circle"></i> Step 4: Model Execution</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step5-table"><i class="bi bi-table"></i> Step 5: Benchmark Table</a></li>
+            <li class="nav-item"><a class="nav-link" href="#step6-compare"><i class="bi bi-diagram-3"></i> Step 6: Compare Evidence</a></li>
+            <li class="nav-item"><a class="nav-link" href="#takeaway"><i class="bi bi-flag"></i> Key Takeaways</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 1</span>
+                    <h1 class="text-white mt-2 mb-1">Same Task, Different Models</h1>
+                    <p class="text-white mb-0">Focus: Quality + Cost + Latency</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview & Goal -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Compare multiple AI models on the same coding task using <strong>evidence</strong> instead of assumptions.</p>
+            
+            <div class="p-3 bg-dark border border-secondary rounded text-center my-3">
+                <span class="text-info fw-bold">Same Engineering Task</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-primary fw-bold">Six Amazon Bedrock Models</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-warning fw-bold">Generated Implementation</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-danger fw-bold">Same Pytest Acceptance Tests</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-success fw-bold fs-5">QUALITY + COST + LATENCY</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-info fw-bold">Evidence-Based Model Decision</span>
+            </div>
+        </div>
+
+        <!-- Step 1: Make a Prediction -->
+        <div class="lab-card" id="step1-predict">
+            <h2><i class="bi bi-1-circle-fill text-primary me-2"></i> Step 1 — Make a Prediction</h2>
+            <p>Before running anything, write down your expectations in the prediction table below. You will compare these assumptions with actual evidence at the end of the lab.</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Question</th>
+                            <th style="width: 60%;">Your Prediction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Which model will produce the best quality?</strong></td>
+                            <td><input type="text" class="table-input" id="pred_quality" placeholder="e.g. Claude 3.5 Sonnet or GPT-5.6 Sol..." oninput="savePredictions()"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Which model will be fastest?</strong></td>
+                            <td><input type="text" class="table-input" id="pred_fastest" placeholder="e.g. GPT-5.6 Luna or Claude 3.5 Haiku..." oninput="savePredictions()"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Which model will be cheapest?</strong></td>
+                            <td><input type="text" class="table-input" id="pred_cheapest" placeholder="e.g. GPT-5.6 Luna..." oninput="savePredictions()"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Why did you make these predictions?</strong></td>
+                            <td><textarea class="table-input" id="pred_why" rows="2" placeholder="Write your reasoning here..." oninput="savePredictions()"></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <small class="text-muted"><i class="bi bi-info-circle"></i> Your predictions auto-save locally in your browser.</small>
+        </div>
+
+        <!-- Step 2: Task Requirements -->
+        <div class="lab-card" id="step2-task">
+            <h2><i class="bi bi-2-circle-fill text-primary me-2"></i> Step 2 — Task Requirements</h2>
+            <p>Each model receives the exact same implementation requirement task defined in <code>benchmark/TASK.md</code>:</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>benchmark/TASK.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>Implement the in-memory rate limiter in:
+
+../order-flow-service/src/utils/rate_limiter.py
+
+Requirements:
+
+1. Allow a configurable maximum number of requests per time window.
+2. Reject requests after the limit is reached.
+3. Requests must become eligible again after the window expires.
+4. Different client IDs must be tracked independently.
+5. The implementation must behave correctly under concurrent access.
+6. Do not change public function signatures.
+7. Do not modify unrelated files.
+8. Keep the implementation simple and maintainable.
+
+When finished, return a short summary of what you changed.</pre>
+            </div>
+        </div>
+
+        <!-- Step 3: Target Models -->
+        <div class="lab-card" id="step3-models">
+            <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Step 3 — Target Models Configuration</h2>
+            <p>Set your AWS environment variables in your terminal:</p>
+
+            <ul class="nav nav-tabs nav-tabs-custom mb-3" id="envTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#env-win"><i class="bi bi-windows"></i> Windows PowerShell</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#env-nix"><i class="bi bi-terminal"></i> macOS / Linux</button></li>
+            </ul>
+            <div class="tab-content mb-3">
+                <div class="tab-pane fade show active" id="env-win">
+                    <div class="code-container">
+                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>$env:AWS_PROFILE="order-flow-course"
+$env:AWS_REGION="us-east-1"</pre>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="env-nix">
+                    <div class="code-container">
+                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>export AWS_PROFILE=order-flow-course
+export AWS_REGION=us-east-1</pre>
+                    </div>
+                </div>
+            </div>
+
+            <p>Target model agents configured in <code>.opencode/agent/</code>:</p>
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr><th>Agent Name</th><th>Model Name</th><th>Amazon Bedrock Model Identifier</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>claude-3-5-sonnet</code></td><td>Claude 3.5 Sonnet</td><td><code>amazon-bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0</code></td></tr>
+                        <tr><td><code>claude-3-5-haiku</code></td><td>Claude 3.5 Haiku</td><td><code>amazon-bedrock/us.anthropic.claude-3-5-haiku-20241022-v1:0</code></td></tr>
+                        <tr><td><code>claude-3-opus</code></td><td>Claude 3 Opus</td><td><code>amazon-bedrock/us.anthropic.claude-3-opus-20240229-v1:0</code></td></tr>
+                        <tr><td><code>gpt-5-6-luna</code></td><td>GPT-5.6 Luna</td><td><code>amazon-bedrock/us.openai.gpt-5.6-luna</code></td></tr>
+                        <tr><td><code>gpt-5-6-terra</code></td><td>GPT-5.6 Terra</td><td><code>amazon-bedrock/us.openai.gpt-5.6-terra</code></td></tr>
+                        <tr><td><code>gpt-5-6-sol</code></td><td>GPT-5.6 Sol</td><td><code>amazon-bedrock/us.openai.gpt-5.6-sol</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Step 4: Model Execution Procedure -->
+        <div class="lab-card" id="step4-manual">
+            <h2><i class="bi bi-4-circle-fill text-primary me-2"></i> Step 4 — Execute Models One by One</h2>
+            <p>Run each model individually following the 5-step loop below:</p>
+
+            <div class="callout callout-warning">
+                <strong>Execution Loop For Each Model:</strong>
+                <ol class="mb-0">
+                    <td>Run OpenCode command and note the wall-clock <strong>Latency</strong> (seconds) and token <strong>Cost</strong>.</td>
+                    <td>Run acceptance tests: <code>cd ../order-flow-service &amp;&amp; pytest -q tests/ &amp;&amp; cd ../Lab1</code></td>
+                    <td>Record <strong>Tests Passed</strong> and <strong>Quality Bar</strong> (PASS if 100% pass rate, else FAIL).</td>
+                    <td>Reset repository: <code>.\reset.ps1</code> (Windows) or <code>./reset.sh</code> (Linux/macOS).</td>
+                    <td>Repeat for the next model.</td>
+                </ol>
+            </div>
+
+            <!-- How to Measure Metrics Box -->
+            <div class="p-3 bg-dark border border-info rounded my-3">
+                <h5 class="text-info"><i class="bi bi-speedometer2"></i> How to Measure Latency, Tokens &amp; Cost</h5>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-4">
+                        <strong class="text-primary"><i class="bi bi-clock"></i> 1. Latency (Seconds)</strong>
+                        <p class="small text-muted mb-1">Measure total execution time using timing commands:</p>
+                        <ul class="small mb-0">
+                            <td><strong>PowerShell:</strong> <code>Measure-Command { opencode run --agent claude-3-5-sonnet "$(Get-Content benchmark/TASK.md -Raw)" }</code></td>
+                            <td><strong>Bash:</strong> <code>time opencode run --agent claude-3-5-sonnet "$(cat benchmark/TASK.md)"</code></td>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <strong class="text-success"><i class="bi bi-file-code"></i> 2. Token Counting</strong>
+                        <p class="small text-muted mb-1">Pass <code>--format json</code> to stream JSON events containing exact token counts (<code>tokens.input</code>, <code>tokens.output</code>):</p>
+                        <code class="small text-success">opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/TASK.md)"</code>
+                    </div>
+                    <div class="col-md-4">
+                        <strong class="text-warning"><i class="bi bi-calculator"></i> 3. Cost Calculation ($ USD)</strong>
+                        <p class="small text-muted mb-1">Calculate cost using Amazon Bedrock pricing per 1 Million tokens:</p>
+                        <div class="small bg-black p-2 rounded text-white font-monospace">
+                            Cost = (Input_Tokens / 1M * Input_Price) + (Output_Tokens / 1M * Output_Price)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bedrock Pricing Reference Table -->
+                <div class="table-responsive mt-3">
+                    <table class="table table-dark table-bordered table-sm small text-center mb-0">
+                        <thead>
+                            <tr class="table-secondary text-dark">
+                                <th>Model Name</th>
+                                <th>Agent Name</th>
+                                <th>Input Price (USD / 1M Tokens)</th>
+                                <th>Output Price (USD / 1M Tokens)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Claude 3.5 Sonnet</td><td><code>claude-3-5-sonnet</code></td><td>$3.00</td><td>$15.00</td></tr>
+                            <tr><td>Claude 3.5 Haiku</td><td><code>claude-3-5-haiku</code></td><td>$1.00</td><td>$5.00</td></tr>
+                            <tr><td>Claude 3 Opus</td><td><code>claude-3-opus</code></td><td>$15.00</td><td>$75.00</td></tr>
+                            <tr><td>GPT-5.6 Luna</td><td><code>gpt-5-6-luna</code></td><td>$0.25</td><td>$1.25</td></tr>
+                            <tr><td>GPT-5.6 Terra</td><td><code>gpt-5-6-terra</code></td><td>$1.00</td><td>$5.00</td></tr>
+                            <tr><td>GPT-5.6 Sol</td><td><code>gpt-5-6-sol</code></td><td>$3.00</td><td>$15.00</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Model Commands Accordion -->
+            <div class="accordion accordion-flush" id="modelCmdsAccordion">
+                
+                <!-- Model 1: Claude 3.5 Sonnet -->
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m1">
+                            1. Claude 3.5 Sonnet (<code>claude-3-5-sonnet</code>)
+                        </button>
+                    </h2>
+                    <div id="m1" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
+                        <div class="accordion-body">
+                            <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m1-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m1-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
+                            </ul>
+                            <div class="tab-content mb-3">
+                                <div class="tab-pane fade show active" id="m1-ps" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent claude-3-5-sonnet "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="m1-bash" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent claude-3-5-sonnet "$(cat benchmark/TASK.md)"</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 2: Claude 3.5 Haiku -->
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m2">
+                            2. Claude 3.5 Haiku (<code>claude-3-5-haiku</code>)
+                        </button>
+                    </h2>
+                    <div id="m2" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
+                        <div class="accordion-body">
+                            <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m2-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m2-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
+                            </ul>
+                            <div class="tab-content mb-3">
+                                <div class="tab-pane fade show active" id="m2-ps" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent claude-3-5-haiku "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="m2-bash" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent claude-3-5-haiku "$(cat benchmark/TASK.md)"</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 3: Claude 3 Opus -->
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m3">
+                            3. Claude 3 Opus (<code>claude-3-opus</code>)
+                        </button>
+                    </h2>
+                    <div id="m3" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
+                        <div class="accordion-body">
+                            <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m3-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m3-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
+                            </ul>
+                            <div class="tab-content mb-3">
+                                <div class="tab-pane fade show active" id="m3-ps" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent claude-3-opus "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="m3-bash" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent claude-3-opus "$(cat benchmark/TASK.md)"</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 4: GPT-5.6 Luna -->
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m4">
+                            4. GPT-5.6 Luna (<code>gpt-5-6-luna</code>)
+                        </button>
+                    </h2>
+                    <div id="m4" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
+                        <div class="accordion-body">
+                            <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m4-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m4-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
+                            </ul>
+                            <div class="tab-content mb-3">
+                                <div class="tab-pane fade show active" id="m4-ps" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent gpt-5-6-luna "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="m4-bash" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent gpt-5-6-luna "$(cat benchmark/TASK.md)"</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 5: GPT-5.6 Terra -->
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m5">
+                            5. GPT-5.6 Terra (<code>gpt-5-6-terra</code>)
+                        </button>
+                    </h2>
+                    <div id="m5" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
+                        <div class="accordion-body">
+                            <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m5-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m5-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
+                            </ul>
+                            <div class="tab-content mb-3">
+                                <div class="tab-pane fade show active" id="m5-ps" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent gpt-5-6-terra "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="m5-bash" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent gpt-5-6-terra "$(cat benchmark/TASK.md)"</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 6: GPT-5.6 Sol -->
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m6">
+                            6. GPT-5.6 Sol (<code>gpt-5-6-sol</code>)
+                        </button>
+                    </h2>
+                    <div id="m6" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
+                        <div class="accordion-body">
+                            <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m6-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m6-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
+                            </ul>
+                            <div class="tab-content mb-3">
+                                <div class="tab-pane fade show active" id="m6-ps" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent gpt-5-6-sol "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="m6-bash" role="tabpanel">
+                                    <div class="code-container">
+                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                        <pre>opencode run --agent gpt-5-6-sol "$(cat benchmark/TASK.md)"</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Step 5: Benchmark Table -->
+        <div class="lab-card" id="step5-table">
+            <h2><i class="bi bi-5-circle-fill text-primary me-2"></i> Step 5 — Complete the Benchmarking Table</h2>
+            <p>Record your observed benchmark metrics into the table below or edit <code>benchmark/benchmark.csv</code> directly:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Model</th>
+                            <th style="width: 15%;">Tests Passed</th>
+                            <th style="width: 15%;">Quality Bar</th>
+                            <th style="width: 15%;">Latency</th>
+                            <th style="width: 15%;">Cost</th>
+                            <th style="width: 20%;">Observation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-start"><strong>Claude 3.5 Sonnet</strong></td>
+                            <td><input type="text" class="table-input text-center" id="m1_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td>
+                                <select class="table-input text-center" id="m1_bar" onchange="saveTableData()">
+                                    <option value="">PASS / FAIL</option>
+                                    <option value="PASS">PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="table-input text-center" id="m1_lat" placeholder="e.g. 18s" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m1_cost" placeholder="e.g. $0.005" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input" id="m1_obs" placeholder="Notes..." oninput="saveTableData()"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start"><strong>Claude 3.5 Haiku</strong></td>
+                            <td><input type="text" class="table-input text-center" id="m2_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td>
+                                <select class="table-input text-center" id="m2_bar" onchange="saveTableData()">
+                                    <option value="">PASS / FAIL</option>
+                                    <option value="PASS">PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="table-input text-center" id="m2_lat" placeholder="e.g. 6s" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m2_cost" placeholder="e.g. $0.001" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input" id="m2_obs" placeholder="Notes..." oninput="saveTableData()"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start"><strong>Claude 3 Opus</strong></td>
+                            <td><input type="text" class="table-input text-center" id="m3_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td>
+                                <select class="table-input text-center" id="m3_bar" onchange="saveTableData()">
+                                    <option value="">PASS / FAIL</option>
+                                    <option value="PASS">PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="table-input text-center" id="m3_lat" placeholder="e.g. 45s" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m3_cost" placeholder="e.g. $0.035" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input" id="m3_obs" placeholder="Notes..." oninput="saveTableData()"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start"><strong>GPT-5.6 Luna</strong></td>
+                            <td><input type="text" class="table-input text-center" id="m4_tests" placeholder="e.g. 7/8" oninput="saveTableData()"></td>
+                            <td>
+                                <select class="table-input text-center" id="m4_bar" onchange="saveTableData()">
+                                    <option value="">PASS / FAIL</option>
+                                    <option value="PASS">PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="table-input text-center" id="m4_lat" placeholder="e.g. 5s" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m4_cost" placeholder="e.g. $0.0005" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input" id="m4_obs" placeholder="Notes..." oninput="saveTableData()"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start"><strong>GPT-5.6 Terra</strong></td>
+                            <td><input type="text" class="table-input text-center" id="m5_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td>
+                                <select class="table-input text-center" id="m5_bar" onchange="saveTableData()">
+                                    <option value="">PASS / FAIL</option>
+                                    <option value="PASS">PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="table-input text-center" id="m5_lat" placeholder="e.g. 12s" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m5_cost" placeholder="e.g. $0.002" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input" id="m5_obs" placeholder="Notes..." oninput="saveTableData()"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start"><strong>GPT-5.6 Sol</strong></td>
+                            <td><input type="text" class="table-input text-center" id="m6_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td>
+                                <select class="table-input text-center" id="m6_bar" onchange="saveTableData()">
+                                    <option value="">PASS / FAIL</option>
+                                    <option value="PASS">PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="table-input text-center" id="m6_lat" placeholder="e.g. 20s" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m6_cost" placeholder="e.g. $0.008" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input" id="m6_obs" placeholder="Notes..." oninput="saveTableData()"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <small class="text-muted"><i class="bi bi-info-circle"></i> Benchmarking table data auto-saves in your browser session.</small>
+        </div>
+
+        <!-- Step 6: Compare Evidence -->
+        <div class="lab-card" id="step6-compare">
+            <h2><i class="bi bi-6-circle-fill text-primary me-2"></i> Step 6 — Compare Evidence Against Predictions</h2>
+            <p>Now review your Step 1 predictions against your actual recorded benchmark evidence:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Question</th>
+                            <th style="width: 35%;">Your Initial Prediction (Step 1)</th>
+                            <th style="width: 35%;">Actual Empirical Evidence (Step 5)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Best Quality Model</strong></td>
+                            <td id="review_pred_quality" class="text-warning"><em>Waiting for Step 1 input...</em></td>
+                            <td><input type="text" class="table-input" id="evid_quality" placeholder="Actual winner from tests..." oninput="saveTableData()"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fastest Model</strong></td>
+                            <td id="review_pred_fastest" class="text-warning"><em>Waiting for Step 1 input...</em></td>
+                            <td><input type="text" class="table-input" id="evid_fastest" placeholder="Actual fastest model..." oninput="saveTableData()"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cheapest Model</strong></td>
+                            <td id="review_pred_cheapest" class="text-warning"><em>Waiting for Step 1 input...</em></td>
+                            <td><input type="text" class="table-input" id="evid_cheapest" placeholder="Actual cheapest model..." oninput="saveTableData()"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-success">
+                <strong><i class="bi bi-shield-check"></i> Multi-Model Selection Rule:</strong>
+                <ol class="mb-0">
+                    <td>Filter out models that failed the <strong>Quality Bar</strong> (must pass 100% of acceptance unit tests).</td>
+                    <td>Among the passing models, select the model with the lowest combined <strong>Cost + Latency</strong> for your workload.</td>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Takeaway -->
+        <div class="lab-card text-center border-success" id="takeaway">
+            <h3 class="text-success"><i class="bi bi-flag-fill me-2"></i> Key Takeaway</h3>
+            <blockquote class="blockquote text-white fs-4 my-3">
+                "Don't choose the most capable model. Choose the least expensive model that reliably meets the quality bar for that task."
+            </blockquote>
+            <p class="text-muted mb-0">Lab 1 provides the core benchmarking method — replacing vendor hype with evidence-driven model routing decisions.</p>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        function savePredictions() {
+            const q = document.getElementById('pred_quality').value;
+            const f = document.getElementById('pred_fastest').value;
+            const c = document.getElementById('pred_cheapest').value;
+            const w = document.getElementById('pred_why').value;
+
+            localStorage.setItem('lab1_pred_quality', q);
+            localStorage.setItem('lab1_pred_fastest', f);
+            localStorage.setItem('lab1_pred_cheapest', c);
+            localStorage.setItem('lab1_pred_why', w);
+
+            document.getElementById('review_pred_quality').innerText = q || 'Waiting for Step 1 input...';
+            document.getElementById('review_pred_fastest').innerText = f || 'Waiting for Step 1 input...';
+            document.getElementById('review_pred_cheapest').innerText = c || 'Waiting for Step 1 input...';
+        }
+
+        function saveTableData() {
+            const fields = [
+                'm1_tests', 'm1_bar', 'm1_lat', 'm1_cost', 'm1_obs',
+                'm2_tests', 'm2_bar', 'm2_lat', 'm2_cost', 'm2_obs',
+                'm3_tests', 'm3_bar', 'm3_lat', 'm3_cost', 'm3_obs',
+                'm4_tests', 'm4_bar', 'm4_lat', 'm4_cost', 'm4_obs',
+                'm5_tests', 'm5_bar', 'm5_lat', 'm5_cost', 'm5_obs',
+                'm6_tests', 'm6_bar', 'm6_lat', 'm6_cost', 'm6_obs',
+                'evid_quality', 'evid_fastest', 'evid_cheapest'
+            ];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) localStorage.setItem('lab1_' + id, el.value);
+            });
+        }
+
+        function loadSavedData() {
+            ['pred_quality', 'pred_fastest', 'pred_cheapest', 'pred_why'].forEach(id => {
+                const val = localStorage.getItem('lab1_' + id);
+                if (val && document.getElementById(id)) {
+                    document.getElementById(id).value = val;
+                }
+            });
+            savePredictions();
+
+            const fields = [
+                'm1_tests', 'm1_bar', 'm1_lat', 'm1_cost', 'm1_obs',
+                'm2_tests', 'm2_bar', 'm2_lat', 'm2_cost', 'm2_obs',
+                'm3_tests', 'm3_bar', 'm3_lat', 'm3_cost', 'm3_obs',
+                'm4_tests', 'm4_bar', 'm4_lat', 'm4_cost', 'm4_obs',
+                'm5_tests', 'm5_bar', 'm5_lat', 'm5_cost', 'm5_obs',
+                'm6_tests', 'm6_bar', 'm6_lat', 'm6_cost', 'm6_obs',
+                'evid_quality', 'evid_fastest', 'evid_cheapest'
+            ];
+            fields.forEach(id => {
+                const val = localStorage.getItem('lab1_' + id);
+                if (val && document.getElementById(id)) {
+                    document.getElementById(id).value = val;
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', loadSavedData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+[
+  {
+    "sample_id": "INC-LOG-001",
+    "raw_log": "2026-09-19T08:12:44Z [ERROR] [order_service.py:34] Unhandled exception during stock check. Traceback: AttributeError: 'NoneType' object has no attribute 'stock' at line 34 in get_stock. SKU: SKU_NOT_FOUND_887 customer_id=cust_9921",
+    "ground_truth": {
+      "incident_category": "MISSING_ENTITY_ERROR",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "SKU_NOT_FOUND_887",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-002",
+    "raw_log": "2026-09-19T08:14:02Z [WARN] [payment_gateway.py:48] HTTP 504 Gateway Timeout while posting to https://api.mockpayment.internal/v1/charges. Idempotency-Key: idemp_992a8b. Connection dropped after 2002ms.",
+    "ground_truth": {
+      "incident_category": "UPSTREAM_TIMEOUT",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "idemp_992a8b",
+      "severity": "MEDIUM",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-003",
+    "raw_log": "2026-09-19T08:16:11Z [CRITICAL] [inventory_service.py:28] sqlalchemy.exc.OperationalError: database table is locked (sqlite3.OperationalError). Concurrent write lock collision on table 'inventory' during stock reservation.",
+    "ground_truth": {
+      "incident_category": "CONCURRENCY_LOCK_COLLISION",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "inventory",
+      "severity": "CRITICAL",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-004",
+    "raw_log": "2026-09-19T08:18:55Z [ERROR] [rate_limiter.py:19] SimpleMemoryRateLimiter window exhausted. 128 requests received in 60s window (limit: 60 rpm). Caller IP: 10.0.4.192.",
+    "ground_truth": {
+      "incident_category": "RATE_LIMIT_EXCEEDED",
+      "root_cause_service": "rate_limiter",
+      "affected_entity": "10.0.4.192",
+      "severity": "LOW",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-005",
+    "raw_log": "2026-09-19T08:21:00Z [SECURITY] [payment_gateway.py:62] Webhook signature mismatch. Received sig_44 but expected sha256 HMAC for order_id: ORD-1002. Dropping webhook payload.",
+    "ground_truth": {
+      "incident_category": "AUTH_SIGNATURE_INVALID",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "ORD-1002",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-006",
+    "raw_log": "2026-09-19T09:06:15Z [ALERT] [inventory_service.py:40] AttributeError: 'NoneType' object has no attribute 'stock'. Target: SKU_66. Context: automated worker thread-6.",
+    "ground_truth": {
+      "incident_category": "MISSING_ENTITY_ERROR",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "SKU_66",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-007",
+    "raw_log": "2026-09-19T09:07:15Z [ALERT] [payment_gateway.py:40] HTTP 504 Gateway Timeout while posting to payment endpoint. Target: idemp_77. Context: automated worker thread-7.",
+    "ground_truth": {
+      "incident_category": "UPSTREAM_TIMEOUT",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "idemp_77",
+      "severity": "MEDIUM",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-008",
+    "raw_log": "2026-09-19T09:08:15Z [ALERT] [inventory_service.py:40] database table is locked due to concurrent transaction race. Target: inventory. Context: automated worker thread-8.",
+    "ground_truth": {
+      "incident_category": "CONCURRENCY_LOCK_COLLISION",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "inventory",
+      "severity": "CRITICAL",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-009",
+    "raw_log": "2026-09-19T09:09:15Z [ALERT] [rate_limiter.py:40] RPM threshold violated; request burst dropped. Target: 10.0.4.99. Context: automated worker thread-9.",
+    "ground_truth": {
+      "incident_category": "RATE_LIMIT_EXCEEDED",
+      "root_cause_service": "rate_limiter",
+      "affected_entity": "10.0.4.99",
+      "severity": "LOW",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-010",
+    "raw_log": "2026-09-19T09:10:15Z [ALERT] [payment_gateway.py:40] Invalid signature detected on incoming webhook payload. Target: ORD-110. Context: automated worker thread-10.",
+    "ground_truth": {
+      "incident_category": "AUTH_SIGNATURE_INVALID",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "ORD-110",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-011",
+    "raw_log": "2026-09-19T09:11:15Z [ALERT] [inventory_service.py:40] AttributeError: 'NoneType' object has no attribute 'stock'. Target: SKU_121. Context: automated worker thread-11.",
+    "ground_truth": {
+      "incident_category": "MISSING_ENTITY_ERROR",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "SKU_121",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-012",
+    "raw_log": "2026-09-19T09:12:15Z [ALERT] [payment_gateway.py:40] HTTP 504 Gateway Timeout while posting to payment endpoint. Target: idemp_132. Context: automated worker thread-12.",
+    "ground_truth": {
+      "incident_category": "UPSTREAM_TIMEOUT",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "idemp_132",
+      "severity": "MEDIUM",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-013",
+    "raw_log": "2026-09-19T09:13:15Z [ALERT] [inventory_service.py:40] database table is locked due to concurrent transaction race. Target: inventory. Context: automated worker thread-13.",
+    "ground_truth": {
+      "incident_category": "CONCURRENCY_LOCK_COLLISION",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "inventory",
+      "severity": "CRITICAL",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-014",
+    "raw_log": "2026-09-19T09:14:15Z [ALERT] [rate_limiter.py:40] RPM threshold violated; request burst dropped. Target: 10.0.4.154. Context: automated worker thread-14.",
+    "ground_truth": {
+      "incident_category": "RATE_LIMIT_EXCEEDED",
+      "root_cause_service": "rate_limiter",
+      "affected_entity": "10.0.4.154",
+      "severity": "LOW",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-015",
+    "raw_log": "2026-09-19T09:15:15Z [ALERT] [payment_gateway.py:40] Invalid signature detected on incoming webhook payload. Target: ORD-165. Context: automated worker thread-15.",
+    "ground_truth": {
+      "incident_category": "AUTH_SIGNATURE_INVALID",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "ORD-165",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-016",
+    "raw_log": "2026-09-19T09:16:15Z [ALERT] [inventory_service.py:40] AttributeError: 'NoneType' object has no attribute 'stock'. Target: SKU_176. Context: automated worker thread-16.",
+    "ground_truth": {
+      "incident_category": "MISSING_ENTITY_ERROR",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "SKU_176",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-017",
+    "raw_log": "2026-09-19T09:17:15Z [ALERT] [payment_gateway.py:40] HTTP 504 Gateway Timeout while posting to payment endpoint. Target: idemp_187. Context: automated worker thread-17.",
+    "ground_truth": {
+      "incident_category": "UPSTREAM_TIMEOUT",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "idemp_187",
+      "severity": "MEDIUM",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-018",
+    "raw_log": "2026-09-19T09:18:15Z [ALERT] [inventory_service.py:40] database table is locked due to concurrent transaction race. Target: inventory. Context: automated worker thread-18.",
+    "ground_truth": {
+      "incident_category": "CONCURRENCY_LOCK_COLLISION",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "inventory",
+      "severity": "CRITICAL",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-019",
+    "raw_log": "2026-09-19T09:19:15Z [ALERT] [rate_limiter.py:40] RPM threshold violated; request burst dropped. Target: 10.0.4.209. Context: automated worker thread-19.",
+    "ground_truth": {
+      "incident_category": "RATE_LIMIT_EXCEEDED",
+      "root_cause_service": "rate_limiter",
+      "affected_entity": "10.0.4.209",
+      "severity": "LOW",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-020",
+    "raw_log": "2026-09-19T09:20:15Z [ALERT] [payment_gateway.py:40] Invalid signature detected on incoming webhook payload. Target: ORD-220. Context: automated worker thread-20.",
+    "ground_truth": {
+      "incident_category": "AUTH_SIGNATURE_INVALID",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "ORD-220",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-021",
+    "raw_log": "2026-09-19T09:21:15Z [ALERT] [inventory_service.py:40] AttributeError: 'NoneType' object has no attribute 'stock'. Target: SKU_231. Context: automated worker thread-21.",
+    "ground_truth": {
+      "incident_category": "MISSING_ENTITY_ERROR",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "SKU_231",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  },
+  {
+    "sample_id": "INC-LOG-022",
+    "raw_log": "2026-09-19T09:22:15Z [ALERT] [payment_gateway.py:40] HTTP 504 Gateway Timeout while posting to payment endpoint. Target: idemp_242. Context: automated worker thread-22.",
+    "ground_truth": {
+      "incident_category": "UPSTREAM_TIMEOUT",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "idemp_242",
+      "severity": "MEDIUM",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-023",
+    "raw_log": "2026-09-19T09:23:15Z [ALERT] [inventory_service.py:40] database table is locked due to concurrent transaction race. Target: inventory. Context: automated worker thread-23.",
+    "ground_truth": {
+      "incident_category": "CONCURRENCY_LOCK_COLLISION",
+      "root_cause_service": "inventory_service",
+      "affected_entity": "inventory",
+      "severity": "CRITICAL",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-024",
+    "raw_log": "2026-09-19T09:24:15Z [ALERT] [rate_limiter.py:40] RPM threshold violated; request burst dropped. Target: 10.0.4.264. Context: automated worker thread-24.",
+    "ground_truth": {
+      "incident_category": "RATE_LIMIT_EXCEEDED",
+      "root_cause_service": "rate_limiter",
+      "affected_entity": "10.0.4.264",
+      "severity": "LOW",
+      "requires_retry": true
+    }
+  },
+  {
+    "sample_id": "INC-LOG-025",
+    "raw_log": "2026-09-19T09:25:15Z [ALERT] [payment_gateway.py:40] Invalid signature detected on incoming webhook payload. Target: ORD-275. Context: automated worker thread-25.",
+    "ground_truth": {
+      "incident_category": "AUTH_SIGNATURE_INVALID",
+      "root_cause_service": "payment_gateway",
+      "affected_entity": "ORD-275",
+      "severity": "HIGH",
+      "requires_retry": false
+    }
+  }
+]

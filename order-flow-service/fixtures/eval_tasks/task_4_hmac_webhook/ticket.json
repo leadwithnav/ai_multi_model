@@ -1,0 +1,7 @@
+{
+  "task_id": "TASK-004",
+  "title": "Harden webhook signature validation against timing attacks",
+  "difficulty": "EASY",
+  "target_file": "src/services/payment_gateway.py",
+  "instructions": "The verify_webhook_signature function uses direct string comparison (==) which is susceptible to timing side-channel attacks. Refactor it to use hmac.compare_digest."
+}

@@ -1,0 +1,763 @@
+[
+  {
+    "pr_id": 101,
+    "title": "fix: resolve NoneType crash when SKU does not exist",
+    "author": "dev_alex",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 4,
+      "deletions": 1
+    },
+    "diff": "@@ -31,3 +31,5 @@ class InventoryService:\n     async def get_stock(session: AsyncSession, sku: str) -> int:\n         item = await session.get(InventoryRecord, sku)\n-        return item.stock\n+        if not item:\n+            return 0\n+        return item.stock",
+    "description": "Handles missing inventory rows cleanly instead of letting an unhandled AttributeError bubble up to callers."
+  },
+  {
+    "pr_id": 102,
+    "title": "feat: introduce atomic row locking on stock reservations",
+    "author": "lead_marcus",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/inventory_service.py",
+      "src/models.py"
+    ],
+    "diff_stats": {
+      "additions": 18,
+      "deletions": 5
+    },
+    "diff": "@@ -19,5 +19,10 @@ class InventoryService:\n-        result = await session.execute(select(InventoryRecord).where(InventoryRecord.sku == sku))\n+        result = await session.execute(\n+            select(InventoryRecord)\n+            .where(InventoryRecord.sku == sku)\n+            .with_for_update()\n+        )\n         item = result.scalar_one_or_none()\n         if not item or item.stock < quantity:\n             return False",
+    "description": "Mitigates high-concurrency race condition and double-spending by acquiring database row locks during inventory checkout."
+  },
+  {
+    "pr_id": 103,
+    "title": "refactor: replace float math with Decimal for order totals",
+    "author": "dev_sara",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/models.py"
+    ],
+    "diff_stats": {
+      "additions": 12,
+      "deletions": 6
+    },
+    "diff": "@@ -12,4 +12,5 @@ from decimal import Decimal\n-        total_amount = sum(item.quantity * item.unit_price for item in request.items)\n+        total_amount = sum(Decimal(str(item.quantity)) * Decimal(str(item.unit_price)) for item in request.items)\n+        total_amount = float(round(total_amount, 2))",
+    "description": "Fixes financial precision drift in basket totals across multi-item checkout flows."
+  },
+  {
+    "pr_id": 104,
+    "title": "fix: add bounded exponential backoff to payment gateway calls",
+    "author": "dev_alex",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 14,
+      "deletions": 4
+    },
+    "diff": "@@ -20,4 +20,9 @@ class PaymentGatewayClient:\n-        while True:\n+        for attempt in range(settings.max_retries):\n             try:\n                 resp = await client.post(...)\n-            except httpx.RequestError:\n+            except httpx.RequestError as exc:\n+                if attempt == settings.max_retries - 1:\n+                    raise RuntimeError('Gateway unreachable') from exc\n+                await asyncio.sleep(2 ** attempt)",
+    "description": "Prevents infinite token/CPU burn by capping HTTP retry attempts and applying exponential backoff."
+  },
+  {
+    "pr_id": 105,
+    "title": "docs: update API setup instructions in README",
+    "author": "intern_leo",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 8,
+      "deletions": 2
+    },
+    "diff": "@@ -5,2 +5,8 @@\n+### Virtual Environment Setup\n+```bash\n+python3 -m venv .venv\n+source .venv/bin/activate\n+pip install -e '.[dev]'\n+```",
+    "description": "Adds virtual environment instructions to resolve PEP 668 errors on macOS systems."
+  },
+  {
+    "pr_id": 106,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-106]",
+    "author": "engineer_4",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 13,
+      "deletions": 3
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #106\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #106."
+  },
+  {
+    "pr_id": 107,
+    "title": "fix: sanitize payment webhook inputs [batch-107]",
+    "author": "engineer_10",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 22,
+      "deletions": 8
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #107\n+// Modified src/services/payment_gateway.py",
+    "description": "Input sanitization and validation. Historical commit record #107."
+  },
+  {
+    "pr_id": 108,
+    "title": "docs: update docstrings and markdown [batch-108]",
+    "author": "engineer_5",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 5,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #108\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #108."
+  },
+  {
+    "pr_id": 109,
+    "title": "refactor: extract helper function in utils [batch-109]",
+    "author": "engineer_6",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/utils/rate_limiter.py"
+    ],
+    "diff_stats": {
+      "additions": 20,
+      "deletions": 9
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #109\n+// Modified src/utils/rate_limiter.py",
+    "description": "Refactor window calculations. Historical commit record #109."
+  },
+  {
+    "pr_id": 110,
+    "title": "feat: distributed saga transaction coordinator [batch-110]",
+    "author": "engineer_9",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 122,
+      "deletions": 48
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #110\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #110."
+  },
+  {
+    "pr_id": 111,
+    "title": "refactor: extract helper function in utils [batch-111]",
+    "author": "engineer_5",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/utils/rate_limiter.py"
+    ],
+    "diff_stats": {
+      "additions": 20,
+      "deletions": 11
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #111\n+// Modified src/utils/rate_limiter.py",
+    "description": "Refactor window calculations. Historical commit record #111."
+  },
+  {
+    "pr_id": 112,
+    "title": "docs: update docstrings and markdown [batch-112]",
+    "author": "engineer_10",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 8,
+      "deletions": 3
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #112\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #112."
+  },
+  {
+    "pr_id": 113,
+    "title": "feat: distributed saga transaction coordinator [batch-113]",
+    "author": "engineer_2",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 125,
+      "deletions": 46
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #113\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #113."
+  },
+  {
+    "pr_id": 114,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-114]",
+    "author": "engineer_5",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 12,
+      "deletions": 5
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #114\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #114."
+  },
+  {
+    "pr_id": 115,
+    "title": "docs: update docstrings and markdown [batch-115]",
+    "author": "engineer_2",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 5,
+      "deletions": 2
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #115\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #115."
+  },
+  {
+    "pr_id": 116,
+    "title": "feat: distributed saga transaction coordinator [batch-116]",
+    "author": "engineer_6",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 123,
+      "deletions": 45
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #116\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #116."
+  },
+  {
+    "pr_id": 117,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-117]",
+    "author": "engineer_4",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 11,
+      "deletions": 3
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #117\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #117."
+  },
+  {
+    "pr_id": 118,
+    "title": "chore: bump dependency versions [batch-118]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "pyproject.toml"
+    ],
+    "diff_stats": {
+      "additions": 7,
+      "deletions": 3
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #118\n+// Modified pyproject.toml",
+    "description": "Routine dependency bump. Historical commit record #118."
+  },
+  {
+    "pr_id": 119,
+    "title": "docs: update docstrings and markdown [batch-119]",
+    "author": "engineer_4",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 10,
+      "deletions": 5
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #119\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #119."
+  },
+  {
+    "pr_id": 120,
+    "title": "feat: distributed saga transaction coordinator [batch-120]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 123,
+      "deletions": 46
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #120\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #120."
+  },
+  {
+    "pr_id": 121,
+    "title": "chore: bump dependency versions [batch-121]",
+    "author": "engineer_4",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "pyproject.toml"
+    ],
+    "diff_stats": {
+      "additions": 4,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #121\n+// Modified pyproject.toml",
+    "description": "Routine dependency bump. Historical commit record #121."
+  },
+  {
+    "pr_id": 122,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-122]",
+    "author": "engineer_10",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 11,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #122\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #122."
+  },
+  {
+    "pr_id": 123,
+    "title": "docs: update docstrings and markdown [batch-123]",
+    "author": "engineer_8",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 10,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #123\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #123."
+  },
+  {
+    "pr_id": 124,
+    "title": "refactor: extract helper function in utils [batch-124]",
+    "author": "engineer_7",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/utils/rate_limiter.py"
+    ],
+    "diff_stats": {
+      "additions": 18,
+      "deletions": 10
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #124\n+// Modified src/utils/rate_limiter.py",
+    "description": "Refactor window calculations. Historical commit record #124."
+  },
+  {
+    "pr_id": 125,
+    "title": "refactor: extract helper function in utils [batch-125]",
+    "author": "engineer_1",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/utils/rate_limiter.py"
+    ],
+    "diff_stats": {
+      "additions": 17,
+      "deletions": 9
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #125\n+// Modified src/utils/rate_limiter.py",
+    "description": "Refactor window calculations. Historical commit record #125."
+  },
+  {
+    "pr_id": 126,
+    "title": "docs: update docstrings and markdown [batch-126]",
+    "author": "engineer_1",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 9,
+      "deletions": 2
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #126\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #126."
+  },
+  {
+    "pr_id": 127,
+    "title": "fix: sanitize payment webhook inputs [batch-127]",
+    "author": "engineer_6",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 22,
+      "deletions": 6
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #127\n+// Modified src/services/payment_gateway.py",
+    "description": "Input sanitization and validation. Historical commit record #127."
+  },
+  {
+    "pr_id": 128,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-128]",
+    "author": "engineer_2",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 11,
+      "deletions": 5
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #128\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #128."
+  },
+  {
+    "pr_id": 129,
+    "title": "fix: sanitize payment webhook inputs [batch-129]",
+    "author": "engineer_6",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 25,
+      "deletions": 6
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #129\n+// Modified src/services/payment_gateway.py",
+    "description": "Input sanitization and validation. Historical commit record #129."
+  },
+  {
+    "pr_id": 130,
+    "title": "chore: bump dependency versions [batch-130]",
+    "author": "engineer_8",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "pyproject.toml"
+    ],
+    "diff_stats": {
+      "additions": 7,
+      "deletions": 3
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #130\n+// Modified pyproject.toml",
+    "description": "Routine dependency bump. Historical commit record #130."
+  },
+  {
+    "pr_id": 131,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-131]",
+    "author": "engineer_1",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 10,
+      "deletions": 5
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #131\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #131."
+  },
+  {
+    "pr_id": 132,
+    "title": "refactor: extract helper function in utils [batch-132]",
+    "author": "engineer_2",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/utils/rate_limiter.py"
+    ],
+    "diff_stats": {
+      "additions": 18,
+      "deletions": 10
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #132\n+// Modified src/utils/rate_limiter.py",
+    "description": "Refactor window calculations. Historical commit record #132."
+  },
+  {
+    "pr_id": 133,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-133]",
+    "author": "engineer_12",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 10,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #133\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #133."
+  },
+  {
+    "pr_id": 134,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-134]",
+    "author": "engineer_7",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 12,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #134\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #134."
+  },
+  {
+    "pr_id": 135,
+    "title": "feat: distributed saga transaction coordinator [batch-135]",
+    "author": "engineer_9",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 125,
+      "deletions": 48
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #135\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #135."
+  },
+  {
+    "pr_id": 136,
+    "title": "docs: update docstrings and markdown [batch-136]",
+    "author": "engineer_4",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 7,
+      "deletions": 2
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #136\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #136."
+  },
+  {
+    "pr_id": 137,
+    "title": "chore: bump dependency versions [batch-137]",
+    "author": "engineer_6",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "pyproject.toml"
+    ],
+    "diff_stats": {
+      "additions": 5,
+      "deletions": 3
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #137\n+// Modified pyproject.toml",
+    "description": "Routine dependency bump. Historical commit record #137."
+  },
+  {
+    "pr_id": 138,
+    "title": "docs: update docstrings and markdown [batch-138]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 7,
+      "deletions": 3
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #138\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #138."
+  },
+  {
+    "pr_id": 139,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-139]",
+    "author": "engineer_1",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 9,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #139\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #139."
+  },
+  {
+    "pr_id": 140,
+    "title": "docs: update docstrings and markdown [batch-140]",
+    "author": "engineer_7",
+    "target_model_tier": "TIER_1_FAST",
+    "files_changed": [
+      "README.md"
+    ],
+    "diff_stats": {
+      "additions": 7,
+      "deletions": 4
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #140\n+// Modified README.md",
+    "description": "Trivial doc change. Historical commit record #140."
+  },
+  {
+    "pr_id": 141,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-141]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 9,
+      "deletions": 5
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #141\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #141."
+  },
+  {
+    "pr_id": 142,
+    "title": "feat: distributed saga transaction coordinator [batch-142]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 121,
+      "deletions": 46
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #142\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #142."
+  },
+  {
+    "pr_id": 143,
+    "title": "feat: distributed saga transaction coordinator [batch-143]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 123,
+      "deletions": 47
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #143\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #143."
+  },
+  {
+    "pr_id": 144,
+    "title": "feat: distributed saga transaction coordinator [batch-144]",
+    "author": "engineer_8",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 123,
+      "deletions": 45
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #144\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #144."
+  },
+  {
+    "pr_id": 145,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-145]",
+    "author": "engineer_10",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 13,
+      "deletions": 5
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #145\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #145."
+  },
+  {
+    "pr_id": 146,
+    "title": "refactor: extract helper function in utils [batch-146]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/utils/rate_limiter.py"
+    ],
+    "diff_stats": {
+      "additions": 18,
+      "deletions": 8
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #146\n+// Modified src/utils/rate_limiter.py",
+    "description": "Refactor window calculations. Historical commit record #146."
+  },
+  {
+    "pr_id": 147,
+    "title": "feat: distributed saga transaction coordinator [batch-147]",
+    "author": "engineer_3",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/order_service.py",
+      "src/services/inventory_service.py"
+    ],
+    "diff_stats": {
+      "additions": 122,
+      "deletions": 45
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #147\n+// Modified src/services/order_service.py",
+    "description": "Complex cross-service transaction coordinator. Historical commit record #147."
+  },
+  {
+    "pr_id": 148,
+    "title": "fix: sanitize payment webhook inputs [batch-148]",
+    "author": "engineer_12",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 27,
+      "deletions": 8
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #148\n+// Modified src/services/payment_gateway.py",
+    "description": "Input sanitization and validation. Historical commit record #148."
+  },
+  {
+    "pr_id": 149,
+    "title": "sec: timing-attack mitigation in webhook signature [batch-149]",
+    "author": "engineer_8",
+    "target_model_tier": "TIER_3_REASONING",
+    "files_changed": [
+      "src/services/payment_gateway.py"
+    ],
+    "diff_stats": {
+      "additions": 11,
+      "deletions": 5
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #149\n+// Modified src/services/payment_gateway.py",
+    "description": "Use hmac.compare_digest for signature checks. Historical commit record #149."
+  },
+  {
+    "pr_id": 150,
+    "title": "refactor: extract helper function in utils [batch-150]",
+    "author": "engineer_9",
+    "target_model_tier": "TIER_2_BALANCED",
+    "files_changed": [
+      "src/utils/rate_limiter.py"
+    ],
+    "diff_stats": {
+      "additions": 18,
+      "deletions": 9
+    },
+    "diff": "@@ -1,5 +1,7 @@\n+// Diff patch for ticket #150\n+// Modified src/utils/rate_limiter.py",
+    "description": "Refactor window calculations. Historical commit record #150."
+  }
+]

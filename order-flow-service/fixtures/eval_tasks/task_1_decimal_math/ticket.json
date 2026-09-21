@@ -1,0 +1,7 @@
+{
+  "task_id": "TASK-001",
+  "title": "Fix floating point precision drift in order total calculations",
+  "difficulty": "EASY",
+  "target_file": "src/services/order_service.py",
+  "instructions": "Refactor OrderService.create_order to compute basket totals using Python's decimal.Decimal instead of native floats. The final output must be rounded to two decimal places to prevent penny drift."
+}
