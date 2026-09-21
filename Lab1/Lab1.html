@@ -294,16 +294,16 @@
 
 ../order-flow-service/src/utils/rate_limiter.py
 
+The rate limiter should prevent a client from exceeding a configurable
+number of requests within a configurable time window.
+
+The implementation should be suitable for use in a concurrent web application.
+
 Requirements:
 
-1. Allow a configurable maximum number of requests per time window.
-2. Reject requests after the limit is reached.
-3. Requests must become eligible again after the window expires.
-4. Different client IDs must be tracked independently.
-5. The implementation must behave correctly under concurrent access.
-6. Do not change public function signatures.
-7. Do not modify unrelated files.
-8. Keep the implementation simple and maintainable.
+- Preserve the existing public interface.
+- Do not modify unrelated files.
+- Keep the implementation simple and maintainable.
 
 When finished, return a short summary of what you changed.</pre>
             </div>
@@ -342,9 +342,9 @@ export AWS_REGION=us-east-1</pre>
                         <tr><th>Agent Name</th><th>Model Name</th><th>Amazon Bedrock Model Identifier</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><code>claude-3-5-sonnet</code></td><td>Claude 3.5 Sonnet</td><td><code>amazon-bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0</code></td></tr>
-                        <tr><td><code>claude-3-5-haiku</code></td><td>Claude 3.5 Haiku</td><td><code>amazon-bedrock/us.anthropic.claude-3-5-haiku-20241022-v1:0</code></td></tr>
-                        <tr><td><code>claude-3-opus</code></td><td>Claude 3 Opus</td><td><code>amazon-bedrock/us.anthropic.claude-3-opus-20240229-v1:0</code></td></tr>
+                        <tr><td><code>claude-3-5-sonnet</code></td><td>Claude 3.5 Sonnet</td><td><code>amazon-bedrock/global.anthropic.claude-sonnet-5</code></td></tr>
+                        <tr><td><code>claude-3-5-haiku</code></td><td>Claude 3.5 Haiku</td><td><code>amazon-bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0</code></td></tr>
+                        <tr><td><code>claude-3-opus</code></td><td>Claude 3 Opus</td><td><code>amazon-bedrock/global.anthropic.claude-opus-5</code></td></tr>
                         <tr><td><code>gpt-5-6-luna</code></td><td>GPT-5.6 Luna</td><td><code>amazon-bedrock/us.openai.gpt-5.6-luna</code></td></tr>
                         <tr><td><code>gpt-5-6-terra</code></td><td>GPT-5.6 Terra</td><td><code>amazon-bedrock/us.openai.gpt-5.6-terra</code></td></tr>
                         <tr><td><code>gpt-5-6-sol</code></td><td>GPT-5.6 Sol</td><td><code>amazon-bedrock/us.openai.gpt-5.6-sol</code></td></tr>
@@ -359,64 +359,42 @@ export AWS_REGION=us-east-1</pre>
             <p>Run each model individually following the 5-step loop below:</p>
 
             <div class="callout callout-warning">
-                <strong>Execution Loop For Each Model:</strong>
-                <ol class="mb-0">
-                    <td>Run OpenCode command and note the wall-clock <strong>Latency</strong> (seconds) and token <strong>Cost</strong>.</td>
-                    <td>Run acceptance tests: <code>cd ../order-flow-service &amp;&amp; pytest -q tests/ &amp;&amp; cd ../Lab1</code></td>
-                    <td>Record <strong>Tests Passed</strong> and <strong>Quality Bar</strong> (PASS if 100% pass rate, else FAIL).</td>
-                    <td>Reset repository: <code>.\reset.ps1</code> (Windows) or <code>./reset.sh</code> (Linux/macOS).</td>
-                    <td>Repeat for the next model.</td>
-                </ol>
-            </div>
-
-            <!-- How to Measure Metrics Box -->
-            <div class="p-3 bg-dark border border-info rounded my-3">
-                <h5 class="text-info"><i class="bi bi-speedometer2"></i> How to Measure Latency, Tokens &amp; Cost</h5>
-                <div class="row g-3 mt-1">
-                    <div class="col-md-4">
-                        <strong class="text-primary"><i class="bi bi-clock"></i> 1. Latency (Seconds)</strong>
-                        <p class="small text-muted mb-1">Measure total execution time using timing commands:</p>
-                        <ul class="small mb-0">
-                            <td><strong>PowerShell:</strong> <code>Measure-Command { opencode run --agent claude-3-5-sonnet "$(Get-Content benchmark/TASK.md -Raw)" }</code></td>
-                            <td><strong>Bash:</strong> <code>time opencode run --agent claude-3-5-sonnet "$(cat benchmark/TASK.md)"</code></td>
-                        </ul>
+                <h5 class="text-warning mb-3"><i class="bi bi-arrow-repeat me-2"></i> Standard Execution Loop For Each Model</h5>
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-warning text-dark mb-2">Step 1</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-play-circle-fill me-1 text-warning"></i> Run Model</h6>
+                            <p class="small text-white  mb-0">Execute the <code>opencode</code> command. Record <strong>Latency</strong>, <strong>Cost</strong>, &amp; <strong>LLM Steps</strong>.</p>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <strong class="text-success"><i class="bi bi-file-code"></i> 2. Token Counting</strong>
-                        <p class="small text-muted mb-1">Pass <code>--format json</code> to stream JSON events containing exact token counts (<code>tokens.input</code>, <code>tokens.output</code>):</p>
-                        <code class="small text-success">opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/TASK.md)"</code>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-primary mb-2">Step 2</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-check-circle-fill me-1 text-info"></i> Run Tests</h6>
+                            <p class="small text-white mb-1">Evaluate acceptance quality:</p>
+                            <code class="small text-info d-block p-1 bg-black rounded">pytest -q tests/test_rate_limiter.py</code>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <strong class="text-warning"><i class="bi bi-calculator"></i> 3. Cost Calculation ($ USD)</strong>
-                        <p class="small text-muted mb-1">Calculate cost using Amazon Bedrock pricing per 1 Million tokens:</p>
-                        <div class="small bg-black p-2 rounded text-white font-monospace">
-                            Cost = (Input_Tokens / 1M * Input_Price) + (Output_Tokens / 1M * Output_Price)
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-success mb-2">Step 3</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-journal-check me-1 text-success"></i> Record Metrics</h6>
+                            <p class="small text-white  mb-0">Record <strong>Tests Passed</strong> &amp; <strong>Quality Bar</strong> (PASS if 100%, else FAIL) in Step 5.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-danger mb-2">Step 4</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-arrow-counterclockwise me-1 text-danger"></i> Reset Baseline</h6>
+                            <p class="small text-white  mb-1">Clean working directory:</p>
+                            <code class="small text-warning d-block p-1 bg-black rounded">.\reset.ps1 (Win) / ./reset.sh</code>
                         </div>
                     </div>
                 </div>
-
-                <!-- Bedrock Pricing Reference Table -->
-                <div class="table-responsive mt-3">
-                    <table class="table table-dark table-bordered table-sm small text-center mb-0">
-                        <thead>
-                            <tr class="table-secondary text-dark">
-                                <th>Model Name</th>
-                                <th>Agent Name</th>
-                                <th>Input Price (USD / 1M Tokens)</th>
-                                <th>Output Price (USD / 1M Tokens)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Claude 3.5 Sonnet</td><td><code>claude-3-5-sonnet</code></td><td>$3.00</td><td>$15.00</td></tr>
-                            <tr><td>Claude 3.5 Haiku</td><td><code>claude-3-5-haiku</code></td><td>$1.00</td><td>$5.00</td></tr>
-                            <tr><td>Claude 3 Opus</td><td><code>claude-3-opus</code></td><td>$15.00</td><td>$75.00</td></tr>
-                            <tr><td>GPT-5.6 Luna</td><td><code>gpt-5-6-luna</code></td><td>$0.25</td><td>$1.25</td></tr>
-                            <tr><td>GPT-5.6 Terra</td><td><code>gpt-5-6-terra</code></td><td>$1.00</td><td>$5.00</td></tr>
-                            <tr><td>GPT-5.6 Sol</td><td><code>gpt-5-6-sol</code></td><td>$3.00</td><td>$15.00</td></tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
+
+
 
             <!-- Model Commands Accordion -->
             <div class="accordion accordion-flush" id="modelCmdsAccordion">
@@ -438,19 +416,19 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="tab-pane fade show active" id="m1-ps" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-sonnet "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                        <pre>opencode run --agent claude-3-5-sonnet --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="m1-bash" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-sonnet "$(cat benchmark/TASK.md)"</pre>
+                                        <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; cd ../Lab1; .\reset.ps1</pre>
                             </div>
                         </div>
                     </div>
@@ -473,19 +451,19 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="tab-pane fade show active" id="m2-ps" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-haiku "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                        <pre>opencode run --agent claude-3-5-haiku --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="m2-bash" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-haiku "$(cat benchmark/TASK.md)"</pre>
+                                        <pre>opencode run --agent claude-3-5-haiku --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; cd ../Lab1; .\reset.ps1</pre>
                             </div>
                         </div>
                     </div>
@@ -508,19 +486,19 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="tab-pane fade show active" id="m3-ps" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-opus "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                        <pre>opencode run --agent claude-3-opus --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="m3-bash" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-opus "$(cat benchmark/TASK.md)"</pre>
+                                        <pre>opencode run --agent claude-3-opus --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; cd ../Lab1; .\reset.ps1</pre>
                             </div>
                         </div>
                     </div>
@@ -543,19 +521,19 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="tab-pane fade show active" id="m4-ps" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-luna "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                        <pre>opencode run --agent gpt-5-6-luna --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="m4-bash" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-luna "$(cat benchmark/TASK.md)"</pre>
+                                        <pre>opencode run --agent gpt-5-6-luna --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; cd ../Lab1; .\reset.ps1</pre>
                             </div>
                         </div>
                     </div>
@@ -578,19 +556,19 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="tab-pane fade show active" id="m5-ps" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-terra "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                        <pre>opencode run --agent gpt-5-6-terra --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="m5-bash" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-terra "$(cat benchmark/TASK.md)"</pre>
+                                        <pre>opencode run --agent gpt-5-6-terra --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; cd ../Lab1; .\reset.ps1</pre>
                             </div>
                         </div>
                     </div>
@@ -613,19 +591,19 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="tab-pane fade show active" id="m6-ps" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-sol "$(Get-Content benchmark/TASK.md -Raw)"</pre>
+                                        <pre>opencode run --agent gpt-5-6-sol --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="m6-bash" role="tabpanel">
                                     <div class="code-container">
                                         <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-sol "$(cat benchmark/TASK.md)"</pre>
+                                        <pre>opencode run --agent gpt-5-6-sol --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
                                     </div>
                                 </div>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/; cd ../Lab1; .\reset.ps1</pre>
+                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; cd ../Lab1; .\reset.ps1</pre>
                             </div>
                         </div>
                     </div>
@@ -636,25 +614,29 @@ export AWS_REGION=us-east-1</pre>
 
         <!-- Step 5: Benchmark Table -->
         <div class="lab-card" id="step5-table">
-            <h2><i class="bi bi-5-circle-fill text-primary me-2"></i> Step 5 — Complete the Benchmarking Table</h2>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <h2><i class="bi bi-5-circle-fill text-primary me-2"></i> Step 5 — Complete the Benchmarking Table</h2>
+                <button class="btn btn-outline-success btn-sm" onclick="downloadBenchmarkCSV()"><i class="bi bi-download me-1"></i> Download Benchmark CSV</button>
+            </div>
             <p>Record your observed benchmark metrics into the table below or edit <code>benchmark/benchmark.csv</code> directly:</p>
 
             <div class="table-responsive my-3">
                 <table class="table table-dark table-bordered align-middle text-center">
                     <thead>
                         <tr>
-                            <th style="width: 20%;">Model</th>
-                            <th style="width: 15%;">Tests Passed</th>
-                            <th style="width: 15%;">Quality Bar</th>
-                            <th style="width: 15%;">Latency</th>
-                            <th style="width: 15%;">Cost</th>
-                            <th style="width: 20%;">Observation</th>
+                            <th style="width: 18%;">Model</th>
+                            <th style="width: 13%;">Tests Passed</th>
+                            <th style="width: 13%;">Quality Bar</th>
+                            <th style="width: 13%;">LLM Calls / Steps</th>
+                            <th style="width: 13%;">Latency</th>
+                            <th style="width: 13%;">Cost</th>
+                            <th style="width: 17%;">Observation</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td class="text-start"><strong>Claude 3.5 Sonnet</strong></td>
-                            <td><input type="text" class="table-input text-center" id="m1_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m1_tests" placeholder="e.g. 15/15" oninput="saveTableData()"></td>
                             <td>
                                 <select class="table-input text-center" id="m1_bar" onchange="saveTableData()">
                                     <option value="">PASS / FAIL</option>
@@ -662,13 +644,14 @@ export AWS_REGION=us-east-1</pre>
                                     <option value="FAIL">FAIL</option>
                                 </select>
                             </td>
+                            <td><input type="text" class="table-input text-center" id="m1_steps" placeholder="e.g. 3" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m1_lat" placeholder="e.g. 18s" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m1_cost" placeholder="e.g. $0.005" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input" id="m1_obs" placeholder="Notes..." oninput="saveTableData()"></td>
                         </tr>
                         <tr>
                             <td class="text-start"><strong>Claude 3.5 Haiku</strong></td>
-                            <td><input type="text" class="table-input text-center" id="m2_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m2_tests" placeholder="e.g. 15/15" oninput="saveTableData()"></td>
                             <td>
                                 <select class="table-input text-center" id="m2_bar" onchange="saveTableData()">
                                     <option value="">PASS / FAIL</option>
@@ -676,13 +659,14 @@ export AWS_REGION=us-east-1</pre>
                                     <option value="FAIL">FAIL</option>
                                 </select>
                             </td>
+                            <td><input type="text" class="table-input text-center" id="m2_steps" placeholder="e.g. 2" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m2_lat" placeholder="e.g. 6s" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m2_cost" placeholder="e.g. $0.001" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input" id="m2_obs" placeholder="Notes..." oninput="saveTableData()"></td>
                         </tr>
                         <tr>
                             <td class="text-start"><strong>Claude 3 Opus</strong></td>
-                            <td><input type="text" class="table-input text-center" id="m3_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m3_tests" placeholder="e.g. 15/15" oninput="saveTableData()"></td>
                             <td>
                                 <select class="table-input text-center" id="m3_bar" onchange="saveTableData()">
                                     <option value="">PASS / FAIL</option>
@@ -690,13 +674,14 @@ export AWS_REGION=us-east-1</pre>
                                     <option value="FAIL">FAIL</option>
                                 </select>
                             </td>
+                            <td><input type="text" class="table-input text-center" id="m3_steps" placeholder="e.g. 4" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m3_lat" placeholder="e.g. 45s" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m3_cost" placeholder="e.g. $0.035" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input" id="m3_obs" placeholder="Notes..." oninput="saveTableData()"></td>
                         </tr>
                         <tr>
                             <td class="text-start"><strong>GPT-5.6 Luna</strong></td>
-                            <td><input type="text" class="table-input text-center" id="m4_tests" placeholder="e.g. 7/8" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m4_tests" placeholder="e.g. 14/15" oninput="saveTableData()"></td>
                             <td>
                                 <select class="table-input text-center" id="m4_bar" onchange="saveTableData()">
                                     <option value="">PASS / FAIL</option>
@@ -704,13 +689,14 @@ export AWS_REGION=us-east-1</pre>
                                     <option value="FAIL">FAIL</option>
                                 </select>
                             </td>
+                            <td><input type="text" class="table-input text-center" id="m4_steps" placeholder="e.g. 2" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m4_lat" placeholder="e.g. 5s" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m4_cost" placeholder="e.g. $0.0005" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input" id="m4_obs" placeholder="Notes..." oninput="saveTableData()"></td>
                         </tr>
                         <tr>
                             <td class="text-start"><strong>GPT-5.6 Terra</strong></td>
-                            <td><input type="text" class="table-input text-center" id="m5_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m5_tests" placeholder="e.g. 15/15" oninput="saveTableData()"></td>
                             <td>
                                 <select class="table-input text-center" id="m5_bar" onchange="saveTableData()">
                                     <option value="">PASS / FAIL</option>
@@ -718,13 +704,14 @@ export AWS_REGION=us-east-1</pre>
                                     <option value="FAIL">FAIL</option>
                                 </select>
                             </td>
+                            <td><input type="text" class="table-input text-center" id="m5_steps" placeholder="e.g. 3" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m5_lat" placeholder="e.g. 12s" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m5_cost" placeholder="e.g. $0.002" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input" id="m5_obs" placeholder="Notes..." oninput="saveTableData()"></td>
                         </tr>
                         <tr>
                             <td class="text-start"><strong>GPT-5.6 Sol</strong></td>
-                            <td><input type="text" class="table-input text-center" id="m6_tests" placeholder="e.g. 8/8" oninput="saveTableData()"></td>
+                            <td><input type="text" class="table-input text-center" id="m6_tests" placeholder="e.g. 15/15" oninput="saveTableData()"></td>
                             <td>
                                 <select class="table-input text-center" id="m6_bar" onchange="saveTableData()">
                                     <option value="">PASS / FAIL</option>
@@ -732,6 +719,7 @@ export AWS_REGION=us-east-1</pre>
                                     <option value="FAIL">FAIL</option>
                                 </select>
                             </td>
+                            <td><input type="text" class="table-input text-center" id="m6_steps" placeholder="e.g. 3" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m6_lat" placeholder="e.g. 20s" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input text-center" id="m6_cost" placeholder="e.g. $0.008" oninput="saveTableData()"></td>
                             <td><input type="text" class="table-input" id="m6_obs" placeholder="Notes..." oninput="saveTableData()"></td>
@@ -739,7 +727,10 @@ export AWS_REGION=us-east-1</pre>
                     </tbody>
                 </table>
             </div>
-            <small class="text-muted"><i class="bi bi-info-circle"></i> Benchmarking table data auto-saves in your browser session.</small>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
+                <small class="text-white "><i class="bi bi-info-circle"></i> Benchmarking table data auto-saves in your browser session.</small>
+                <button class="btn btn-success btn-sm" onclick="downloadBenchmarkCSV()"><i class="bi bi-file-earmark-arrow-down me-1"></i> Download Benchmark CSV</button>
+            </div>
         </div>
 
         <!-- Step 6: Compare Evidence -->
@@ -791,7 +782,7 @@ export AWS_REGION=us-east-1</pre>
             <blockquote class="blockquote text-white fs-4 my-3">
                 "Don't choose the most capable model. Choose the least expensive model that reliably meets the quality bar for that task."
             </blockquote>
-            <p class="text-muted mb-0">Lab 1 provides the core benchmarking method — replacing vendor hype with evidence-driven model routing decisions.</p>
+            <p class="text-white  mb-0">Lab 1 provides the core benchmarking method — replacing vendor hype with evidence-driven model routing decisions.</p>
         </div>
 
     </div>
@@ -830,12 +821,12 @@ export AWS_REGION=us-east-1</pre>
 
         function saveTableData() {
             const fields = [
-                'm1_tests', 'm1_bar', 'm1_lat', 'm1_cost', 'm1_obs',
-                'm2_tests', 'm2_bar', 'm2_lat', 'm2_cost', 'm2_obs',
-                'm3_tests', 'm3_bar', 'm3_lat', 'm3_cost', 'm3_obs',
-                'm4_tests', 'm4_bar', 'm4_lat', 'm4_cost', 'm4_obs',
-                'm5_tests', 'm5_bar', 'm5_lat', 'm5_cost', 'm5_obs',
-                'm6_tests', 'm6_bar', 'm6_lat', 'm6_cost', 'm6_obs',
+                'm1_tests', 'm1_bar', 'm1_steps', 'm1_lat', 'm1_cost', 'm1_obs',
+                'm2_tests', 'm2_bar', 'm2_steps', 'm2_lat', 'm2_cost', 'm2_obs',
+                'm3_tests', 'm3_bar', 'm3_steps', 'm3_lat', 'm3_cost', 'm3_obs',
+                'm4_tests', 'm4_bar', 'm4_steps', 'm4_lat', 'm4_cost', 'm4_obs',
+                'm5_tests', 'm5_bar', 'm5_steps', 'm5_lat', 'm5_cost', 'm5_obs',
+                'm6_tests', 'm6_bar', 'm6_steps', 'm6_lat', 'm6_cost', 'm6_obs',
                 'evid_quality', 'evid_fastest', 'evid_cheapest'
             ];
             fields.forEach(id => {
@@ -854,12 +845,12 @@ export AWS_REGION=us-east-1</pre>
             savePredictions();
 
             const fields = [
-                'm1_tests', 'm1_bar', 'm1_lat', 'm1_cost', 'm1_obs',
-                'm2_tests', 'm2_bar', 'm2_lat', 'm2_cost', 'm2_obs',
-                'm3_tests', 'm3_bar', 'm3_lat', 'm3_cost', 'm3_obs',
-                'm4_tests', 'm4_bar', 'm4_lat', 'm4_cost', 'm4_obs',
-                'm5_tests', 'm5_bar', 'm5_lat', 'm5_cost', 'm5_obs',
-                'm6_tests', 'm6_bar', 'm6_lat', 'm6_cost', 'm6_obs',
+                'm1_tests', 'm1_bar', 'm1_steps', 'm1_lat', 'm1_cost', 'm1_obs',
+                'm2_tests', 'm2_bar', 'm2_steps', 'm2_lat', 'm2_cost', 'm2_obs',
+                'm3_tests', 'm3_bar', 'm3_steps', 'm3_lat', 'm3_cost', 'm3_obs',
+                'm4_tests', 'm4_bar', 'm4_steps', 'm4_lat', 'm4_cost', 'm4_obs',
+                'm5_tests', 'm5_bar', 'm5_steps', 'm5_lat', 'm5_cost', 'm5_obs',
+                'm6_tests', 'm6_bar', 'm6_steps', 'm6_lat', 'm6_cost', 'm6_obs',
                 'evid_quality', 'evid_fastest', 'evid_cheapest'
             ];
             fields.forEach(id => {
@@ -868,6 +859,39 @@ export AWS_REGION=us-east-1</pre>
                     document.getElementById(id).value = val;
                 }
             });
+        }
+
+        function downloadBenchmarkCSV() {
+            const models = [
+                { name: "Claude 3.5 Sonnet", prefix: "m1" },
+                { name: "Claude 3.5 Haiku", prefix: "m2" },
+                { name: "Claude 3 Opus", prefix: "m3" },
+                { name: "GPT-5.6 Luna", prefix: "m4" },
+                { name: "GPT-5.6 Terra", prefix: "m5" },
+                { name: "GPT-5.6 Sol", prefix: "m6" }
+            ];
+
+            let csvContent = "Model,Tests Passed,Quality Bar,LLM Calls / Steps,Latency,Cost,Observation\n";
+
+            models.forEach(m => {
+                const tests = (document.getElementById(m.prefix + "_tests")?.value || "").replace(/"/g, '""');
+                const bar = (document.getElementById(m.prefix + "_bar")?.value || "").replace(/"/g, '""');
+                const steps = (document.getElementById(m.prefix + "_steps")?.value || "").replace(/"/g, '""');
+                const lat = (document.getElementById(m.prefix + "_lat")?.value || "").replace(/"/g, '""');
+                const cost = (document.getElementById(m.prefix + "_cost")?.value || "").replace(/"/g, '""');
+                const obs = (document.getElementById(m.prefix + "_obs")?.value || "").replace(/"/g, '""');
+
+                csvContent += `"${m.name}","${tests}","${bar}","${steps}","${lat}","${cost}","${obs}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'benchmark_results.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         window.addEventListener('DOMContentLoaded', loadSavedData);
