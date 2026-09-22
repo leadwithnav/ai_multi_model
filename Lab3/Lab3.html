@@ -374,44 +374,17 @@ routing_policy:
 
         <!-- Run Strategies -->
         <div class="lab-card" id="run">
-            <h2><i class="bi bi-play-circle-fill text-success me-2"></i> Strategy Execution Steps</h2>
-            <p>Run the implementation task (and other tasks) against each routing strategy:</p>
+            <h2><i class="bi bi-play-circle-fill text-success me-2"></i> Strategy Evidence-Driven Routing</h2>
+            <p>Run the implementation task (and other tasks) against evidence routing strategy:</p>
 
-            <!-- Strategy A: Cheapest Everywhere -->
-            <div class="callout border-info my-3">
-                <h5 class="text-info mb-2"><i class="bi bi-lightning-charge-fill me-2"></i> Strategy A — Cheapest Model Everywhere</h5>
-                <p class="small text-white">Routes all engineering tasks to <code>claude-3-5-haiku</code> regardless of task difficulty.</p>
-                <div class="code-container mb-2">
-                    <div class="code-header"><span>Run Implementation Task against Cheapest Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>python run_router.py tasks/implementation.md --strategy cheapest</pre>
-                </div>
-                <div class="code-container mb-0">
-                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>bash reset.sh</pre>
-                </div>
-            </div>
 
-            <!-- Strategy B: Strongest Everywhere -->
-            <div class="callout border-warning my-3">
-                <h5 class="text-warning mb-2"><i class="bi bi-award-fill me-2"></i> Strategy B — Strongest Model Everywhere</h5>
-                <p class="small text-white">Routes all engineering tasks to <code>claude-3-opus</code> regardless of cost.</p>
-                <div class="code-container mb-2">
-                    <div class="code-header"><span>Run Implementation Task against Strongest Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>python run_router.py tasks/implementation.md --strategy strongest</pre>
-                </div>
-                <div class="code-container mb-0">
-                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>bash reset.sh</pre>
-                </div>
-            </div>
-
-            <!-- Strategy C: Evidence-Driven Routing -->
+            <!-- Evidence-Driven Routing -->
             <div class="callout callout-success my-3">
-                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Strategy C — Evidence-Driven Routing</h5>
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Debugging Request</h5>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
                 <div class="code-container mb-2">
                     <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>python run_router.py tasks/implementation.md --strategy evidence</pre>
+                    <pre>python run_router.py tasks/request_01.md</pre>
                 </div>
                 <div class="code-container mb-0">
                     <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -419,52 +392,49 @@ routing_policy:
                 </div>
             </div>
 
-            <!-- Automated All-Task Comparison Script -->
-            <div class="callout border-secondary my-3">
-                <h5 class="text-white mb-2"><i class="bi bi-cpu-fill me-2"></i> Automated Comparison Across All 4 Tasks</h5>
-                <p class="small text-white">Execute all 4 workloads across all 3 strategies sequentially:</p>
+             <!-- Evidence-Driven Routing -->
+            <div class="callout callout-success my-3">
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Test generation Request</h5>
+                <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
+                <div class="code-container mb-2">
+                    <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>python run_router.py tasks/request_02.md</pre>
+                </div>
                 <div class="code-container mb-0">
-                    <div class="code-header"><span>Run Complete Strategy Comparison Script</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>python compare_strategies.py</pre>
+                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>bash reset.sh</pre>
                 </div>
             </div>
-        </div>
 
-        <!-- Strategy Comparison Table -->
-        <div class="lab-card" id="compare-table">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                <h2><i class="bi bi-table text-primary me-2"></i> Strategy Comparison Table</h2>
-                <button class="btn btn-outline-success btn-sm" onclick="downloadComparisonCSV()"><i class="bi bi-download me-1"></i> Download Comparison CSV</button>
-            </div>
-            <p>Record observed metrics across routing strategies for engineering workloads:</p>
-
-            <div class="table-responsive my-3">
-                <table class="table table-dark table-bordered align-middle text-center">
-                    <thead>
-                        <tr>
-                            <th>Routing Strategy</th>
-                            <th>Primary Model</th>
-                            <th>Successful Tasks</th>
-                            <th>Total Cost ($)</th>
-                            <th>Cost / Success ($)</th>
-                            <th>Total Latency</th>
-                            <th>Escalations</th>
-                            <th>Quality Bar</th>
-                        </tr>
-                    </thead>
-                    <tbody id="comparison_table_body">
-                        <!-- Populated by JavaScript -->
-                    </tbody>
-                </table>
+               <!-- Evidence-Driven Routing -->
+            <div class="callout callout-success my-3">
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Refactoringg Request</h5>
+                <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
+                <div class="code-container mb-2">
+                    <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>python run_router.py tasks/request_03.md</pre>
+                </div>
+                <div class="code-container mb-0">
+                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>bash reset.sh</pre>
+                </div>
             </div>
 
-            <div class="callout callout-warning">
-                <h5 class="text-warning"><i class="bi bi-calculator me-2"></i> Escalation Economics Takeaway</h5>
-                <p class="mb-0">A cheap model call ($0.03) that fails and escalates to a fallback model ($0.09) costs <strong>$0.12 total</strong>. Starting with an evidence-backed model avoids wasted attempts and reduces total cost per completed task!</p>
+                 <!-- Evidence-Driven Routing -->
+            <div class="callout callout-success my-3">
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Implement Request</h5>
+                <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
+                <div class="code-container mb-2">
+                    <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>python run_router.py tasks/request_04.md</pre>
+                </div>
+                <div class="code-container mb-0">
+                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>bash reset.sh</pre>
+                </div>
             </div>
-        </div>
 
-    </div>
+      
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

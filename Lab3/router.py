@@ -1,30 +1,16 @@
+#!/usr/bin/env python3
 """
-Lab 3 — Task Classification and Routing Policy
+Lab 3 — Evidence-Driven Task Classification and Routing
 
 Responsibilities:
 
 1. TaskClassifier
-   Answers:
-       "What kind of engineering task is this?"
-
-   Uses the dedicated OpenCode agent:
-       task-classifier
-
-   Possible outputs:
-       implementation
-       refactoring
-       debugging
-       testing
-
+   Classifies the engineering request as:
+   implementation, refactoring, debugging, or testing.
 
 2. RoutingPolicy
-   Answers:
-       "Which model should handle this task?"
-
-   For evidence strategy, the decision comes from:
-       routing_policy.yaml
-
-   The policy was created using Lab 2 benchmark results.
+   Selects the primary and fallback models from routing_policy.yaml,
+   which is populated from Lab 2 benchmark evidence.
 """
 
 import json
@@ -36,17 +22,16 @@ import yaml
 
 
 # ============================================================
-# Paths
+# PATHS
 # ============================================================
 
 LAB3_DIR = Path(__file__).resolve().parent
 WORKSPACE_ROOT = LAB3_DIR.parent
-
 SERVICE_ROOT = WORKSPACE_ROOT / "order_flow_service"
 
 
 # ============================================================
-# Task Classifier
+# TASK CLASSIFIER
 # ============================================================
 
 class TaskClassifier:
@@ -55,34 +40,59 @@ class TaskClassifier:
         "implementation",
         "refactoring",
         "debugging",
-        "testing"
+        "testing",
     ]
 
     CLASSIFIER_AGENT = "task-classifier"
 
     @classmethod
-    def classify_request(
-        cls,
-        request_text: str
-    ) -> str:
+    def classify_request(cls, request_text: str) -> str:
         """
-        Ask the dedicated OpenCode task-classifier agent
-        to classify the engineering request.
+        Classify the engineering request.
 
-        The classifier only answers:
-
-            implementation
-            refactoring
-            debugging
-            testing
-
-        It does NOT select the coding model.
+        The classifier only determines the task type.
+        It does not perform the engineering task or select a model.
         """
+
+        if not request_text.strip():
+            raise ValueError(
+                "Cannot classify an empty engineering request."
+            )
 
         opencode_bin = (
             shutil.which("opencode")
             or shutil.which("opencode.cmd")
             or "opencode"
+        )
+
+        # ----------------------------------------------------
+        # Prepare compact classification input
+        # ----------------------------------------------------
+
+        # Convert Markdown/multiline request into one line.
+        compact_request = " ".join(
+            request_text.split()
+        )
+
+        # The classifier does not need the entire engineering task.
+        # This also avoids large/multiline CLI argument problems.
+        compact_request = compact_request[:4000]
+
+        classification_prompt = (
+            "Classify this software engineering request. "
+            "Return ONLY one of: "
+            "implementation, refactoring, debugging, testing. "
+            "If the request describes an existing defect, incident, "
+            "failure, regression, or incorrect behavior, classify it "
+            "as debugging. "
+            "If it asks for new functionality, classify it as "
+            "implementation. "
+            "If it asks to improve code structure without changing "
+            "behavior, classify it as refactoring. "
+            "If it primarily asks to create or improve tests, "
+            "classify it as testing. "
+            "\n\nENGINEERING REQUEST:\n"
+            f"{compact_request}"
         )
 
         cmd = [
@@ -91,51 +101,47 @@ class TaskClassifier:
             "--agent",
             cls.CLASSIFIER_AGENT,
             "--format",
-            "json"
+            "json",
+            classification_prompt,
         ]
+
+        print(
+            "[TaskClassifier] Starting OpenCode classifier..."
+        )
 
         try:
 
             proc = subprocess.run(
                 cmd,
-
-                # Run from application repository
-                cwd=str(SERVICE_ROOT),
-
-                # Send complete request through stdin
-                input=request_text,
-
+                cwd=str(WORKSPACE_ROOT),
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=60,
             )
 
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as exc:
 
             raise RuntimeError(
-                "Task classifier timed out."
-            )
+                "Task classifier timed out after 60 seconds."
+            ) from exc
 
         except Exception as exc:
 
             raise RuntimeError(
                 f"Task classifier execution failed: {exc}"
-            )
+            ) from exc
 
-        # ----------------------------------------------------
-        # Check OpenCode execution
-        # ----------------------------------------------------
+        print(
+            "[TaskClassifier] OpenCode classifier finished."
+        )
 
         if proc.returncode != 0:
 
             raise RuntimeError(
                 "Task classifier OpenCode execution failed.\n"
-                f"{proc.stderr}"
+                f"Return code: {proc.returncode}\n"
+                f"stderr:\n{proc.stderr}"
             )
-
-        # ----------------------------------------------------
-        # Extract text returned by classifier from JSONL
-        # ----------------------------------------------------
 
         classifier_text = cls._extract_text(
             proc.stdout
@@ -144,44 +150,33 @@ class TaskClassifier:
         if not classifier_text:
 
             raise ValueError(
-                "Task classifier returned no text."
+                "Task classifier returned no text.\n\n"
+                f"Raw output:\n{proc.stdout}"
             )
-
-        # ----------------------------------------------------
-        # Normalize result
-        # ----------------------------------------------------
 
         task_type = (
             classifier_text
             .strip()
             .lower()
-        )
-
-        # Remove accidental quotes
-        task_type = (
-            task_type
-            .replace('"', '')
+            .replace('"', "")
             .replace("'", "")
             .strip()
         )
 
-        # ----------------------------------------------------
-        # Validate result
-        # ----------------------------------------------------
-
         if task_type not in cls.VALID_TASK_TYPES:
 
             raise ValueError(
-                "Task classifier returned an invalid "
-                f"task type: '{classifier_text}'.\n"
-                "Expected one of: "
-                f"{cls.VALID_TASK_TYPES}"
+                "Task classifier returned an invalid task type: "
+                f"'{classifier_text}'.\n"
+                "Expected exactly one of:\n"
+                "implementation\n"
+                "refactoring\n"
+                "debugging\n"
+                "testing"
             )
 
         print(
-            f"[TaskClassifier] "
-            f"Classified task as: "
-            f"'{task_type}'"
+            f"[TaskClassifier] Result: {task_type}"
         )
 
         return task_type
@@ -195,17 +190,17 @@ class TaskClassifier:
         raw_jsonl: str
     ) -> str:
         """
-        Extract text events from:
+        Extract assistant text from:
 
             opencode run --format json
 
-        Example event:
+        Example:
 
         {
             "type": "text",
             "part": {
                 "type": "text",
-                "text": "implementation"
+                "text": "debugging"
             }
         }
         """
@@ -220,25 +215,22 @@ class TaskClassifier:
                 continue
 
             try:
-
                 event = json.loads(line)
 
             except json.JSONDecodeError:
-
                 continue
 
             if event.get("type") != "text":
                 continue
 
-            part = event.get(
-                "part",
-                {}
-            ) or {}
+            part = (
+                event.get("part", {})
+                or {}
+            )
 
             text = part.get("text")
 
             if text:
-
                 text_parts.append(
                     text.strip()
                 )
@@ -249,7 +241,7 @@ class TaskClassifier:
 
 
 # ============================================================
-# Routing Policy
+# ROUTING POLICY
 # ============================================================
 
 class RoutingPolicy:
@@ -266,10 +258,19 @@ class RoutingPolicy:
                 / "routing_policy.yaml"
             )
 
+        policy_path = Path(policy_path)
+
+        if not policy_path.exists():
+
+            raise FileNotFoundError(
+                "Routing policy not found: "
+                f"{policy_path}"
+            )
+
         with open(
             policy_path,
             "r",
-            encoding="utf-8"
+            encoding="utf-8",
         ) as file:
 
             self.data = (
@@ -291,105 +292,44 @@ class RoutingPolicy:
             )
         )
 
+        if not self.policy:
+
+            raise ValueError(
+                "routing_policy.yaml does not contain "
+                "a 'routing_policy' section."
+            )
+
     # ========================================================
-    # Model Selection
+    # MODEL SELECTION
     # ========================================================
 
     def select_model(
         self,
-        task_type: str,
-        strategy: str = "evidence"
+        task_type: str
     ) -> dict:
         """
-        Select coding model based on routing strategy.
+        Select the primary and fallback models using
+        Lab 2 benchmark evidence stored in routing_policy.yaml.
 
-        Strategies:
-
-        cheapest
-            Always use Haiku.
-
-        strongest
-            Always use Opus.
-
-        evidence
-            Use routing_policy.yaml populated
-            from Lab 2 benchmark results.
+        No cheapest/strongest comparison is performed here.
         """
 
         # ----------------------------------------------------
-        # Cheapest Everywhere
+        # Validate task type
         # ----------------------------------------------------
 
-        if strategy == "cheapest":
-
-            return {
-
-                "strategy":
-                    "cheapest",
-
-                "task_type":
-                    task_type,
-
-                "primary":
-                    "claude-3-5-haiku",
-
-                "fallback":
-                    None,
-
-                "max_attempts":
-                    1,
-
-                "reason":
-                    (
-                        "Cheapest Everywhere baseline: "
-                        "use Haiku for every task."
-                    )
-            }
-
-        # ----------------------------------------------------
-        # Highest-Capability Everywhere
-        # ----------------------------------------------------
-
-        if strategy == "strongest":
-
-            return {
-
-                "strategy":
-                    "strongest",
-
-                "task_type":
-                    task_type,
-
-                "primary":
-                    "claude-3-opus",
-
-                "fallback":
-                    None,
-
-                "max_attempts":
-                    1,
-
-                "reason":
-                    (
-                        "Highest-Capability Everywhere "
-                        "baseline: use Opus for every task."
-                    )
-            }
-
-        # ----------------------------------------------------
-        # Validate strategy
-        # ----------------------------------------------------
-
-        if strategy != "evidence":
+        if (
+            task_type
+            not in TaskClassifier.VALID_TASK_TYPES
+        ):
 
             raise ValueError(
-                f"Unknown routing strategy: "
-                f"'{strategy}'"
+                f"Unknown task type: '{task_type}'"
             )
 
-        # ====================================================
-        # Evidence-Driven Routing
-        # ====================================================
+        # ----------------------------------------------------
+        # Get policy for this task type
+        # ----------------------------------------------------
 
         task_policy = (
             self.policy.get(
@@ -400,8 +340,8 @@ class RoutingPolicy:
         if not task_policy:
 
             raise ValueError(
-                f"No routing policy configured "
-                f"for task type '{task_type}'."
+                "No routing policy configured for "
+                f"task type '{task_type}'."
             )
 
         primary = (
@@ -417,7 +357,7 @@ class RoutingPolicy:
         )
 
         # ----------------------------------------------------
-        # Make sure students populated Lab 2 results
+        # Validate primary
         # ----------------------------------------------------
 
         if (
@@ -427,13 +367,16 @@ class RoutingPolicy:
         ):
 
             raise ValueError(
-                f"Primary model for "
-                f"'{task_type}' has not been "
-                f"configured.\n"
-                f"Add the model selected from "
-                f"your Lab 2 benchmark results "
-                f"to routing_policy.yaml."
+                f"Primary model for '{task_type}' "
+                "has not been configured.\n\n"
+                "Add the model selected from your "
+                "Lab 2 benchmark results to "
+                "routing_policy.yaml."
             )
+
+        # ----------------------------------------------------
+        # Validate fallback
+        # ----------------------------------------------------
 
         if (
             not fallback
@@ -442,18 +385,18 @@ class RoutingPolicy:
         ):
 
             raise ValueError(
-                f"Fallback model for "
-                f"'{task_type}' has not been "
-                f"configured.\n"
-                f"Add the fallback selected from "
-                f"your Lab 2 benchmark results "
-                f"to routing_policy.yaml."
+                f"Fallback model for '{task_type}' "
+                "has not been configured.\n\n"
+                "Add the fallback model selected from "
+                "your Lab 2 benchmark results to "
+                "routing_policy.yaml."
             )
 
-        return {
+        # ----------------------------------------------------
+        # Return evidence-based routing decision
+        # ----------------------------------------------------
 
-            "strategy":
-                "evidence",
+        return {
 
             "task_type":
                 task_type,
@@ -469,9 +412,8 @@ class RoutingPolicy:
 
             "reason":
                 (
-                    "Selected from the routing "
-                    "policy created using Lab 2 "
-                    f"benchmark evidence for "
-                    f"'{task_type}'."
-                )
+                    "Selected from routing_policy.yaml "
+                    "using Lab 2 benchmark evidence "
+                    f"for '{task_type}'."
+                ),
         }

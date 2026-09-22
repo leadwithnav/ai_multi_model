@@ -1,33 +1,16 @@
 #!/usr/bin/env python3
-
 """
 Lab 3 — Evidence-Driven Model Routing
 
-Purpose:
-    Compare three model-selection strategies:
+Flow:
+    Engineering Request
+        -> Task Classifier
+        -> Lab 2 Routing Policy
+        -> Primary Model
+        -> Deterministic Verification
+        -> Fallback Model only when acceptance tests genuinely fail
 
-    1. cheapest
-       Always use the cheapest model.
-
-    2. strongest
-       Always use the strongest model.
-
-    3. evidence
-       Classify the engineering task and use the routing
-       policy created from Lab 2 benchmark evidence.
-
-Important:
-    This script DOES NOT verify code quality.
-
-    Verification is performed manually after the model run.
-
-Example:
-
-    python run_router.py tasks/implementation.md --strategy cheapest
-
-    python run_router.py tasks/implementation.md --strategy strongest
-
-    python run_router.py tasks/implementation.md --strategy evidence
+There are no cheapest/strongest baseline strategies in this lab.
 """
 
 import sys
@@ -41,28 +24,11 @@ from pathlib import Path
 from router import TaskClassifier, RoutingPolicy
 
 
-# ============================================================
-# PATHS
-# ============================================================
-
 LAB3_DIR = Path(__file__).resolve().parent
-
 WORKSPACE_ROOT = LAB3_DIR.parent
+SERVICE_ROOT = WORKSPACE_ROOT / "order_flow_service"
+ARTIFACTS_DIR = LAB3_DIR / "artifacts"
 
-SERVICE_ROOT = (
-    WORKSPACE_ROOT
-    / "order_flow_service"
-)
-
-ARTIFACTS_DIR = (
-    LAB3_DIR
-    / "artifacts"
-)
-
-
-# ============================================================
-# OPENCode JSONL METRICS
-# ============================================================
 
 def parse_opencode_jsonl(
     raw_jsonl: str,
@@ -489,486 +455,338 @@ def detect_incomplete_prompt_response(
     )
 
 
+
 # ============================================================
-# DETERMINE TASK TYPE
+# DETERMINISTIC VERIFICATION
 # ============================================================
 
-def determine_task_type(
-    path: Path,
-    request_text: str,
-    strategy: str
-) -> str:
+VERIFICATION_TESTS = {
+    "implementation": "test_implementation.py",
+    "refactoring": "test_refactoring.py",
+    "debugging": "test_debugging.py",
+    "testing": "test_testing.py",
+}
+
+
+def run_verification(task_type: str, timeout_seconds: int = 120) -> dict:
     """
-    Evidence strategy:
-        Use the dedicated task-classifier OpenCode agent.
-
-    Cheapest / strongest:
-        Classification is unnecessary because the model
-        does not depend on task type.
-
-        The task type is therefore taken from the filename.
+    PASSED  -> acceptance tests passed
+    FAILED  -> tests ran and assertions failed; fallback is allowed
+    TIMEOUT -> verifier timed out; fallback is NOT allowed
+    ERROR   -> verifier/collection/infrastructure problem; no fallback
     """
 
-    # ========================================================
-    # Evidence-driven strategy
-    # ========================================================
+    test_name = VERIFICATION_TESTS.get(task_type)
 
-    if strategy == "evidence":
+    if not test_name:
+        return {
+            "status": "ERROR",
+            "passed": False,
+            "stdout": "",
+            "stderr": f"No verification configured for: {task_type}",
+            "exit_code": None,
+        }
 
-        print("\nCLASSIFICATION")
-        print("-" * 50)
+    test_file = LAB3_DIR / "instructor_tests" / test_name
 
-        task_type = (
-            TaskClassifier.classify_request(
-                request_text
-            )
+    if not test_file.exists():
+        return {
+            "status": "ERROR",
+            "passed": False,
+            "stdout": "",
+            "stderr": f"Verification test not found: {test_file}",
+            "exit_code": None,
+        }
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        str(test_file),
+        "-v",
+        "--tb=short",
+    ]
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(SERVICE_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
         )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
 
-        print(
-            f"Task Type: {task_type}"
-        )
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode("utf-8", errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
 
-        return task_type
+        return {
+            "status": "TIMEOUT",
+            "passed": False,
+            "stdout": stdout,
+            "stderr": stderr or f"pytest timed out after {timeout_seconds}s",
+            "exit_code": None,
+        }
+    except Exception as exc:
+        return {
+            "status": "ERROR",
+            "passed": False,
+            "stdout": "",
+            "stderr": str(exc),
+            "exit_code": None,
+        }
 
-    # ========================================================
-    # Baseline strategies
-    # ========================================================
+    if proc.returncode == 0:
+        status = "PASSED"
+    elif proc.returncode == 1:
+        status = "FAILED"
+    else:
+        status = "ERROR"
 
-    task_type = (
-        path.stem.lower()
-    )
-
-    if (
-        task_type
-        not in TaskClassifier.VALID_TASK_TYPES
-    ):
-
-        raise ValueError(
-
-            f"Cannot determine task type "
-            f"from '{path.name}'.\n"
-
-            f"For baseline strategies, "
-            f"the task filename must be one of:\n"
-
-            f"{TaskClassifier.VALID_TASK_TYPES}"
-        )
-
-    print("\nTASK TYPE")
-    print("-" * 50)
-
-    print(
-        f"Task Type: {task_type}"
-    )
-
-    print(
-        "LLM Classification: "
-        "Not required for baseline strategy"
-    )
-
-    return task_type
+    return {
+        "status": status,
+        "passed": status == "PASSED",
+        "stdout": proc.stdout or "",
+        "stderr": proc.stderr or "",
+        "exit_code": proc.returncode,
+    }
 
 
 # ============================================================
 # MAIN PIPELINE
 # ============================================================
 
-def run_pipeline(
-    task_path: str,
-    strategy: str = "evidence"
-) -> dict:
-
-    # --------------------------------------------------------
-    # Resolve task file
-    # --------------------------------------------------------
+def run_pipeline(task_path: str) -> dict:
 
     path = Path(task_path)
 
     if not path.is_absolute():
-
-        path = (
-            LAB3_DIR
-            / task_path
-        )
+        path = LAB3_DIR / task_path
 
     if not path.exists():
-
-        print(
-            f"ERROR: Task file not found: "
-            f"{path}"
-        )
-
-        sys.exit(1)
+        raise FileNotFoundError(f"Task file not found: {path}")
 
     if not SERVICE_ROOT.exists():
-
-        print(
-            f"ERROR: Service repository "
-            f"not found: {SERVICE_ROOT}"
+        raise FileNotFoundError(
+            f"Service repository not found: {SERVICE_ROOT}"
         )
 
-        sys.exit(1)
-
-    # --------------------------------------------------------
-    # Read engineering request
-    # --------------------------------------------------------
-
-    request_text = (
-        path.read_text(
-            encoding="utf-8"
-        )
-    )
+    request_text = path.read_text(encoding="utf-8")
 
     if not request_text.strip():
-
-        print(
-            "ERROR: Task file is empty."
-        )
-
-        sys.exit(1)
-
-    # --------------------------------------------------------
-    # Display task
-    # --------------------------------------------------------
+        raise ValueError("Task file is empty.")
 
     print("\nINCOMING TASK")
     print("-" * 50)
+    preview = request_text.strip()[:300]
+    print(preview + ("..." if len(request_text) > 300 else ""))
 
-    preview = (
-        request_text
-        .strip()[:300]
-    )
+    # 1. Classify every incoming request.
+    print("\nCLASSIFICATION")
+    print("-" * 50)
 
-    if len(request_text) > 300:
+    task_type = TaskClassifier.classify_request(request_text)
+    print(f"Task Type: {task_type}")
 
-        preview += "..."
+    # 2. Apply the Lab 2 evidence policy.
+    policy = RoutingPolicy()
+    decision = policy.select_model(task_type)
 
-    print(preview)
+    primary_model = decision["primary"]
+    fallback_model = decision["fallback"]
+    max_attempts = min(decision.get("max_attempts", 2), 2)
 
-    print(
-        f"\nTask prompt length: "
-        f"{len(request_text)} characters"
-    )
+    print("\nEVIDENCE-BASED ROUTING")
+    print("-" * 50)
+    print(f"Primary Model:  {primary_model}")
+    print(f"Fallback Model: {fallback_model}")
+    print(f"Max Attempts:   {max_attempts}")
+    print(f"Reason:         {decision['reason']}")
 
-    # ========================================================
-    # 1. DETERMINE TASK TYPE
-    # ========================================================
+    attempts_detail = []
+    total_cost = 0.0
+    total_latency = 0.0
+    escalated = False
+    final_status = "NOT_RUN"
+    final_model = primary_model
 
-    try:
+    current_model = primary_model
+    prompt_to_run = request_text
 
-        task_type = (
-            determine_task_type(
-                path,
-                request_text,
-                strategy
+    for attempt_num in range(1, max_attempts + 1):
+
+        print(
+            f"\nMODEL EXECUTION "
+            f"(Attempt {attempt_num}/{max_attempts})"
+        )
+        print("-" * 50)
+        print(f"Running: {current_model}")
+
+        stdout, stderr, return_code, wall_latency = (
+            execute_opencode_agent(
+                current_model,
+                prompt_to_run
             )
         )
 
-    except Exception as exc:
-
-        print("\nCLASSIFICATION ERROR")
-        print("-" * 50)
-
-        print(str(exc))
-
-        sys.exit(1)
-
-    # ========================================================
-    # 2. SELECT MODEL
-    # ========================================================
-
-    try:
-
-        policy = RoutingPolicy()
-
-        decision = (
-            policy.select_model(
-                task_type,
-                strategy=strategy
-            )
-        )
-
-    except Exception as exc:
-
-        print("\nROUTING ERROR")
-        print("-" * 50)
-
-        print(str(exc))
-
-        sys.exit(1)
-
-    primary_model = (
-        decision["primary"]
-    )
-
-    fallback_model = (
-        decision.get("fallback")
-    )
-
-    print("\nROUTING DECISION")
-    print("-" * 50)
-
-    print(
-        f"Strategy:       {strategy}"
-    )
-
-    print(
-        f"Selected Model: {primary_model}"
-    )
-
-    if strategy == "evidence":
-
-        print(
-            f"Configured Fallback: "
-            f"{fallback_model}"
-        )
-
-        print(
-            "Automatic Fallback: DISABLED"
-        )
-
-    print(
-        f"Reason:         "
-        f"{decision['reason']}"
-    )
-
-    # ========================================================
-    # 3. EXECUTE SELECTED MODEL
-    # ========================================================
-
-    print("\nMODEL EXECUTION")
-    print("-" * 50)
-
-    print(
-        f"Running: {primary_model}"
-    )
-
-    print(
-        f"Prompt size: "
-        f"{len(request_text)} characters"
-    )
-
-    (
-        stdout,
-        stderr,
-        return_code,
-        wall_latency
-    ) = execute_opencode_agent(
-        primary_model,
-        request_text
-    )
-
-    # ========================================================
-    # 4. SAVE RAW EXECUTION
-    # ========================================================
-
-    raw_files = (
-        save_raw_execution(
+        raw_files = save_raw_execution(
             task_type,
-            strategy,
+            "evidence",
             stdout,
             stderr
         )
-    )
 
-    # ========================================================
-    # 5. EXTRACT METRICS
-    # ========================================================
-
-    metrics = (
-        parse_opencode_jsonl(
+        metrics = parse_opencode_jsonl(
             stdout,
-            primary_model
+            current_model
         )
-    )
+        metrics["latency_seconds"] = round(wall_latency, 2)
 
-    metrics["latency_seconds"] = (
-        round(
-            wall_latency,
-            2
-        )
-    )
-
-    print(
-        f"\nLLM Steps: "
-        f"{metrics['llm_steps']}"
-    )
-
-    print(
-        f"Task Cost: "
-        f"${metrics['cost_usd']:.6f}"
-    )
-
-    print(
-        f"Task Latency: "
-        f"{metrics['latency_seconds']} seconds"
-    )
-
-    # ========================================================
-    # 6. CHECK OPENCode EXECUTION
-    # ========================================================
-
-    if return_code != 0:
-
-        execution_status = (
-            "EXECUTION_ERROR"
-        )
-
-        print("\nEXECUTION ERROR")
-        print("-" * 50)
+        total_cost += metrics["cost_usd"]
+        total_latency += metrics["latency_seconds"]
 
         print(
-            f"OpenCode exited with "
-            f"return code {return_code}."
+            f"Steps: {metrics['llm_steps']} | "
+            f"Latency: {metrics['latency_seconds']}s | "
+            f"Cost: ${metrics['cost_usd']:.6f}"
         )
 
-        if stderr:
+        if return_code != 0:
+            attempts_detail.append({
+                "attempt": attempt_num,
+                "model": current_model,
+                "execution_status": "ERROR",
+                "return_code": return_code,
+                "metrics": metrics,
+                "raw_files": raw_files,
+                "verification": None,
+            })
+            final_model = current_model
+            final_status = "EXECUTION_ERROR"
+            break
 
+        if detect_incomplete_prompt_response(stdout):
+            attempts_detail.append({
+                "attempt": attempt_num,
+                "model": current_model,
+                "execution_status": "INVALID_PROMPT",
+                "return_code": return_code,
+                "metrics": metrics,
+                "raw_files": raw_files,
+                "verification": None,
+            })
+            final_model = current_model
+            final_status = "INVALID_EXECUTION"
+            break
+
+        # 3. Deterministic quality gate.
+        print("\nVERIFICATION")
+        print("-" * 50)
+
+        verify_result = run_verification(task_type)
+        verification_status = verify_result["status"]
+
+        print(f"Acceptance Tests: {verification_status}")
+
+        attempts_detail.append({
+            "attempt": attempt_num,
+            "model": current_model,
+            "execution_status": "SUCCESS",
+            "return_code": return_code,
+            "metrics": metrics,
+            "raw_files": raw_files,
+            "verification": verify_result,
+        })
+
+        final_model = current_model
+
+        if verification_status == "PASSED":
+            final_status = "PASS"
+            break
+
+        # Verifier failure is not model failure.
+        if verification_status in {"TIMEOUT", "ERROR"}:
             print(
-                stderr[-1500:]
+                "\nVerification could not complete correctly. "
+                "Fallback will NOT be triggered."
             )
+            final_status = "VERIFICATION_ERROR"
+            break
 
-    elif detect_incomplete_prompt_response(
-        stdout
-    ):
-
-        execution_status = (
-            "INVALID_EXECUTION"
+        # 4. Only a genuine acceptance-test failure can escalate.
+        can_escalate = (
+            verification_status == "FAILED"
+            and attempt_num < max_attempts
+            and fallback_model
+            and current_model != fallback_model
         )
 
-        print("\nINVALID EXECUTION")
+        if not can_escalate:
+            final_status = "FAIL"
+            break
+
+        escalated = True
+
+        print("\nESCALATION")
         print("-" * 50)
+        print(f"{current_model} did not meet the quality bar.")
+        print(f"Escalating to: {fallback_model}")
 
-        print(
-            "The model appears not to have "
-            "received the complete task."
+        failure_text = (
+            verify_result.get("stdout")
+            or verify_result.get("stderr")
+            or "Acceptance tests failed."
         )
 
-        print(
-            "Do not count this as a "
-            "model-quality result."
+        failure_snippet = failure_text[-1500:]
+        current_model = fallback_model
+
+        prompt_to_run = (
+            f"{request_text}\n\n"
+            "### ESCALATION CONTEXT\n\n"
+            "A previous model attempted this task, but deterministic "
+            "acceptance tests failed.\n\n"
+            "Verification failure:\n\n"
+            f"```text\n{failure_snippet}\n```\n\n"
+            "Inspect the CURRENT repository state.\n"
+            "Do not start from scratch.\n"
+            "Repair the implementation so the original requirement "
+            "and acceptance tests are satisfied.\n"
         )
-
-    else:
-
-        execution_status = (
-            "MODEL_EXECUTION_COMPLETE"
-        )
-
-    # ========================================================
-    # 7. BUILD SUMMARY
-    # ========================================================
 
     summary = {
-
-        "task_file":
-            path.name,
-
-        "task_type":
-            task_type,
-
-        "strategy":
-            strategy,
-
-        "selected_model":
-            primary_model,
-
-        "configured_fallback":
-            (
-                fallback_model
-                if strategy == "evidence"
-                else None
-            ),
-
-        "automatic_fallback":
-            False,
-
-        "execution_status":
-            execution_status,
-
-        "return_code":
-            return_code,
-
-        "metrics":
-            metrics,
-
-        "raw_files":
-            raw_files,
-
-        "verification":
-            "NOT_RUN"
+        "task_file": path.name,
+        "task_type": task_type,
+        "routing": "evidence",
+        "primary_model": primary_model,
+        "fallback_model": fallback_model,
+        "attempts": len(attempts_detail),
+        "escalated": escalated,
+        "final_model": final_model,
+        "final_status": final_status,
+        "total_cost_usd": round(total_cost, 6),
+        "total_latency_seconds": round(total_latency, 2),
+        "attempts_detail": attempts_detail,
     }
-
-    # ========================================================
-    # 8. DISPLAY RESULT
-    # ========================================================
 
     print("\nRESULT SUMMARY")
     print("=" * 50)
-
-    print(
-        f"Task Type:       "
-        f"{task_type}"
-    )
-
-    print(
-        f"Strategy:        "
-        f"{strategy}"
-    )
-
-    print(
-        f"Selected Model:  "
-        f"{primary_model}"
-    )
-
-    print(
-        f"Execution:       "
-        f"{execution_status}"
-    )
-
-    print(
-        f"LLM Steps:       "
-        f"{metrics['llm_steps']}"
-    )
-
-    print(
-        f"Task Cost:       "
-        f"${metrics['cost_usd']:.6f}"
-    )
-
-    print(
-        f"Task Latency:    "
-        f"{metrics['latency_seconds']:.2f} seconds"
-    )
-
-    print(
-        "Verification:    NOT RUN"
-    )
-
+    print(f"Task Type:       {task_type}")
+    print(f"Primary Model:   {primary_model}")
+    print(f"Fallback Model:  {fallback_model}")
+    print(f"Attempts:        {summary['attempts']}")
+    print(f"Escalated:       {'YES' if escalated else 'NO'}")
+    print(f"Final Model:     {final_model}")
+    print(f"Final Status:    {final_status}")
+    print(f"Total Cost:      ${total_cost:.6f}")
+    print(f"Total Latency:   {total_latency:.2f} seconds")
     print("=" * 50)
 
-    if (
-        execution_status
-        == "MODEL_EXECUTION_COMPLETE"
-    ):
-
-        print(
-            "\nModel execution completed."
-        )
-
-        print(
-            "Now run the acceptance test "
-            "manually to measure quality."
-        )
-
-    # ========================================================
-    # 9. SAVE RESULT
-    # ========================================================
-
-    save_artifact(
-        summary
-    )
-
+    save_artifact(summary)
     return summary
 
 
@@ -976,49 +794,17 @@ def run_pipeline(
 # SAVE SUMMARY
 # ============================================================
 
-def save_artifact(
-    summary: dict
-):
+def save_artifact(summary: dict):
 
-    task_type = (
-        summary["task_type"]
-    )
+    out_dir = ARTIFACTS_DIR / summary["task_type"]
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    out_dir = (
-        ARTIFACTS_DIR
-        / task_type
-    )
+    out_path = out_dir / f"run_{time.time_ns()}.json"
 
-    out_dir.mkdir(
-        parents=True,
-        exist_ok=True
-    )
+    with open(out_path, "w", encoding="utf-8") as file:
+        json.dump(summary, file, indent=2)
 
-    timestamp = (
-        time.time_ns()
-    )
-
-    out_path = (
-        out_dir
-        / f"run_{timestamp}.json"
-    )
-
-    with open(
-        out_path,
-        "w",
-        encoding="utf-8"
-    ) as file:
-
-        json.dump(
-            summary,
-            file,
-            indent=2
-        )
-
-    print(
-        f"\nArtifact saved to: "
-        f"{out_path}"
-    )
+    print(f"\nArtifact saved to: {out_path}")
 
 
 # ============================================================
@@ -1027,51 +813,18 @@ def save_artifact(
 
 def main():
 
-    parser = (
-        argparse.ArgumentParser(
-            description=(
-                "Lab 3 — Evidence-Driven "
-                "Model Routing"
-            )
-        )
+    parser = argparse.ArgumentParser(
+        description="Lab 3 — Evidence-Driven Model Routing"
     )
 
     parser.add_argument(
-
         "task",
-
-        help=(
-            "Task file, for example: "
-            "tasks/implementation.md"
-        )
-    )
-
-    parser.add_argument(
-
-        "--strategy",
-
-        choices=[
-            "evidence",
-            "cheapest",
-            "strongest"
-        ],
-
-        default="evidence",
-
-        help=(
-            "Routing strategy "
-            "(default: evidence)"
-        )
+        help="Engineering request file, e.g. tasks/request_01.md"
     )
 
     args = parser.parse_args()
-
-    run_pipeline(
-        args.task,
-        strategy=args.strategy
-    )
+    run_pipeline(args.task)
 
 
 if __name__ == "__main__":
-
     main()
