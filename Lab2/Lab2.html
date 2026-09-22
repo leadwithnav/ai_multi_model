@@ -325,7 +325,7 @@ export AWS_REGION=us-east-1</pre>
 
 
               <div class="code-container">
-                <div class="code-header"><span>Check and Record Metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
                 <pre>python metrics_helper.py claude-3-5-sonnet runs/implementation-claude-3-5-sonnet.jsonl</pre>
             </div>
             <div class="code-container">
@@ -356,7 +356,7 @@ export AWS_REGION=us-east-1</pre>
 
             
               <div class="code-container">
-                <div class="code-header"><span>Check and Record Metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                <div class="code-header"><span>Extract Metrics and Record it Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
                 <pre>python metrics_helper.py claude-3-5-sonnet runs/refactor-claude-3-5-sonnet.jsonl</pre>
             </div>
 
@@ -377,14 +377,29 @@ export AWS_REGION=us-east-1</pre>
             <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Workload 3 — Debugging</h2>
             <p><strong>Requirement:</strong> Diagnose and fix incident INC-8821 (inventory stock leak during multi-item order reservation failure).</p>
 
-            <div class="code-container">
-                <div class="code-header"><span>Command — Task 3</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/debugging/TASK.md)" > run3.jsonl; python metrics_helper.py claude-3-5-sonnet run3.jsonl</pre>
+             <div class="code-container">
+                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>benchmark/debugging/Task.md</pre>
             </div>
 
             <div class="code-container">
-                <div class="code-header"><span>Instructor Evaluation — Task 3</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>pytest instructor_tests/test_debugging_acceptance.py -v</pre>
+                <div class="code-header"><span>Run task against claude-3-5-sonnet </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/debugging/TASK.md)" > runs/debugging-claude-3-5-sonnet.jsonl;</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>python metrics_helper.py claude-3-5-sonnet runs/debugging-claude-3-5-sonnet.jsonl</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>pytest acceptance_tests/test_debugging_acceptance.py</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>bash reset.sh</pre>
             </div>
         </div>
 

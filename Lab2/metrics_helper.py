@@ -142,4 +142,10 @@ def main():
 
 
 if __name__ == "__main__":
+    print("metrics_helper started", flush=True)
+
+    agent_name = sys.argv[1] if len(sys.argv) > 1 else None
+    input_file = sys.argv[2] if len(sys.argv) > 2 else None
+
+    print(f"Reading: {input_file}", flush=True)
     main()
