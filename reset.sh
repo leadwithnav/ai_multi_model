@@ -1,33 +1,37 @@
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
-LAB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_URL="https://github.com/leadwithnav/ai_multi_model.git"
+# Directory containing this script = repository root
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-GIT_TARGET="$LAB_DIR"
-if [ -d "$LAB_DIR/../order-flow-service/.git" ]; then
-    GIT_TARGET="$LAB_DIR/../order-flow-service"
-elif [ -d "$LAB_DIR/order-flow-service/.git" ]; then
-    GIT_TARGET="$LAB_DIR/order-flow-service"
-elif [ -d "$LAB_DIR/../.git" ]; then
-    GIT_TARGET="$LAB_DIR/.."
+# Only this folder will be reset
+SERVICE_DIR="order_flow_service"
+
+cd "$REPO_DIR"
+
+echo "Resetting only: $SERVICE_DIR"
+
+# Verify that we are in the Git repository
+if [ ! -d ".git" ]; then
+    echo "ERROR: $REPO_DIR is not a Git repository."
+    exit 1
 fi
 
-if [ ! -d "$GIT_TARGET/.git" ]; then
-    echo "Cloning repository from $REPO_URL..."
-    git clone "$REPO_URL" "$LAB_DIR"
-else
-    cd "$GIT_TARGET"
-    git remote set-url origin "$REPO_URL"
-    git fetch origin
-    git reset --hard HEAD
-    git clean -fd
-    cd "$LAB_DIR"
+# Verify the target folder exists
+if [ ! -d "$SERVICE_DIR" ]; then
+    echo "ERROR: $SERVICE_DIR does not exist."
+    exit 1
 fi
 
-GEN_TEST="$LAB_DIR/../order-flow-service/tests/test_inventory_generated.py"
-if [ -f "$GEN_TEST" ]; then
-    rm -f "$GEN_TEST"
-fi
+# Restore tracked files ONLY inside order_flow_service
+git restore --source=HEAD --staged --worktree "$SERVICE_DIR/"
 
-echo "Repository reset to baseline ($REPO_URL)."
+# Remove untracked files/directories ONLY inside order_flow_service
+git clean -fd "$SERVICE_DIR/"
+
+echo ""
+echo "Reset complete."
+echo "Only $SERVICE_DIR was reset."
+echo "All other lab files were left unchanged."
+```

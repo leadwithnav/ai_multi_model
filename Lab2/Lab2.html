@@ -350,7 +350,7 @@ export AWS_REGION=us-east-1</pre>
             </div>
 
             <div class="code-container">
-                <div class="code-header"><span>Command — Task 2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <div class="code-header"><span>Run Refactoring task aganist claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                 <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/refactoring/TASK.md)" > run/refactor-claude-3-5-sonnet.jsonl</pre>
             </div>
 
@@ -361,7 +361,7 @@ export AWS_REGION=us-east-1</pre>
             </div>
 
             <div class="code-container">
-                <div class="code-header"><span>Instructor Evaluation — Task 2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                 <pre>pytest instructor_tests/test_refactoring_regression.py -v</pre>
             </div>
 
@@ -369,7 +369,7 @@ export AWS_REGION=us-east-1</pre>
                 <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                 <pre>../reset.sh</pre>
             </div>
-            
+
         </div>
 
         <!-- Task 3: Debugging -->
