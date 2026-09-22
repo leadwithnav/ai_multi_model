@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 3 — Evidence-Driven Model Routing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .table-input {
+            background-color: #0d1117;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 4px 8px;
+            width: 100%;
+        }
+
+        .table-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 3 Walkthrough</h5>
+            <small class="text-muted">Evidence-Driven Routing</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#arch"><i class="bi bi-diagram-3"></i> Target Architecture</a></li>
+            <li class="nav-item"><a class="nav-link" href="#policy"><i class="bi bi-file-earmark-code"></i> Routing Policy</a></li>
+            <li class="nav-item"><a class="nav-link" href="#tasks"><i class="bi bi-card-checklist"></i> Engineering Tasks</a></li>
+            <li class="nav-item"><a class="nav-link" href="#run"><i class="bi bi-play-circle"></i> Strategy Execution Steps</a></li>
+            <li class="nav-item"><a class="nav-link" href="#compare-table"><i class="bi bi-table"></i> Strategy Comparison Table</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 3</span>
+                    <h1 class="text-white mt-2 mb-1">Evidence-Driven Model Routing</h1>
+                    <p class="text-white mb-0">Automatically Route Engineering Tasks using Lab 2 Benchmark Evidence</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview & Goal -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Answer the core system design question: <strong>How do I automatically use benchmark evidence to choose an appropriate model for an engineering task?</strong></p>
+
+            <div class="p-3 bg-dark border border-secondary rounded text-center my-3">
+                <span class="text-info fw-bold">Lab 2 Benchmark Evidence</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-primary fw-bold">Routing Policy (routing_policy.yaml)</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-warning fw-bold">Task Classifier → Primary Model Execution</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-success fw-bold fs-5">DETERMINISTIC VERIFICATION &amp; ESCALATION</span>
+            </div>
+
+            <div class="callout callout-success">
+                <h5 class="text-success"><i class="bi bi-lightbulb-fill me-2"></i> Core Principles</h5>
+                <ul class="mb-0">
+                    <li><strong>Don't route based on model reputation. Route based on evidence.</strong></li>
+                    <li><strong>Choose the least expensive model that reliably meets the quality bar for the task.</strong></li>
+                    <li><strong>Cost per model call is NOT the same as cost per completed engineering task.</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Target Architecture -->
+        <div class="lab-card" id="arch">
+            <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Target Architecture</h2>
+            <p>Simple, decoupled architecture enforcing strict separation of concerns:</p>
+
+            <div class="row g-3 my-2">
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-info text-dark mb-2">Classifier Agent</span>
+                        <h6 class="text-white">TaskClassifier LLM Agent</h6>
+                        <small class="text-white">Invokes <code>claude-3-5-haiku</code> agent to answer: <em>What kind of task is this?</em> (Does NOT select execution model)</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-primary mb-2">Policy</span>
+                        <h6 class="text-white">RoutingPolicy</h6>
+                        <small class="text-white">Answers: <em>Which model should handle it based on evidence?</em></small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-warning text-dark mb-2">Runner</span>
+                        <h6 class="text-white">OpenCode Subprocess</h6>
+                        <small class="text-white">Executes selected agent via OpenCode + AWS Bedrock</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-success mb-2">Verifier</span>
+                        <h6 class="text-white">pytest Deterministic</h6>
+                        <small class="text-white">Answers: <em>Did the code pass tests?</em> (Never uses an LLM)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Routing Policy -->
+        <div class="lab-card" id="policy">
+            <h2><i class="bi bi-file-earmark-code text-info me-2"></i> Benchmark Routing Policy</h2>
+            <p>Stored in <code>routing_policy.yaml</code> derived from Lab 2 empirical evidence:</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>routing_policy.yaml</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>max_attempts: 2
+
+routing_policy:
+  implementation:
+    primary: add_from_lab2_benchmarking
+    fallback: add_from_lab2_benchmarking
+    
+  refactoring:
+    primary: add_from_lab2_benchmarking
+    fallback: add_from_lab2_benchmarking
+
+  debugging:
+    primary: add_from_lab2_benchmarking
+    fallback: add_from_lab2_benchmarking
+
+  testing:
+    primary: add_from_lab2_benchmarking
+    fallback: add_from_lab2_benchmarking</pre>
+            </div>
+        </div>
+
+        <!-- Engineering Tasks -->
+        <div class="lab-card" id="tasks">
+            <h2><i class="bi bi-card-checklist text-warning me-2"></i> Four Workload Tasks</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="p-3 bg-dark border border-secondary rounded">
+                        <h6 class="text-white"><i class="bi bi-tools text-primary me-2"></i> Implementation Task</h6>
+                        <small class="text-white">Order cancellation &amp; inventory restoration (<code>POST /orders/{id}/cancel</code>)</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-dark border border-secondary rounded">
+                        <h6 class="text-white"><i class="bi bi-code-square text-info me-2"></i> Refactoring Task</h6>
+                        <small class="text-white">Refactor <code>order_service.py</code> readability while preserving behavior</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-dark border border-secondary rounded">
+                        <h6 class="text-white"><i class="bi bi-bug text-danger me-2"></i> Debugging Task</h6>
+                        <small class="text-white">INC-8821 Inventory stock leak during payment failure</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-dark border border-secondary rounded">
+                        <h6 class="text-white"><i class="bi bi-shield-check text-success me-2"></i> Testing Task</h6>
+                        <small class="text-white">Generate unit test suite for <code>InventoryService</code></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Run Strategies -->
+        <div class="lab-card" id="run">
+            <h2><i class="bi bi-play-circle-fill text-success me-2"></i> Strategy Execution Steps</h2>
+            <p>Run the implementation task (and other tasks) against each routing strategy:</p>
+
+            <!-- Strategy A: Cheapest Everywhere -->
+            <div class="callout border-info my-3">
+                <h5 class="text-info mb-2"><i class="bi bi-lightning-charge-fill me-2"></i> Strategy A — Cheapest Model Everywhere</h5>
+                <p class="small text-white">Routes all engineering tasks to <code>claude-3-5-haiku</code> regardless of task difficulty.</p>
+                <div class="code-container mb-2">
+                    <div class="code-header"><span>Run Implementation Task against Cheapest Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>python run_router.py tasks/implementation.md --strategy cheapest</pre>
+                </div>
+                <div class="code-container mb-0">
+                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>bash reset.sh</pre>
+                </div>
+            </div>
+
+            <!-- Strategy B: Strongest Everywhere -->
+            <div class="callout border-warning my-3">
+                <h5 class="text-warning mb-2"><i class="bi bi-award-fill me-2"></i> Strategy B — Strongest Model Everywhere</h5>
+                <p class="small text-white">Routes all engineering tasks to <code>claude-3-opus</code> regardless of cost.</p>
+                <div class="code-container mb-2">
+                    <div class="code-header"><span>Run Implementation Task against Strongest Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>python run_router.py tasks/implementation.md --strategy strongest</pre>
+                </div>
+                <div class="code-container mb-0">
+                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>bash reset.sh</pre>
+                </div>
+            </div>
+
+            <!-- Strategy C: Evidence-Driven Routing -->
+            <div class="callout callout-success my-3">
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Strategy C — Evidence-Driven Routing</h5>
+                <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
+                <div class="code-container mb-2">
+                    <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>python run_router.py tasks/implementation.md --strategy evidence</pre>
+                </div>
+                <div class="code-container mb-0">
+                    <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>bash reset.sh</pre>
+                </div>
+            </div>
+
+            <!-- Automated All-Task Comparison Script -->
+            <div class="callout border-secondary my-3">
+                <h5 class="text-white mb-2"><i class="bi bi-cpu-fill me-2"></i> Automated Comparison Across All 4 Tasks</h5>
+                <p class="small text-white">Execute all 4 workloads across all 3 strategies sequentially:</p>
+                <div class="code-container mb-0">
+                    <div class="code-header"><span>Run Complete Strategy Comparison Script</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>python compare_strategies.py</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Comparison Table -->
+        <div class="lab-card" id="compare-table">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <h2><i class="bi bi-table text-primary me-2"></i> Strategy Comparison Table</h2>
+                <button class="btn btn-outline-success btn-sm" onclick="downloadComparisonCSV()"><i class="bi bi-download me-1"></i> Download Comparison CSV</button>
+            </div>
+            <p>Record observed metrics across routing strategies for engineering workloads:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th>Routing Strategy</th>
+                            <th>Primary Model</th>
+                            <th>Successful Tasks</th>
+                            <th>Total Cost ($)</th>
+                            <th>Cost / Success ($)</th>
+                            <th>Total Latency</th>
+                            <th>Escalations</th>
+                            <th>Quality Bar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparison_table_body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-warning">
+                <h5 class="text-warning"><i class="bi bi-calculator me-2"></i> Escalation Economics Takeaway</h5>
+                <p class="mb-0">A cheap model call ($0.03) that fails and escalates to a fallback model ($0.09) costs <strong>$0.12 total</strong>. Starting with an evidence-backed model avoids wasted attempts and reduces total cost per completed task!</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        const strategies = [
+            { name: "Cheapest Everywhere", model: "claude-3-5-haiku", id: "cheapest" },
+            { name: "Strongest Everywhere", model: "claude-3-opus", id: "strongest" },
+            { name: "Evidence-Driven Routing", model: "Policy Derived", id: "evidence" }
+        ];
+
+        function buildComparisonTable() {
+            const tbody = document.getElementById("comparison_table_body");
+            let html = "";
+            strategies.forEach((s, idx) => {
+                const idPrefix = `l3_s${idx + 1}`;
+                html += `
+                    <tr>
+                        <td class="text-start"><strong>${s.name}</strong></td>
+                        <td><code>${s.model}</code></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_success" placeholder="4/4" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_cost" placeholder="e.g. $0.045" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_cps" placeholder="e.g. $0.011" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_lat" placeholder="e.g. 45s" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_esc" placeholder="e.g. 1" oninput="saveData()"></td>
+                        <td>
+                            <select class="table-input text-center" id="${idPrefix}_bar" onchange="saveData()">
+                                <option value="">PASS / FAIL</option>
+                                <option value="PASS">PASS</option>
+                                <option value="FAIL">FAIL</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function saveData() {
+            for(let i=1; i<=3; i++) {
+                ['success', 'cost', 'cps', 'lat', 'esc', 'bar'].forEach(k => {
+                    const id = `l3_s${i}_${k}`;
+                    const el = document.getElementById(id);
+                    if(el) localStorage.setItem(id, el.value);
+                });
+            }
+        }
+
+        function loadData() {
+            buildComparisonTable();
+            for(let i=1; i<=3; i++) {
+                ['success', 'cost', 'cps', 'lat', 'esc', 'bar'].forEach(k => {
+                    const id = `l3_s${i}_${k}`;
+                    const val = localStorage.getItem(id);
+                    const el = document.getElementById(id);
+                    if(val && el) el.value = val;
+                });
+            }
+        }
+
+        function downloadComparisonCSV() {
+            let csvContent = "Routing Strategy,Primary Model,Successful Tasks,Total Cost ($),Cost / Success ($),Total Latency,Escalations,Quality Bar\n";
+            strategies.forEach((s, idx) => {
+                const prefix = `l3_s${idx + 1}`;
+                const success = (document.getElementById(prefix + "_success")?.value || "").replace(/"/g, '""');
+                const cost = (document.getElementById(prefix + "_cost")?.value || "").replace(/"/g, '""');
+                const cps = (document.getElementById(prefix + "_cps")?.value || "").replace(/"/g, '""');
+                const lat = (document.getElementById(prefix + "_lat")?.value || "").replace(/"/g, '""');
+                const esc = (document.getElementById(prefix + "_esc")?.value || "").replace(/"/g, '""');
+                const bar = (document.getElementById(prefix + "_bar")?.value || "").replace(/"/g, '""');
+                csvContent += `"${s.name}","${s.model}","${success}","${cost}","${cps}","${lat}","${esc}","${bar}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'lab3_strategy_comparison_results.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
