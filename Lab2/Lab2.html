@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 2 — Benchmark Models Across Engineering Tasks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .nav-tabs-custom {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-tabs-custom .nav-link {
+            color: var(--text-muted);
+            border: none;
+            padding: 8px 16px;
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            color: var(--accent-color);
+            background: none;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .table-input {
+            background-color: #0d1117;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 4px 8px;
+            width: 100%;
+        }
+
+        .table-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 2 Walkthrough</h5>
+            <small class="text-muted">Workload Benchmarking</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#loop"><i class="bi bi-arrow-repeat"></i> Execution Loop</a></li>
+            <li class="nav-item"><a class="nav-link" href="#task1"><i class="bi bi-tools"></i> 1. Feature Implementation</a></li>
+            <li class="nav-item"><a class="nav-link" href="#task2"><i class="bi bi-code-square"></i> 2. Refactoring</a></li>
+            <li class="nav-item"><a class="nav-link" href="#task3"><i class="bi bi-bug"></i> 3. Debugging</a></li>
+            <li class="nav-item"><a class="nav-link" href="#task4"><i class="bi bi-shield-check"></i> 4. Test Generation</a></li>
+            <li class="nav-item"><a class="nav-link" href="#table"><i class="bi bi-table"></i> Benchmark Table</a></li>
+            <li class="nav-item"><a class="nav-link" href="#matrix"><i class="bi bi-diagram-3"></i> Capability Matrix</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 2</span>
+                    <h1 class="text-white mt-2 mb-1">Benchmark Models Across Engineering Tasks</h1>
+                    <p class="text-white mb-0">Workload-Specific Model Evaluation on <code>order_flow_service</code></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview & Goal -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Answer the core engineering decision question: <strong>Does a model that excels at feature implementation also perform well at refactoring, debugging, and testing?</strong></p>
+            
+            <div class="p-3 bg-dark border border-secondary rounded text-center my-3">
+                <span class="text-info fw-bold">Four Realistic Engineering Workloads</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-primary fw-bold">Implementation | Refactoring | Debugging | Testing</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-warning fw-bold">Deterministic Instructor Evaluation Suites</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-success fw-bold fs-5">EVIDENCE-BASED WORKLOAD ROUTING</span>
+            </div>
+        </div>
+
+        <!-- Execution Loop -->
+        <div class="lab-card" id="loop">
+            <h2><i class="bi bi-arrow-repeat text-primary me-2"></i> Execution Loop For Each Model &amp; Task</h2>
+            <div class="callout callout-warning">
+                <h5 class="text-warning mb-3"><i class="bi bi-arrow-repeat me-2"></i> Standard 4-Step Loop</h5>
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-warning text-dark mb-2">Step 1</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-play-circle-fill me-1 text-warning"></i> Run Model</h6>
+                            <p class="small text-white mb-0">Run <code>opencode</code> with <code>--format json</code>. Parse metrics with <code>metrics_helper.py</code>.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-primary mb-2">Step 2</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-check-circle-fill me-1 text-info"></i> Evaluate</h6>
+                            <p class="small text-white mb-0">Run task's instructor evaluation test suite.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-success mb-2">Step 3</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-journal-check me-1 text-success"></i> Record</h6>
+                            <p class="small text-white mb-0">Record Pass Rate, Latency, Cost, and LLM Steps.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                            <span class="badge bg-danger mb-2">Step 4</span>
+                            <h6 class="text-white mb-1"><i class="bi bi-arrow-counterclockwise me-1 text-danger"></i> Reset</h6>
+                            <p class="small text-white mb-0">Run <code>.\reset.ps1</code> or <code>./reset.sh</code> before next run.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task 1: Feature Implementation -->
+        <div class="lab-card" id="task1">
+            <h2><i class="bi bi-1-circle-fill text-primary me-2"></i> Workload 1 — Feature Implementation</h2>
+            <p><strong>Requirement:</strong> Implement order cancellation and inventory stock restoration (`cancel_order` &amp; `POST /orders/{id}/cancel`).</p>
+            
+              <div class="code-container">
+                <div class="code-header"><span>Go to Lab2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>cd Lab2</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Run Implementation Task using claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/implementation/TASK.md)" > run1.jsonl;</pre>
+            </div>
+
+
+              <div class="code-container">
+                <div class="code-header"><span>Check and Record Metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                <pre>python metrics_helper.py claude-3-5-sonnet run1.jsonl</pre>
+            </div>
+            <div class="code-container">
+                <div class="code-header"><span>Instructor Evaluation — Task 1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>pytest instructor_tests/test_implementation_acceptance.py -v</pre>
+            </div>
+            </div>
+
+        <!-- Task 2: Refactoring -->
+        <div class="lab-card" id="task2">
+            <h2><i class="bi bi-2-circle-fill text-primary me-2"></i> Workload 2 — Refactoring</h2>
+            <p><strong>Requirement:</strong> Refactor `src/services/order_service.py` to improve readability and maintainability while preserving public API contracts.</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>Command — Task 2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/refactoring/TASK.md)" > run2.jsonl; python metrics_helper.py claude-3-5-sonnet run2.jsonl</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Instructor Evaluation — Task 2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>pytest instructor_tests/test_refactoring_regression.py -v</pre>
+            </div>
+        </div>
+
+        <!-- Task 3: Debugging -->
+        <div class="lab-card" id="task3">
+            <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Workload 3 — Debugging</h2>
+            <p><strong>Requirement:</strong> Diagnose and fix incident INC-8821 (inventory stock leak during multi-item order reservation failure).</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>Command — Task 3</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/debugging/TASK.md)" > run3.jsonl; python metrics_helper.py claude-3-5-sonnet run3.jsonl</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Instructor Evaluation — Task 3</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>pytest instructor_tests/test_debugging_acceptance.py -v</pre>
+            </div>
+        </div>
+
+        <!-- Task 4: Test Generation -->
+        <div class="lab-card" id="task4">
+            <h2><i class="bi bi-4-circle-fill text-primary me-2"></i> Workload 4 — Test Generation</h2>
+            <p><strong>Requirement:</strong> Generate an automated test suite for `InventoryService` in `tests/test_inventory_generated.py`. Evaluated via hidden mutation testing.</p>
+
+            <div class="code-container">
+                <div class="code-header"><span>Command — Task 4</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/testing/TASK.md)" > run4.jsonl; python metrics_helper.py claude-3-5-sonnet run4.jsonl</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Instructor Mutation Evaluator — Task 4</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>python instructor_tests/testing_eval/evaluator.py</pre>
+            </div>
+        </div>
+
+        <!-- Benchmark Table -->
+        <div class="lab-card" id="table">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <h2><i class="bi bi-table text-primary me-2"></i> Complete Benchmarking Table</h2>
+                <button class="btn btn-outline-success btn-sm" onclick="downloadBenchmarkCSV()"><i class="bi bi-download me-1"></i> Download Benchmark CSV</button>
+            </div>
+            <p>Record observed benchmark metrics across 3 runs per Model × Task combination:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th>Workload Task</th>
+                            <th>Model</th>
+                            <th>Pass Rate</th>
+                            <th>Avg Latency</th>
+                            <th>Avg Cost</th>
+                            <th>Avg LLM Steps</th>
+                            <th>Meets Quality Bar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmark_table_body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Capability Matrix -->
+        <div class="lab-card" id="matrix">
+            <h2><i class="bi bi-diagram-3 text-primary me-2"></i> Workload Capability Matrix</h2>
+            <p>Select the optimal model for each engineering workload based on empirical evidence:</p>
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Engineering Workload</th>
+                            <th>Models Meeting Quality Bar</th>
+                            <th>Selected Model</th>
+                            <th>Selection Rationale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Feature Implementation</strong></td>
+                            <td><input type="text" class="table-input" id="mat_imp_qual" placeholder="e.g. Sonnet, Opus"></td>
+                            <td><input type="text" class="table-input" id="mat_imp_sel" placeholder="e.g. Sonnet"></td>
+                            <td><input type="text" class="table-input" id="mat_imp_rat" placeholder="Rationale..."></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Refactoring</strong></td>
+                            <td><input type="text" class="table-input" id="mat_ref_qual" placeholder="e.g. Haiku, Sonnet"></td>
+                            <td><input type="text" class="table-input" id="mat_ref_sel" placeholder="e.g. Haiku"></td>
+                            <td><input type="text" class="table-input" id="mat_ref_rat" placeholder="Rationale..."></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Debugging</strong></td>
+                            <td><input type="text" class="table-input" id="mat_dbg_qual" placeholder="e.g. Sonnet, Opus"></td>
+                            <td><input type="text" class="table-input" id="mat_dbg_sel" placeholder="e.g. Sonnet"></td>
+                            <td><input type="text" class="table-input" id="mat_dbg_rat" placeholder="Rationale..."></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Test Generation</strong></td>
+                            <td><input type="text" class="table-input" id="mat_tst_qual" placeholder="e.g. Haiku, Sonnet"></td>
+                            <td><input type="text" class="table-input" id="mat_tst_sel" placeholder="e.g. Haiku"></td>
+                            <td><input type="text" class="table-input" id="mat_tst_rat" placeholder="Rationale..."></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-success">
+                <h5 class="text-success"><i class="bi bi-flag-fill me-2"></i> Final Pedagogical Takeaway</h5>
+                <blockquote class="blockquote text-white fs-5 my-2">
+                    "Do not choose the most capable model for every workload. Choose the least expensive model that reliably meets the quality bar for that specific engineering task."
+                </blockquote>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        const tasks = ["Implementation", "Refactoring", "Debugging", "Testing"];
+        const models = ["Claude 3.5 Haiku", "Claude 3.5 Sonnet", "Claude 3 Opus"];
+
+        function buildTable() {
+            const tbody = document.getElementById("benchmark_table_body");
+            let html = "";
+            let idx = 0;
+            tasks.forEach(t => {
+                models.forEach(m => {
+                    idx++;
+                    const idPrefix = `l2_r${idx}`;
+                    html += `
+                        <tr>
+                            <td class="text-start"><strong>${t}</strong></td>
+                            <td><code>${m}</code></td>
+                            <td><input type="text" class="table-input text-center" id="${idPrefix}_pass" placeholder="3/3" oninput="saveData()"></td>
+                            <td><input type="text" class="table-input text-center" id="${idPrefix}_lat" placeholder="e.g. 14s" oninput="saveData()"></td>
+                            <td><input type="text" class="table-input text-center" id="${idPrefix}_cost" placeholder="e.g. $0.004" oninput="saveData()"></td>
+                            <td><input type="text" class="table-input text-center" id="${idPrefix}_steps" placeholder="e.g. 3" oninput="saveData()"></td>
+                            <td>
+                                <select class="table-input text-center" id="${idPrefix}_bar" onchange="saveData()">
+                                    <option value="">PASS / FAIL</option>
+                                    <option value="PASS">PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+            tbody.innerHTML = html;
+        }
+
+        function saveData() {
+            for(let i=1; i<=12; i++) {
+                ['pass', 'lat', 'cost', 'steps', 'bar'].forEach(k => {
+                    const id = `l2_r${i}_${k}`;
+                    const el = document.getElementById(id);
+                    if(el) localStorage.setItem(id, el.value);
+                });
+            }
+            ['mat_imp_qual','mat_imp_sel','mat_imp_rat','mat_ref_qual','mat_ref_sel','mat_ref_rat','mat_dbg_qual','mat_dbg_sel','mat_dbg_rat','mat_tst_qual','mat_tst_sel','mat_tst_rat'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) localStorage.setItem(id, el.value);
+            });
+        }
+
+        function loadData() {
+            buildTable();
+            for(let i=1; i<=12; i++) {
+                ['pass', 'lat', 'cost', 'steps', 'bar'].forEach(k => {
+                    const id = `l2_r${i}_${k}`;
+                    const val = localStorage.getItem(id);
+                    const el = document.getElementById(id);
+                    if(val && el) el.value = val;
+                });
+            }
+            ['mat_imp_qual','mat_imp_sel','mat_imp_rat','mat_ref_qual','mat_ref_sel','mat_ref_rat','mat_dbg_qual','mat_dbg_sel','mat_dbg_rat','mat_tst_qual','mat_tst_sel','mat_tst_rat'].forEach(id => {
+                const val = localStorage.getItem(id);
+                const el = document.getElementById(id);
+                if(val && el) el.value = val;
+            });
+        }
+
+        function downloadBenchmarkCSV() {
+            let csvContent = "Workload Task,Model,Pass Rate,Avg Latency,Avg Cost,Avg LLM Steps,Meets Quality Bar\n";
+            let idx = 0;
+            tasks.forEach(t => {
+                models.forEach(m => {
+                    idx++;
+                    const prefix = `l2_r${idx}`;
+                    const pass = (document.getElementById(prefix + "_pass")?.value || "").replace(/"/g, '""');
+                    const lat = (document.getElementById(prefix + "_lat")?.value || "").replace(/"/g, '""');
+                    const cost = (document.getElementById(prefix + "_cost")?.value || "").replace(/"/g, '""');
+                    const steps = (document.getElementById(prefix + "_steps")?.value || "").replace(/"/g, '""');
+                    const bar = (document.getElementById(prefix + "_bar")?.value || "").replace(/"/g, '""');
+                    csvContent += `"${t}","${m}","${pass}","${lat}","${cost}","${steps}","${bar}"\n`;
+                });
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'lab2_benchmark_results.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
