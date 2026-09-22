@@ -409,13 +409,29 @@ export AWS_REGION=us-east-1</pre>
             <p><strong>Requirement:</strong> Generate an automated test suite for `InventoryService` in `tests/test_inventory_generated.py`. Evaluated via hidden mutation testing.</p>
 
             <div class="code-container">
-                <div class="code-header"><span>Command — Task 4</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/testing/TASK.md)" > run4.jsonl; python metrics_helper.py claude-3-5-sonnet run4.jsonl</pre>
+                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>benchmark/testing/Task.md</pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header"><span>Run testing task against claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/testing/TASK.md)" > runs/testing-claude-3-5-sonnet.jsonl</pre>
+            </div>
+
+              <div class="code-container">
+                <div class="code-header"><span>Run testing task against claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>python metrics_helper.py claude-3-5-sonnet runs/testing-claude-3-5-sonnet.jsonl</pre>
             </div>
 
             <div class="code-container">
                 <div class="code-header"><span>Instructor Mutation Evaluator — Task 4</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>python instructor_tests/testing_eval/evaluator.py</pre>
+                <pre>python acceptance_tests/testing_eval/evaluator.py</pre>
+            </div>
+
+            
+            <div class="code-container">
+                <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>bash reset.sh</pre>
             </div>
         </div>
 
