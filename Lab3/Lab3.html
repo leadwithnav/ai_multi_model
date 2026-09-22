@@ -251,6 +251,32 @@
             </div>
         </div>
 
+                <div class="lab-card" id="step3-models">
+            <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Step 1 — Set your AWS Configuration</h2>
+
+
+            <ul class="nav nav-tabs nav-tabs-custom mb-3" id="envTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#env-win"><i class="bi bi-windows"></i> Windows PowerShell</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#env-nix"><i class="bi bi-terminal"></i> macOS / Linux</button></li>
+            </ul>
+            <div class="tab-content mb-3">
+                <div class="tab-pane fade show active" id="env-win">
+                    <div class="code-container">
+                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>$env:AWS_PROFILE="order-flow-course"
+$env:AWS_REGION="us-east-1"</pre>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="env-nix">
+                    <div class="code-container">
+                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>export AWS_PROFILE=order-flow-course
+export AWS_REGION=us-east-1</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Target Architecture -->
         <div class="lab-card" id="arch">
             <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Target Architecture</h2>
@@ -290,9 +316,8 @@
 
         <!-- Routing Policy -->
         <div class="lab-card" id="policy">
-            <h2><i class="bi bi-file-earmark-code text-info me-2"></i> Benchmark Routing Policy</h2>
-            <p>Stored in <code>routing_policy.yaml</code> derived from Lab 2 empirical evidence:</p>
-
+            <h2><i class="bi bi-file-earmark-code text-info me-2"></i> Benchmark Routing Policy </h2>
+            <p>Complete <code>routing_policy.yaml</code> based on your benchmarks done in Lab 2</p>
             <div class="code-container">
                 <div class="code-header"><span>routing_policy.yaml</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                 <pre>max_attempts: 2

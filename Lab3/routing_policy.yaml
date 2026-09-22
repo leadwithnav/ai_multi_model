@@ -7,18 +7,19 @@
 max_attempts: 2
 
 routing_policy:
+
   implementation:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking
-    
+    primary: claude-3-5-haiku
+    fallback: claude-3-5-sonnet
+
   refactoring:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking
+    primary: claude-3-5-sonnet
+    fallback: claude-3-opus
 
   debugging:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking
+    primary: claude-3-5-sonnet
+    fallback: claude-3-opus
 
   testing:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking
+    primary: claude-3-5-haiku
+    fallback: claude-3-5-sonnet
