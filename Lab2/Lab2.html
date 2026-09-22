@@ -295,7 +295,7 @@ export AWS_REGION=us-east-1</pre>
                         <div class="p-3 bg-dark border border-secondary rounded h-100">
                             <span class="badge bg-danger mb-2">Step 4</span>
                             <h6 class="text-white mb-1"><i class="bi bi-arrow-counterclockwise me-1 text-danger"></i> Reset</h6>
-                            <p class="small text-white mb-0">Run <code>.\reset.ps1</code> or <code>./reset.sh</code> before next run.</p>
+                            <p class="small text-white mb-0">Run <code>bash reset.sh</code> before next run.</p>
                         </div>
                     </div>
                 </div>
@@ -334,7 +334,7 @@ export AWS_REGION=us-east-1</pre>
             </div>
             <div class="code-container">
                 <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>../reset.sh</pre>
+                <pre>bash reset.sh</pre>
             </div>
 
             </div>
@@ -351,7 +351,7 @@ export AWS_REGION=us-east-1</pre>
 
             <div class="code-container">
                 <div class="code-header"><span>Run Refactoring task aganist claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/refactoring/TASK.md)" > run/refactor-claude-3-5-sonnet.jsonl</pre>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/refactoring/TASK.md)" > runs/refactor-claude-3-5-sonnet.jsonl</pre>
             </div>
 
             
@@ -362,12 +362,12 @@ export AWS_REGION=us-east-1</pre>
 
             <div class="code-container">
                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>pytest instructor_tests/test_refactoring_regression.py -v</pre>
+                <pre>pytest acceptance_tests/test_refactoring_regression.py -v</pre>
             </div>
 
               <div class="code-container">
                 <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>../reset.sh</pre>
+                <pre>bash reset.sh</pre>
             </div>
 
         </div>
