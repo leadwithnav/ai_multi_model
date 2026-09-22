@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 4 — Reasoning Effort Benchmarking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .callout-purple {
+            border-left-color: var(--accent-purple);
+            background-color: rgba(137, 87, 229, 0.08);
+        }
+
+        .table-input {
+            background-color: #0d1117;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 6px 10px;
+            width: 100%;
+        }
+
+        .table-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+            font-weight: 600;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .accordion-item {
+            background-color: transparent;
+            border: none;
+            margin-bottom: 16px;
+        }
+
+        .accordion-body {
+            background-color: #11161d;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 20px;
+        }
+
+        .step-badge {
+            background-color: #21262d;
+            color: var(--accent-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 4 Walkthrough</h5>
+            <small class="text-muted">Reasoning Effort Analysis</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#agents"><i class="bi bi-robot"></i> Reasoning Agents</a></li>
+            <li class="nav-item"><a class="nav-link" href="#task-def"><i class="bi bi-file-earmark-text"></i> Task Requirement</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenarios"><i class="bi bi-diagram-3"></i> Execution Scenarios</a></li>
+            <li class="nav-item"><a class="nav-link" href="#benchmark"><i class="bi bi-table"></i> Benchmark Table</a></li>
+            <li class="nav-item"><a class="nav-link" href="#takeaways"><i class="bi bi-lightbulb"></i> Key Takeaways</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 4</span>
+                    <h1 class="text-white mt-2 mb-1">Reasoning Effort Benchmarking</h1>
+                    <p class="text-white mb-0">Evaluate the Impact of Reasoning Effort (None, Low, Medium, High) on Task Success, Latency, and Cost</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview & Goal -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Overview &amp; Goal</h2>
+            <p class="fs-5 text-white">In this lab, you will benchmark how different reasoning effort levels (<strong>none</strong>, <strong>low</strong>, <strong>medium</strong>, and <strong>high</strong>) impact agent performance on a single production engineering task.</p>
+            
+            <div class="p-3 bg-dark border border-secondary rounded text-center my-3">
+                <span class="text-info fw-bold">Single Task: Production Incident — Payment Retry</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-primary fw-bold">4 Reasoning Agents (.opencode/agent/)</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-warning fw-bold">OpenCode Execution &amp; JSONL Metrics Extraction</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-danger fw-bold">Deterministic Pytest Instructor Evaluation</span>
+                <br><i class="bi bi-arrow-down fs-4 text-muted my-1"></i><br>
+                <span class="text-success fw-bold fs-5">BENCHMARK TABLE &amp; TRADE-OFF ANALYSIS</span>
+            </div>
+
+            <div class="callout callout-purple">
+                <h5 class="text-white"><i class="bi bi-cpu-fill me-2"></i> Why Benchmark Reasoning Effort?</h5>
+                <p class="mb-0 text-white">Reasoning models allocate extra internal processing tokens (reasoning tokens) before generating final code answers. While higher reasoning can solve complex logic problems, it increases latency and cost. Benchmarking helps you select the minimum effective reasoning effort level for a given engineering workload.</p>
+            </div>
+        </div>
+
+        <!-- Reasoning Agents -->
+        <div class="lab-card" id="agents">
+            <h2><i class="bi bi-robot text-info me-2"></i> Reasoning Agents (.opencode/agent)</h2>
+            <p>Lab 4 defines 4 distinct agents configured with different reasoning effort options in <code>.opencode/agent/</code>:</p>
+            
+            <div class="row g-3 my-2">
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-secondary mb-2">effort-none</span>
+                        <h6 class="text-white">No Reasoning</h6>
+                        <small class="text-white"><code>reasoning_effort: none</code><br>Standard direct execution with zero reasoning token budget.</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-info text-dark mb-2">effort-low</span>
+                        <h6 class="text-white">Low Reasoning</h6>
+                        <small class="text-white"><code>reasoning_effort: low</code><br>Light reasoning pass for simple context inspection and fix planning.</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-warning text-dark mb-2">effort-medium</span>
+                        <h6 class="text-white">Medium Reasoning</h6>
+                        <small class="text-white"><code>reasoning_effort: medium</code><br>Moderate reasoning budget for multi-step logic analysis.</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-dark border border-secondary rounded h-100">
+                        <span class="badge bg-danger mb-2">effort-high</span>
+                        <h6 class="text-white">High Reasoning</h6>
+                        <small class="text-white"><code>reasoning_effort: high</code><br>Maximum reasoning allocation for deep code investigation &amp; verification.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Definition -->
+        <div class="lab-card" id="task-def">
+            <h2><i class="bi bi-file-earmark-text-fill text-primary me-2"></i> Single Task Definition (tasks/TASK.md)</h2>
+            <p>Each agent is given the exact same engineering request:</p>
+            <div class="code-container">
+                <div class="code-header"><span>tasks/TASK.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre># Production Incident — Payment Retry
+
+Production monitoring has detected requests that remain active for
+an unexpectedly long time when the external payment provider is
+unavailable.
+
+Investigate the payment processing implementation and fix the issue.
+
+Requirements:
+- Failed payment requests must not retry indefinitely.
+- Temporary failures may be retried.
+- Retry behavior must have a clear upper bound.
+- Existing public interfaces must remain unchanged.
+- Do not modify unrelated functionality.
+
+Target area:
+src/services/payment_gateway.py</pre>
+            </div>
+        </div>
+
+               <div class="lab-card" id="step3-models">
+            <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Step 1 — Set your AWS Configuration</h2>
+
+
+            <ul class="nav nav-tabs nav-tabs-custom mb-3" id="envTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#env-win"><i class="bi bi-windows"></i> Windows PowerShell</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#env-nix"><i class="bi bi-terminal"></i> macOS / Linux</button></li>
+            </ul>
+            <div class="tab-content mb-3">
+                <div class="tab-pane fade show active" id="env-win">
+                    <div class="code-container">
+                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>$env:AWS_PROFILE="order-flow-course"
+$env:AWS_REGION="us-east-1"</pre>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="env-nix">
+                    <div class="code-container">
+                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>export AWS_PROFILE=order-flow-course
+export AWS_REGION=us-east-1</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Collapsible Scenarios -->
+        <div class="lab-card" id="scenarios">
+            <h2><i class="bi bi-diagram-3-fill text-warning me-2"></i> Execution Scenarios</h2>
+            <p>Expand each scenario below to execute the task with the corresponding reasoning agent, extract metrics, run acceptance tests, and reset the environment.</p>
+
+            <div class="accordion" id="scenarioAccordion">
+
+                <!-- Scenario 1: No Reasoning -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <i class="bi bi-1-circle-fill text-secondary me-2"></i> Scenario 1 — No Reasoning (effort-none)
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab4 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab4</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Check Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>tasks\TASK.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Implementation Task using No Reasoning Agent</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent effort-none --format json "$(cat tasks/TASK.md)" > runs/effort-none.jsonl;</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python metrics_helper.py effort-none runs/effort-none.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">5</span><strong>Instructor Evaluation — Task 1</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Pytest</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>pytest acceptance_tests/test.py -v</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">6</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 2: Low Reasoning -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <i class="bi bi-2-circle-fill text-info me-2"></i> Scenario 2 — Low Reasoning (effort-low)
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab4 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab4</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Check Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>tasks\TASK.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Implementation Task using Low Reasoning Agent</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent effort-low --format json "$(cat tasks/TASK.md)" > runs/effort-low.jsonl;</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python metrics_helper.py effort-low runs/effort-low.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">5</span><strong>Instructor Evaluation — Task 1</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Pytest</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>pytest acceptance_tests/test.py -v</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">6</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 3: Medium Reasoning -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            <i class="bi bi-3-circle-fill text-warning me-2"></i> Scenario 3 — Medium Reasoning (effort-medium)
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab4 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab4</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Check Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>tasks\TASK.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Implementation Task using Medium Reasoning Agent</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent effort-medium --format json "$(cat tasks/TASK.md)" > runs/effort-medium.jsonl;</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python metrics_helper.py effort-medium runs/effort-medium.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">5</span><strong>Instructor Evaluation — Task 1</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Pytest</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>pytest acceptance_tests/test.py -v</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">6</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 4: High Reasoning -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            <i class="bi bi-4-circle-fill text-danger me-2"></i> Scenario 4 — High Reasoning (effort-high)
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab4 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab4</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Check Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>tasks\TASK.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Implementation Task using High Reasoning Agent</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent effort-high --format json "$(cat tasks/TASK.md)" > runs/effort-high.jsonl;</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python metrics_helper.py effort-high runs/effort-high.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">5</span><strong>Instructor Evaluation — Task 1</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Pytest</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>pytest acceptance_tests/test.py -v</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">6</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Benchmark Table -->
+        <div class="lab-card" id="benchmark">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h2><i class="bi bi-table text-success me-2"></i> Reasoning Benchmark Table</h2>
+                    <p class="text-white mb-0">Record metrics extracted from <code>metrics_helper.py</code> and pytest evaluation results.</p>
+                </div>
+                <button class="btn btn-outline-success btn-sm mt-2 mt-md-0" onclick="downloadBenchmarkCSV()">
+                    <i class="bi bi-download me-1"></i> Export Benchmark CSV
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered align-middle text-center mb-0">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-start">Scenario / Agent</th>
+                            <th>Reasoning Level</th>
+                            <th style="width: 14%;">Latency (s)</th>
+                            <th style="width: 14%;">Total Cost ($)</th>
+                            <th style="width: 14%;">LLM Calls / Steps</th>
+                            <th style="width: 18%;">Reasoning Cost / Tokens</th>
+                            <th style="width: 15%;">Pass / Fail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmark_table_body">
+                        <!-- Rows rendered via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-text text-muted mt-2">
+                <i class="bi bi-info-circle me-1"></i> All inputs automatically save to your browser's local storage.
+            </div>
+        </div>
+
+        <!-- Key Takeaways -->
+        <div class="lab-card" id="takeaways">
+            <h2><i class="bi bi-lightbulb-fill text-warning me-2"></i> Key Takeaways &amp; Engineering Guidance</h2>
+            <ul class="mb-0">
+                <li class="mb-2"><strong>Reasoning vs Latency:</strong> Higher reasoning effort levels (medium/high) increase response latency as the model conducts deeper tree-of-thought analysis.</li>
+                <li class="mb-2"><strong>Reasoning Token Overhead:</strong> Reasoning tokens add extra cost to the total request bill. Match reasoning effort to problem complexity to avoid overspending on simple tasks.</li>
+                <li class="mb-2"><strong>Quality Thresholds:</strong> Low reasoning may be sufficient for standard syntax or boilerplate tasks, while complex architectural or edge-case bug fixes often require medium or high reasoning to pass deterministic tests on the first try.</li>
+                <li><strong>Optimal Routing:</strong> Use evidence from this benchmark table to set default reasoning effort parameters in your model routing policies.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        const scenarios = [
+            { name: "Scenario 1 — No Reasoning", agent: "effort-none", level: "None" },
+            { name: "Scenario 2 — Low Reasoning", agent: "effort-low", level: "Low" },
+            { name: "Scenario 3 — Medium Reasoning", agent: "effort-medium", level: "Medium" },
+            { name: "Scenario 4 — High Reasoning", agent: "effort-high", level: "High" }
+        ];
+
+        function buildBenchmarkTable() {
+            const tbody = document.getElementById("benchmark_table_body");
+            let html = "";
+            scenarios.forEach((s, idx) => {
+                const idPrefix = `l4_s${idx + 1}`;
+                html += `
+                    <tr>
+                        <td class="text-start">
+                            <strong>${s.name}</strong><br>
+                            <small class="text-muted"><code>${s.agent}</code></small>
+                        </td>
+                        <td><span class="badge bg-secondary">${s.level}</span></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_lat" placeholder="e.g. 12.4s" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_cost" placeholder="e.g. $0.0045" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_calls" placeholder="e.g. 3" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${idPrefix}_rcost" placeholder="e.g. 0 tokens / $0" oninput="saveData()"></td>
+                        <td>
+                            <select class="table-input text-center" id="${idPrefix}_pass" onchange="saveData()">
+                                <option value="">PASS / FAIL</option>
+                                <option value="PASS">PASS</option>
+                                <option value="FAIL">FAIL</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function saveData() {
+            for (let i = 1; i <= 4; i++) {
+                ['lat', 'cost', 'calls', 'rcost', 'pass'].forEach(k => {
+                    const id = `l4_s${i}_${k}`;
+                    const el = document.getElementById(id);
+                    if (el) localStorage.setItem(id, el.value);
+                });
+            }
+        }
+
+        function loadData() {
+            buildBenchmarkTable();
+            for (let i = 1; i <= 4; i++) {
+                ['lat', 'cost', 'calls', 'rcost', 'pass'].forEach(k => {
+                    const id = `l4_s${i}_${k}`;
+                    const val = localStorage.getItem(id);
+                    const el = document.getElementById(id);
+                    if (val && el) el.value = val;
+                });
+            }
+        }
+
+        function downloadBenchmarkCSV() {
+            let csvContent = "Scenario,Agent,Reasoning Effort Level,Latency (s),Total Cost ($),LLM Calls/Steps,Reasoning Cost/Tokens,Pass/Fail\n";
+            scenarios.forEach((s, idx) => {
+                const prefix = `l4_s${idx + 1}`;
+                const lat = (document.getElementById(prefix + "_lat")?.value || "").replace(/"/g, '""');
+                const cost = (document.getElementById(prefix + "_cost")?.value || "").replace(/"/g, '""');
+                const calls = (document.getElementById(prefix + "_calls")?.value || "").replace(/"/g, '""');
+                const rcost = (document.getElementById(prefix + "_rcost")?.value || "").replace(/"/g, '""');
+                const pass = (document.getElementById(prefix + "_pass")?.value || "").replace(/"/g, '""');
+                csvContent += `"${s.name}","${s.agent}","${s.level}","${lat}","${cost}","${calls}","${rcost}","${pass}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'lab4_reasoning_benchmark_results.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
