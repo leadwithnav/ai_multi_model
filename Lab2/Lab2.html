@@ -222,6 +222,32 @@
             </div>
         </div>
 
+        <div class="lab-card" id="step3-models">
+            <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Step 1 — Set your AWS Configuration</h2>
+
+
+            <ul class="nav nav-tabs nav-tabs-custom mb-3" id="envTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#env-win"><i class="bi bi-windows"></i> Windows PowerShell</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#env-nix"><i class="bi bi-terminal"></i> macOS / Linux</button></li>
+            </ul>
+            <div class="tab-content mb-3">
+                <div class="tab-pane fade show active" id="env-win">
+                    <div class="code-container">
+                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>$env:AWS_PROFILE="order-flow-course"
+$env:AWS_REGION="us-east-1"</pre>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="env-nix">
+                    <div class="code-container">
+                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>export AWS_PROFILE=order-flow-course
+export AWS_REGION=us-east-1</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Overview & Goal -->
         <div class="lab-card" id="overview">
             <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
@@ -281,25 +307,36 @@
             <h2><i class="bi bi-1-circle-fill text-primary me-2"></i> Workload 1 — Feature Implementation</h2>
             <p><strong>Requirement:</strong> Implement order cancellation and inventory stock restoration (`cancel_order` &amp; `POST /orders/{id}/cancel`).</p>
             
-              <div class="code-container">
+
+            <div class="code-container">
                 <div class="code-header"><span>Go to Lab2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                 <pre>cd Lab2</pre>
             </div>
 
             <div class="code-container">
+                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>benchmark\implementation\TASK.md</pre>
+            </div>
+
+            <div class="code-container">
                 <div class="code-header"><span>Run Implementation Task using claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/implementation/TASK.md)" > run1.jsonl;</pre>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/implementation/TASK.md)" > runs/implementation-claude-3-5-sonnet.jsonl;</pre>
             </div>
 
 
               <div class="code-container">
                 <div class="code-header"><span>Check and Record Metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                <pre>python metrics_helper.py claude-3-5-sonnet run1.jsonl</pre>
+                <pre>python metrics_helper.py claude-3-5-sonnet runs/implementation-claude-3-5-sonnet.jsonl</pre>
             </div>
             <div class="code-container">
                 <div class="code-header"><span>Instructor Evaluation — Task 1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>pytest instructor_tests/test_implementation_acceptance.py -v</pre>
+                <pre>pytest acceptance_tests/test_implementation_acceptance.py -v</pre>
             </div>
+            <div class="code-container">
+                <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>../reset.sh</pre>
+            </div>
+
             </div>
 
         <!-- Task 2: Refactoring -->
@@ -308,14 +345,31 @@
             <p><strong>Requirement:</strong> Refactor `src/services/order_service.py` to improve readability and maintainability while preserving public API contracts.</p>
 
             <div class="code-container">
+                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>benchmark\refactoring\TASK.md</pre>
+            </div>
+
+            <div class="code-container">
                 <div class="code-header"><span>Command — Task 2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/refactoring/TASK.md)" > run2.jsonl; python metrics_helper.py claude-3-5-sonnet run2.jsonl</pre>
+                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/refactoring/TASK.md)" > run/refactor-claude-3-5-sonnet.jsonl</pre>
+            </div>
+
+            
+              <div class="code-container">
+                <div class="code-header"><span>Check and Record Metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                <pre>python metrics_helper.py claude-3-5-sonnet runs/refactor-claude-3-5-sonnet.jsonl</pre>
             </div>
 
             <div class="code-container">
                 <div class="code-header"><span>Instructor Evaluation — Task 2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                 <pre>pytest instructor_tests/test_refactoring_regression.py -v</pre>
             </div>
+
+              <div class="code-container">
+                <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>../reset.sh</pre>
+            </div>
+            
         </div>
 
         <!-- Task 3: Debugging -->
