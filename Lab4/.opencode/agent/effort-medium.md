@@ -1,5 +1,5 @@
 ---
-description: Solve engineering task with reasoning effort none
+description: Solve engineering task with reasoning effort medium
 mode: primary
 model: amazon-bedrock/us.openai.gpt-5.6-sol
 reasoningEffort: medium
