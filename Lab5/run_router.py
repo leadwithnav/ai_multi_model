@@ -48,12 +48,10 @@ WORKSPACE_ROOT = LAB_DIR.parent
 
 SERVICE_ROOT = WORKSPACE_ROOT / "order_flow_service"
 
-# Hidden acceptance tests should ideally be outside the
-# coding-agent-visible workspace.
-HIDDEN_TEST_ROOT = (
-    WORKSPACE_ROOT
-    / "hidden_eval"
-    / "Lab4"
+
+ACCEPTANCE_TEST_ROOT = (
+    LAB_DIR
+    / "acceptance_tests"
 )
 
 POLICY_FILE = (
@@ -64,7 +62,7 @@ POLICY_FILE = (
 
 ARTIFACTS_DIR = (
     LAB_DIR
-    / "artifacts"
+    / "runs"
 )
 
 RESET_SCRIPT = (
@@ -694,7 +692,7 @@ def verify(
 
 
     test_file = (
-        HIDDEN_TEST_ROOT
+        ACCEPTANCE_TEST_ROOT
         / test_filename
     )
 
