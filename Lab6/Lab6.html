@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 6 — Intelligent Failure Recovery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .callout-purple {
+            border-left-color: var(--accent-purple);
+            background-color: rgba(137, 87, 229, 0.08);
+        }
+
+        .callout-danger {
+            border-left-color: var(--accent-red);
+            background-color: rgba(248, 81, 73, 0.08);
+        }
+
+        .table-input {
+            background-color: #0d1117;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 6px 10px;
+            width: 100%;
+        }
+
+        .table-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+            font-weight: 600;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .accordion-item {
+            background-color: transparent;
+            border: none;
+            margin-bottom: 16px;
+        }
+
+        .accordion-body {
+            background-color: #11161d;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 20px;
+        }
+
+        .step-badge {
+            background-color: #21262d;
+            color: var(--accent-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 6 Walkthrough</h5>
+            <small class="text-muted">Intelligent Failure Recovery</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Story</a></li>
+            <li class="nav-item"><a class="nav-link" href="#flow"><i class="bi bi-diagram-3"></i> Recovery Architecture Flow</a></li>
+            <li class="nav-item"><a class="nav-link" href="#policies"><i class="bi bi-file-earmark-code"></i> Routing &amp; Recovery Policies</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenarios"><i class="bi bi-play-circle"></i> Execution Scenarios</a></li>
+            <li class="nav-item"><a class="nav-link" href="#benchmark"><i class="bi bi-table"></i> Benchmark Table</a></li>
+            <li class="nav-item"><a class="nav-link" href="#takeaways"><i class="bi bi-lightbulb"></i> Key Takeaways</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 6</span>
+                    <h1 class="text-white mt-2 mb-1">Intelligent Failure Recovery</h1>
+                    <p class="text-white mb-0">First Choose Intelligently. Then Recover Intelligently.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview & Story -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Overview &amp; Core Concept</h2>
+            <p class="fs-5 text-white">In Lab 6, you build a complete autonomous feedback loop: <strong>First choose intelligently. Then recover intelligently.</strong></p>
+
+            <div class="callout callout-purple my-3">
+                <h5 class="text-white mb-2"><i class="bi bi-arrow-repeat me-2"></i> The Autonomous Recovery Loop</h5>
+                <p class="mb-0 text-white fs-6">
+                    <strong>Acceptance Test FAILED</strong> → 
+                    <strong>Why did it fail?</strong> (Diagnostician Agent) → 
+                    <strong>Choose recovery strategy</strong> (Recovery Policy) → 
+                    <strong>Retry / Escalate / Stop</strong>
+                </p>
+            </div>
+
+            <p class="text-white">When an initial coding agent's implementation fails deterministic verification, a specialized <code>diagnostician</code> agent inspects the test failure stack trace, categorizes the failure (e.g. <code>MINOR_BUG</code>, <code>WRONG_APPROACH</code>, or <code>TEST_INFRASTRUCTURE_ISSUE</code>), and looks up the <code>recovery_policy.yaml</code> to decide whether to <strong>retry with the same model</strong>, <strong>escalate to a stronger model</strong>, or <strong>stop for human review</strong>.</p>
+        </div>
+
+        <!-- Recovery Architecture Flow -->
+        <div class="lab-card" id="flow">
+            <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Architecture &amp; Workflow Flow</h2>
+            
+            <div class="p-4 bg-dark border border-secondary rounded text-center my-3">
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-3">
+                    <span class="badge bg-info text-dark p-2 fs-6">1. Request (tasks/request_0X.md)</span>
+                    <i class="bi bi-arrow-right text-white fs-5"></i>
+                    <span class="badge bg-primary p-2 fs-6">2. Task Classifier (classifier.md)</span>
+                    <i class="bi bi-arrow-right text-white fs-5"></i>
+                    <span class="badge bg-secondary p-2 fs-6">3. Routing Policy (routing_policy.yaml)</span>
+                </div>
+                <div class="my-2">
+                    <i class="bi bi-arrow-down fs-4 text-white"></i>
+                </div>
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 my-3">
+                    <span class="badge bg-warning text-dark p-2 fs-6">4. Attempt 1 Coding Agent (run_router.py)</span>
+                    <i class="bi bi-arrow-right text-white fs-5"></i>
+                    <span class="badge bg-success p-2 fs-6">5. Deterministic Pytest Verification</span>
+                </div>
+                <div class="my-2">
+                    <span class="text-success fw-bold me-4"><i class="bi bi-check-circle me-1"></i> PASS → DONE</span>
+                    <span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i> FAIL → RECOVERY</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dual Policies -->
+        <div class="lab-card" id="policies">
+            <h2><i class="bi bi-file-earmark-code-fill text-info me-2"></i> Dual Configuration Policies</h2>
+            <p>Lab 6 relies on two distinct YAML configuration policies in <code>config/</code>:</p>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="code-container h-100 mb-0">
+                        <div class="code-header"><span>config/routing_policy.yaml (Initial Routing &amp; Escalation Targets)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>version: 1
+
+model_policy:
+
+  implementation:
+    primary: terra
+    escalation: sol
+
+  debugging:
+    primary: terra
+    escalation: sol
+
+  refactoring:
+    primary: terra
+    escalation: sol
+
+  testing:
+    primary: terra
+    escalation: sol
+
+reasoning_policy:
+
+  low: low
+  medium: medium
+  high: high</pre>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="code-container h-100 mb-0">
+                        <div class="code-header"><span>config/recovery_policy.yaml (Failure Strategy Decisions)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                        <pre>version: 1
+
+recovery_policy:
+
+  MINOR_BUG:
+    action: retry_same_configuration
+    prompt_mode: targeted
+
+  WRONG_APPROACH:
+    action: escalate_model
+    prompt_mode: targeted
+
+  TEST_INFRASTRUCTURE_ISSUE:
+    action: stop
+    reason: human_review</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Execution Scenarios -->
+        <div class="lab-card" id="scenarios">
+            <h2><i class="bi bi-play-circle-fill text-success me-2"></i> Workflow Execution Scenarios</h2>
+            <p>Expand each scenario below to execute the intelligent failure recovery pipeline on <code>request_01.md</code> and <code>request_02.md</code>.</p>
+
+            <div class="accordion" id="scenarioAccordion">
+
+                <!-- Scenario 1: Request 01 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <i class="bi bi-1-circle-fill text-info me-2"></i> Scenario 1 — Intelligent Recovery on Request 01 (tasks/request_01.md)
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab6 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab6</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Check Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>tasks\request_01.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Intelligent Recovery Pipeline</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python run_recovery.py tasks/request_01.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Measure Workflow Metrics</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python measure_metrics.py runs/request_01_attempt1_terra-low.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">5</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 2: Request 02 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <i class="bi bi-2-circle-fill text-warning me-2"></i> Scenario 2 — Intelligent Recovery on Request 02 (tasks/request_02.md)
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab6 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab6</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Check Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>tasks\request_02.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Intelligent Recovery Pipeline</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python run_recovery.py tasks/request_02.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Measure Workflow Metrics</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python measure_metrics.py runs/request_02_attempt1_terra-medium.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">5</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Benchmark Table -->
+        <div class="lab-card" id="benchmark">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h2><i class="bi bi-table text-success me-2"></i> Failure Recovery Benchmark Table</h2>
+                    <p class="text-muted mb-0">Record metrics extracted from <code>measure_metrics.py</code> and <code>runs/request_0X_result.json</code>.</p>
+                </div>
+                <button class="btn btn-outline-success btn-sm mt-2 mt-md-0" onclick="downloadBenchmarkCSV()">
+                    <i class="bi bi-download me-1"></i> Export Recovery CSV
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered align-middle text-center mb-0">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-start">Task Request</th>
+                            <th>Attempt 1 Agent</th>
+                            <th>Attempt 1 Test</th>
+                            <th>Diagnosis Category</th>
+                            <th>Recovery Strategy</th>
+                            <th>Attempt 2 Agent</th>
+                            <th>Final Result</th>
+                            <th style="width: 11%;">Total Latency (s)</th>
+                            <th style="width: 11%;">Total Cost ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmark_table_body">
+                        <!-- Rows rendered via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-text text-muted mt-2">
+                <i class="bi bi-info-circle me-1"></i> All inputs automatically save to your browser's local storage.
+            </div>
+        </div>
+
+        <!-- Key Takeaways -->
+        <div class="lab-card" id="takeaways">
+            <h2><i class="bi bi-lightbulb-fill text-warning me-2"></i> Key Takeaways &amp; Engineering Guidance</h2>
+            <ul class="mb-0">
+                <li class="mb-2"><strong>First Choose Intelligently, Then Recover Intelligently:</strong> Combining intelligent routing with automated failure recovery creates self-healing agent pipelines capable of fixing edge-case bugs without human intervention.</li>
+                <li class="mb-2"><strong>Context Handoff:</strong> Attempt 2 receives Attempt 1's generated code plus the diagnostician's precise error analysis, ensuring the second attempt targets the root cause rather than starting from scratch.</li>
+                <li class="mb-2"><strong>Cost-Controlled Escalation:</strong> Model escalation (`sol`) is triggered only when the failure diagnosis confirms `WRONG_APPROACH`, preventing unnecessary spending on minor syntax fixes.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        const scenarios = [
+            { name: "Request 01", file: "tasks/request_01.md", att1: "terra-low", defaultCat: "MINOR_BUG", defaultStrat: "retry_same_configuration", att2: "terra-low" },
+            { name: "Request 02", file: "tasks/request_02.md", att1: "terra-medium", defaultCat: "WRONG_APPROACH", defaultStrat: "escalate_model", att2: "sol-medium" }
+        ];
+
+        function buildBenchmarkTable() {
+            const tbody = document.getElementById("benchmark_table_body");
+            let html = "";
+            scenarios.forEach((s, idx) => {
+                const prefix = `l6_s${idx + 1}`;
+                html += `
+                    <tr>
+                        <td class="text-start">
+                            <strong>${s.name}</strong><br>
+                            <small class="text-muted"><code>${s.file}</code></small>
+                        </td>
+                        <td><span class="badge bg-secondary"><code>${s.att1}</code></span></td>
+                        <td>
+                            <select class="table-input text-center" id="${prefix}_att1_status" onchange="saveData()">
+                                <option value="FAILED">FAILED</option>
+                                <option value="PASSED">PASSED</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_category" placeholder="${s.defaultCat}" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_strategy" placeholder="${s.defaultStrat}" oninput="saveData()"></td>
+                        <td><span class="badge bg-primary"><code>${s.att2}</code></span></td>
+                        <td>
+                            <select class="table-input text-center" id="${prefix}_final_status" onchange="saveData()">
+                                <option value="PASSED_AFTER_RECOVERY">PASSED_AFTER_RECOVERY</option>
+                                <option value="FAILED_AFTER_RECOVERY">FAILED_AFTER_RECOVERY</option>
+                                <option value="HUMAN_REVIEW_REQUIRED">HUMAN_REVIEW_REQUIRED</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_lat" placeholder="e.g. 18.2s" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_cost" placeholder="e.g. $0.0082" oninput="saveData()"></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function saveData() {
+            for (let i = 1; i <= 2; i++) {
+                ['att1_status', 'category', 'strategy', 'final_status', 'lat', 'cost'].forEach(k => {
+                    const id = `l6_s${i}_${k}`;
+                    const el = document.getElementById(id);
+                    if (el) localStorage.setItem(id, el.value);
+                });
+            }
+        }
+
+        function loadData() {
+            buildBenchmarkTable();
+            for (let i = 1; i <= 2; i++) {
+                ['att1_status', 'category', 'strategy', 'final_status', 'lat', 'cost'].forEach(k => {
+                    const id = `l6_s${i}_${k}`;
+                    const val = localStorage.getItem(id);
+                    const el = document.getElementById(id);
+                    if (val && el) el.value = val;
+                });
+            }
+        }
+
+        function downloadBenchmarkCSV() {
+            let csvContent = "Request,File,Attempt 1 Agent,Attempt 1 Test Status,Diagnosis Category,Recovery Strategy,Attempt 2 Agent,Final Status,Total Latency (s),Total Cost ($)\n";
+            scenarios.forEach((s, idx) => {
+                const prefix = `l6_s${idx + 1}`;
+                const att1Status = (document.getElementById(prefix + "_att1_status")?.value || "").replace(/"/g, '""');
+                const category = (document.getElementById(prefix + "_category")?.value || "").replace(/"/g, '""');
+                const strategy = (document.getElementById(prefix + "_strategy")?.value || "").replace(/"/g, '""');
+                const finalStatus = (document.getElementById(prefix + "_final_status")?.value || "").replace(/"/g, '""');
+                const lat = (document.getElementById(prefix + "_lat")?.value || "").replace(/"/g, '""');
+                const cost = (document.getElementById(prefix + "_cost")?.value || "").replace(/"/g, '""');
+                csvContent += `"${s.name}","${s.file}","${s.att1}","${att1Status}","${category}","${strategy}","${s.att2}","${finalStatus}","${lat}","${cost}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'lab6_recovery_benchmark_results.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

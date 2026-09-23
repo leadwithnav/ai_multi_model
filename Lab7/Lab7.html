@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 7 — Horizontal vs Vertical Tiering</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .callout-purple {
+            border-left-color: var(--accent-purple);
+            background-color: rgba(137, 87, 229, 0.08);
+        }
+
+        .table-input {
+            background-color: #0d1117;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 6px 10px;
+            width: 100%;
+        }
+
+        .table-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+            font-weight: 600;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .accordion-item {
+            background-color: transparent;
+            border: none;
+            margin-bottom: 16px;
+        }
+
+        .accordion-body {
+            background-color: #11161d;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 20px;
+        }
+
+        .step-badge {
+            background-color: #21262d;
+            color: var(--accent-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 7 Walkthrough</h5>
+            <small class="text-muted">Horizontal vs Vertical Tiering</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-question-circle"></i> Which Direction to Move?</a></li>
+            <li class="nav-item"><a class="nav-link" href="#matrix"><i class="bi bi-diagram-3"></i> Model Tiering Matrix</a></li>
+            <li class="nav-item"><a class="nav-link" href="#task-def"><i class="bi bi-file-earmark-text"></i> Task Requirement</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenarios"><i class="bi bi-play-circle"></i> Execution Scenarios</a></li>
+            <li class="nav-item"><a class="nav-link" href="#benchmark"><i class="bi bi-table"></i> Tiering Benchmark Table</a></li>
+            <li class="nav-item"><a class="nav-link" href="#takeaways"><i class="bi bi-lightbulb"></i> Key Takeaways</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 7</span>
+                    <h1 class="text-white mt-2 mb-1">Horizontal vs Vertical Tiering</h1>
+                    <p class="text-white mb-0">Architecting Multi-Model Pipelines: Intra-Vendor Scaling vs Cross-Vendor Equivalence</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview & Core Concept -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-compass text-warning me-2"></i> Which Direction Should We Move?</h2>
+            <p class="fs-5 text-white">When an engineering workload requires architectural adjustment, system designers must decide between <strong>Vertical Tiering</strong> (scaling capability within a vendor family) and <strong>Horizontal Tiering</strong> (switching providers at a comparable capability level).</p>
+
+            <div class="p-4 bg-dark border border-secondary rounded text-center my-3">
+                <h5 class="text-info mb-3">Horizontal vs Vertical Decision Framework</h5>
+
+                <div class="row align-items-stretch g-3 text-start">
+                    <!-- Vertical Card -->
+                    <div class="col-md-6">
+                        <div class="p-3 bg-body-tertiary border border-primary rounded h-100">
+                            <span class="badge bg-primary mb-2"><i class="bi bi-arrow-up-circle me-1"></i> VERTICAL TIERING</span>
+                            <h6 class="text-white">Same Vendor — Different Capability Tier</h6>
+                            <p class="small text-muted mb-2"><strong>Question:</strong> <em>"Need more capability or reasoning?"</em></p>
+                            <p class="small text-white mb-2">Move within a single vendor family from <code>FAST</code> &rarr; <code>MID</code> &rarr; <code>HIGH</code>.</p>
+                            <div class="bg-dark p-2 rounded small text-info font-monospace mb-2">
+                                Luna &rarr; Terra &rarr; Sol<br>
+                                Haiku &rarr; Sonnet &rarr; Opus
+                            </div>
+                            <small class="text-muted"><strong>Use when:</strong> The task complexity requires deeper reasoning or higher problem-solving capacity.</small>
+                        </div>
+                    </div>
+
+                    <!-- Horizontal Card -->
+                    <div class="col-md-6">
+                        <div class="p-3 bg-body-tertiary border border-success rounded h-100">
+                            <span class="badge bg-success mb-2"><i class="bi bi-arrow-left-right me-1"></i> HORIZONTAL TIERING</span>
+                            <h6 class="text-white">Different Vendor — Comparable Capability Tier</h6>
+                            <p class="small text-muted mb-2"><strong>Question:</strong> <em>"Need another provider option at the same tier?"</em></p>
+                            <p class="small text-white mb-2">Move across vendors at equivalent capability levels (Vendor A &leftrightarrow; Vendor B).</p>
+                            <div class="bg-dark p-2 rounded small text-success font-monospace mb-2">
+                                Sol &leftrightarrow; Opus / Sonnet<br>
+                                Terra &leftrightarrow; Haiku 4.5
+                            </div>
+                            <small class="text-muted"><strong>Use when:</strong> Cost, latency, regional availability, governance, or provider resilience favors another model.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Tiering Matrix -->
+        <div class="lab-card" id="matrix">
+            <h2><i class="bi bi-diagram-3-fill text-info me-2"></i> Model Family Tiering Matrix</h2>
+            <p>Mapping models across vendor families and capability tiers:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle text-center mb-0">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Capability Tier</th>
+                            <th>Vendor A (OpenAI / Bedrock)</th>
+                            <th>Horizontal Equivalent &leftrightarrow;</th>
+                            <th>Vendor B (Anthropic Claude)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-secondary">FAST / ENTRY</span></td>
+                            <td><code>GPT-5.6 Luna</code> / <code>Terra</code></td>
+                            <td><i class="bi bi-arrow-left-right text-success"></i></td>
+                            <td><code>Claude Haiku 4.5</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">MID TIER</span></td>
+                            <td><code>GPT-5.6 Terra</code></td>
+                            <td><i class="bi bi-arrow-left-right text-success"></i></td>
+                            <td><code>Claude Sonnet 4.5/4.6</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-danger">HIGH TIER</span></td>
+                            <td><code>GPT-5.6 Sol</code></td>
+                            <td><i class="bi bi-arrow-left-right text-success"></i></td>
+                            <td><code>Claude Opus</code> / <code>Sonnet</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Task Requirement -->
+        <div class="lab-card" id="task-def">
+            <h2><i class="bi bi-file-earmark-text-fill text-primary me-2"></i> Benchmark Task (task/request_01.md)</h2>
+            <p>Both vertical and horizontal runs execute against the exact same engineering request:</p>
+            <div class="code-container">
+                <div class="code-header"><span>task/request_01.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre># Engineering Task — Debugging Incident INC-8821
+
+## Symptom Report
+Production incident INC-8821:
+When payment processing fails or payment webhook receives status "FAILED", customer inventory stock remains reserved in `InventoryRecord` instead of being restored.
+Additionally, if multi-item stock reservation fails halfway through in `create_order`, previously reserved items in the same request are not restored.
+
+## Requirements
+1. Investigate `src/services/order_service.py` (and `handle_payment_webhook`).
+2. Identify the root cause of the stock leakage when payment fails or when partial order reservation fails.
+3. Fix the defect so that inventory stock is properly released back when payment status is FAILED or when order reservation fails.
+4. Preserve existing interfaces and avoid breaking unrelated functionality.</pre>
+            </div>
+        </div>
+
+        <!-- Execution Scenarios -->
+        <div class="lab-card" id="scenarios">
+            <h2><i class="bi bi-play-circle-fill text-success me-2"></i> Execution Scenarios</h2>
+            <p>Execute the single task using Vertical Tiering (intravendor scaling) and Horizontal Tiering (cross-vendor comparison).</p>
+
+            <div class="accordion" id="scenarioAccordion">
+
+                <!-- Scenario 1: Vertical Tiering -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <i class="bi bi-arrow-up-circle-fill text-primary me-2"></i> Scenario 1 — Vertical Tiering (Luna &rarr; Terra &rarr; Sol)
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            <p class="text-white small mb-3">Scale capability vertically within the Vendor A family (Luna &rarr; Terra &rarr; Sol) to measure latency, cost, and code quality trade-offs as reasoning depth increases.</p>
+
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab7 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab7</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Inspect Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>task\request_01.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Vertical Tiering Pipeline</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python run_vertical.py task/request_01.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python measure_metrics.py runs/vertical_run.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">5</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 2: Horizontal Tiering -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <i class="bi bi-arrow-left-right text-success me-2"></i> Scenario 2 — Horizontal Tiering (Sol &leftrightarrow; Opus / Sonnet)
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#scenarioAccordion">
+                        <div class="accordion-body">
+                            <p class="text-white small mb-3">Switch horizontally across vendor ecosystems at comparable capability levels (e.g. GPT-5.6 Sol &leftrightarrow; Claude Sonnet/Opus) to evaluate multi-provider resilience and cost-performance.</p>
+
+                            <div class="mb-3">
+                                <span class="step-badge">1</span><strong>Go to Lab7 Directory</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>cd Lab7</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">2</span><strong>Inspect Task Requirements</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>task\request_01.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">3</span><strong>Run Horizontal Tiering Pipeline</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python run_horizontal.py task/request_01.md</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
+                                <div class="code-container">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>python measure_metrics.py runs/horizontal_run.jsonl</pre>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <span class="step-badge">5</span><strong>Clean Working Directory</strong>
+                                <div class="code-container mb-0">
+                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>bash reset.sh</pre>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Benchmark Table -->
+        <div class="lab-card" id="benchmark">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h2><i class="bi bi-table text-success me-2"></i> Tiering Benchmark Table</h2>
+                    <p class="text-muted mb-0">Record and compare metrics for Vertical vs Horizontal runs on <code>request_01.md</code>.</p>
+                </div>
+                <button class="btn btn-outline-success btn-sm mt-2 mt-md-0" onclick="downloadBenchmarkCSV()">
+                    <i class="bi bi-download me-1"></i> Export Tiering CSV
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered align-middle text-center mb-0">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-start">Tiering Strategy</th>
+                            <th>Vendor / Ecosystem</th>
+                            <th>Model Selected</th>
+                            <th>Capability Tier</th>
+                            <th style="width: 14%;">Latency (s)</th>
+                            <th style="width: 14%;">Total Cost ($)</th>
+                            <th style="width: 14%;">LLM Calls / Steps</th>
+                            <th style="width: 15%;">Pass / Fail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmark_table_body">
+                        <!-- Rows rendered via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-text text-muted mt-2">
+                <i class="bi bi-info-circle me-1"></i> All inputs automatically save to your browser's local storage.
+            </div>
+        </div>
+
+        <!-- Key Takeaways -->
+        <div class="lab-card" id="takeaways">
+            <h2><i class="bi bi-lightbulb-fill text-warning me-2"></i> Key Takeaways &amp; Architectural Guidance</h2>
+            <ul class="mb-0">
+                <li class="mb-2"><strong>Vertical Tiering:</strong> Move up or down within a single model family (`Luna` &rarr; `Terra` &rarr; `Sol` or `Haiku` &rarr; `Sonnet` &rarr; `Opus`) when the task requires more reasoning power or when cost reduction is needed for simpler tasks.</li>
+                <li class="mb-2"><strong>Horizontal Tiering:</strong> Switch across vendor families at comparable capability levels (`Sol` &leftrightarrow; `Opus` or `Terra` &leftrightarrow; `Haiku`) to maintain vendor neutrality, bypass rate limits, or leverage specific provider strengths.</li>
+                <li><strong>Evidence-Driven Decision Making:</strong> Always benchmark both vertical scaling and horizontal substitution using empirical metrics (latency, cost, test pass rate) rather than provider marketing claims.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        const tieringRuns = [
+            { strategy: "Vertical Tiering (Fast)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Luna / Terra", tier: "FAST" },
+            { strategy: "Vertical Tiering (Mid)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Terra", tier: "MID" },
+            { strategy: "Vertical Tiering (High)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Sol", tier: "HIGH" },
+            { strategy: "Horizontal Tiering (Vendor A)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Sol", tier: "HIGH" },
+            { strategy: "Horizontal Tiering (Vendor B)", vendor: "Anthropic Claude", model: "Claude Sonnet / Opus", tier: "HIGH" }
+        ];
+
+        function buildBenchmarkTable() {
+            const tbody = document.getElementById("benchmark_table_body");
+            let html = "";
+            tieringRuns.forEach((r, idx) => {
+                const prefix = `l7_r${idx + 1}`;
+                html += `
+                    <tr>
+                        <td class="text-start"><strong>${r.strategy}</strong></td>
+                        <td>${r.vendor}</td>
+                        <td><code>${r.model}</code></td>
+                        <td><span class="badge ${r.tier === 'FAST' ? 'bg-secondary' : r.tier === 'MID' ? 'bg-primary' : 'bg-danger'}">${r.tier}</span></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_lat" placeholder="e.g. 12.5s" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_cost" placeholder="e.g. $0.0042" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_calls" placeholder="e.g. 3" oninput="saveData()"></td>
+                        <td>
+                            <select class="table-input text-center" id="${prefix}_pass" onchange="saveData()">
+                                <option value="">PASS / FAIL</option>
+                                <option value="PASS">PASS</option>
+                                <option value="FAIL">FAIL</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function saveData() {
+            for (let i = 1; i <= tieringRuns.length; i++) {
+                ['lat', 'cost', 'calls', 'pass'].forEach(k => {
+                    const id = `l7_r${i}_${k}`;
+                    const el = document.getElementById(id);
+                    if (el) localStorage.setItem(id, el.value);
+                });
+            }
+        }
+
+        function loadData() {
+            buildBenchmarkTable();
+            for (let i = 1; i <= tieringRuns.length; i++) {
+                ['lat', 'cost', 'calls', 'pass'].forEach(k => {
+                    const id = `l7_r${i}_${k}`;
+                    const val = localStorage.getItem(id);
+                    const el = document.getElementById(id);
+                    if (val && el) el.value = val;
+                });
+            }
+        }
+
+        function downloadBenchmarkCSV() {
+            let csvContent = "Tiering Strategy,Vendor / Ecosystem,Model Selected,Capability Tier,Latency (s),Total Cost ($),LLM Calls/Steps,Pass/Fail\n";
+            tieringRuns.forEach((r, idx) => {
+                const prefix = `l7_r${idx + 1}`;
+                const lat = (document.getElementById(prefix + "_lat")?.value || "").replace(/"/g, '""');
+                const cost = (document.getElementById(prefix + "_cost")?.value || "").replace(/"/g, '""');
+                const calls = (document.getElementById(prefix + "_calls")?.value || "").replace(/"/g, '""');
+                const pass = (document.getElementById(prefix + "_pass")?.value || "").replace(/"/g, '""');
+                csvContent += `"${r.strategy}","${r.vendor}","${r.model}","${r.tier}","${lat}","${cost}","${calls}","${pass}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'lab7_tiering_benchmark_results.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

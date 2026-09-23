@@ -252,6 +252,10 @@ def execute_coding_agent(
         )
     )
 
+    coding_prompt = " ".join(prompt.split())
+
+    print(f"prompt is {coding_prompt}")
+
     command = [
         opencode_binary(),
         "run",
@@ -259,7 +263,7 @@ def execute_coding_agent(
         agent_name,
         "--format",
         "json",
-        prompt,
+        coding_prompt,
     ]
 
     start = time.perf_counter()

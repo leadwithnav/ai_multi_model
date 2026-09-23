@@ -1,0 +1,15 @@
+version: 1
+
+recovery_policy:
+
+  MINOR_BUG:
+    action: retry_same_configuration
+    prompt_mode: targeted
+
+  WRONG_APPROACH:
+    action: escalate_model
+    prompt_mode: targeted
+
+  TEST_INFRASTRUCTURE_ISSUE:
+    action: stop
+    reason: human_review

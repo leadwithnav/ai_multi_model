@@ -94,9 +94,5 @@ Return ONLY valid JSON:
 
 {
   "task_type": "debugging",
-  "complexity": "high",
-  "signals": [
-    "concurrent requests",
-    "external payment side effect"
-  ]
+  "complexity": "high"
 }
