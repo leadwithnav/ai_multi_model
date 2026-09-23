@@ -22,8 +22,4 @@ Requirements:
 - do not remove retry behavior simply to avoid duplicate calls
 - do not modify unrelated functionality
 
-Start your investigation from:
-
-src/services/order_service.py
-
 Inspect other relevant production code as needed.

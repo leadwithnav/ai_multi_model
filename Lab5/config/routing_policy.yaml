@@ -4,19 +4,15 @@ model_policy:
 
   implementation:
     primary: terra
-    fallback: sol
 
   debugging:
     primary: sol
-    fallback: terra
 
   refactoring:
     primary: terra
-    fallback: sol
 
   testing:
     primary: terra
-    fallback: sol
 
 
 reasoning_policy:
@@ -24,11 +20,3 @@ reasoning_policy:
   low: low
   medium: medium
   high: high
-
-
-fallback_policy:
-
-  max_model_attempts: 2
-
-  fallback_on:
-    - quality_failure

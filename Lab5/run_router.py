@@ -1,32 +1,29 @@
 #!/usr/bin/env python3
 
 """
-Lab 4 — Adaptive Model + Reasoning Router
+Adaptive Model + Reasoning Router
 
 Flow:
-
-1. Read one engineering request.
-2. Ask the classifier LLM for:
+1. Read engineering request.
+2. Classifier determines:
       - task_type
       - complexity
-3. Python routing policy selects:
-      - primary model
-      - fallback model
-      - reasoning effort
-4. Run primary OpenCode coding agent.
-5. Run deterministic acceptance test.
-6. If acceptance test FAILS:
-      - reset repository
-      - run fallback model on the ORIGINAL request
-      - verify again
-7. Save raw OpenCode JSONL for metrics_helper.py.
+3. Routing policy determines:
+      - model from task_type
+      - reasoning effort from complexity
+4. Construct the OpenCode agent name.
+5. Run the selected agent.
+6. Save raw JSONL for metrics analysis.
 
-Important:
-- LLM makes semantic judgments.
-- Python owns routing policy.
-- Python/pytest owns verification.
-- Fallback is ONLY for quality failure in this lab.
-- Timeout/provider/model errors do NOT trigger fallback.
+Example:
+
+    implementation + low
+            ↓
+        terra-low
+
+    debugging + high
+            ↓
+         sol-high
 """
 
 import json
@@ -40,19 +37,10 @@ import yaml
 
 
 # ============================================================
-# PATHS
+# CONFIGURATION
 # ============================================================
 
 LAB_DIR = Path(__file__).resolve().parent
-WORKSPACE_ROOT = LAB_DIR.parent
-
-SERVICE_ROOT = WORKSPACE_ROOT / "order_flow_service"
-
-
-ACCEPTANCE_TEST_ROOT = (
-    LAB_DIR
-    / "acceptance_tests"
-)
 
 POLICY_FILE = (
     LAB_DIR
@@ -60,25 +48,9 @@ POLICY_FILE = (
     / "routing_policy.yaml"
 )
 
-ARTIFACTS_DIR = (
-    LAB_DIR
-    / "runs"
-)
-
-RESET_SCRIPT = (
-    LAB_DIR
-    / "reset.sh"
-)
+RUNS_DIR = LAB_DIR / "runs"
 
 CLASSIFIER_AGENT = "classifier"
-
-
-# Map each request to its deterministic acceptance test.
-TEST_MAP = {
-    "request_01": "test_request_01.py",
-    "request_02": "test_request_02.py",
-    "request_03": "test_request_03.py",
-}
 
 
 # ============================================================
@@ -86,9 +58,7 @@ TEST_MAP = {
 # ============================================================
 
 def opencode_binary():
-    """
-    Windows installations commonly expose opencode.cmd.
-    """
+    """Return correct OpenCode executable for the OS."""
 
     if os.name == "nt":
         return "opencode.cmd"
@@ -97,17 +67,34 @@ def opencode_binary():
 
 
 # ============================================================
-# OPENCODE JSONL PARSING
+# SAVE RAW OPENCODE JSONL
 # ============================================================
 
-def parse_opencode_output(stdout: str):
-    """
-    Extract final text from OpenCode JSONL.
+def save_jsonl(request_name, role, stdout):
 
-    We deliberately do NOT calculate metrics here.
+    RUNS_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    Students will use metrics_helper.py separately.
-    """
+    path = (
+        RUNS_DIR
+        / f"{request_name}_{role}.jsonl"
+    )
+
+    path.write_text(
+        stdout,
+        encoding="utf-8",
+    )
+
+    return path
+
+
+# ============================================================
+# EXTRACT TEXT FROM OPENCODE JSONL
+# ============================================================
+
+def parse_opencode_output(stdout):
 
     text_parts = []
 
@@ -137,75 +124,17 @@ def parse_opencode_output(stdout: str):
 
 
 # ============================================================
-# SAVE RAW OPENCODE JSONL
+# STEP 1 — CLASSIFY REQUEST
 # ============================================================
 
-def save_jsonl(
-    request_name: str,
-    role: str,
-    stdout: str,
-):
-    """
-    Save the untouched OpenCode --format json output.
-
-    Example:
-
-    artifacts/request_03_primary.jsonl
-    artifacts/request_03_fallback.jsonl
-
-    metrics_helper.py can process these later.
-    """
-
-    ARTIFACTS_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    path = (
-        ARTIFACTS_DIR
-        / f"{request_name}_{role}.jsonl"
-    )
-
-    path.write_text(
-        stdout,
-        encoding="utf-8",
-    )
-
-    return path
-
-
-# ============================================================
-# STEP 1 — CLASSIFIER
-# ============================================================
-
-def classify_request(
-    request_text: str,
-    request_name: str,
-):
-    """
-    LLM makes TWO semantic judgments:
-
-    task_type:
-        implementation
-        debugging
-        refactoring
-        testing
-
-    complexity:
-        low
-        medium
-        high
-    """
+def classify_request(request_text, request_name):
 
     print()
     print("=" * 60)
     print("1. CLASSIFICATION")
     print("=" * 60)
 
-
-    # Compact only for classifier input.
-    # Coding model still receives original full request.
-
+    # Keep classifier input compact.
     compact_request = " ".join(
         request_text.split()
     )
@@ -219,7 +148,6 @@ def classify_request(
         "json",
         compact_request,
     ]
-
 
     try:
 
@@ -237,14 +165,12 @@ def classify_request(
             "Classifier timed out."
         )
 
-
-    # Optional: save classifier telemetry too.
+    # Save classifier telemetry.
     classifier_path = save_jsonl(
         request_name,
         "classifier",
         result.stdout,
     )
-
 
     if result.returncode != 0:
 
@@ -253,21 +179,17 @@ def classify_request(
             + result.stderr[-2000:]
         )
 
-
     response = parse_opencode_output(
         result.stdout
     )
 
-
-    # Tolerate accidental Markdown fences.
-
+    # Remove accidental Markdown fences.
     response = (
         response
         .replace("```json", "")
         .replace("```", "")
         .strip()
     )
-
 
     try:
 
@@ -301,7 +223,6 @@ def classify_request(
         "high",
     }
 
-
     task_type = classification.get(
         "task_type"
     )
@@ -310,20 +231,18 @@ def classify_request(
         "complexity"
     )
 
-
     if task_type not in allowed_task_types:
 
         raise RuntimeError(
-            f"Classifier returned invalid "
-            f"task_type: {task_type}"
+            f"Invalid task_type returned "
+            f"by classifier: {task_type}"
         )
-
 
     if complexity not in allowed_complexities:
 
         raise RuntimeError(
-            f"Classifier returned invalid "
-            f"complexity: {complexity}"
+            f"Invalid complexity returned "
+            f"by classifier: {complexity}"
         )
 
 
@@ -341,7 +260,6 @@ def classify_request(
         [],
     )
 
-
     if signals:
 
         print("\nSignals:")
@@ -351,10 +269,9 @@ def classify_request(
 
 
     print(
-        f"\nClassifier telemetry:"
-        f"\n{classifier_path}"
+        f"\nClassifier telemetry:\n"
+        f"{classifier_path}"
     )
-
 
     return classification
 
@@ -372,7 +289,6 @@ def load_policy():
             f"{POLICY_FILE}"
         )
 
-
     with POLICY_FILE.open(
         "r",
         encoding="utf-8",
@@ -382,54 +298,24 @@ def load_policy():
 
 
 # ============================================================
-# STEP 3 — ROUTING DECISION
+# STEP 3 — SELECT MODEL + REASONING
 # ============================================================
 
-def select_route(
-    classification: dict,
-    policy: dict,
-):
-    """
-    LLM does NOT choose models.
+def select_route(classification, policy):
 
-    Python deterministically maps:
-
-        task_type
-            ↓
-        primary model
-        fallback model
-
-    and
-
-        complexity
-            ↓
-        reasoning effort
-    """
-
-    task_type = (
-        classification["task_type"]
-    )
-
-    complexity = (
-        classification["complexity"]
-    )
-
+    task_type = classification["task_type"]
+    complexity = classification["complexity"]
 
     try:
 
-        model_policy = (
+        # Task type determines MODEL.
+        model = (
             policy["model_policy"]
                   [task_type]
+                  ["primary"]
         )
 
-        primary_model = (
-            model_policy["primary"]
-        )
-
-        fallback_model = (
-            model_policy["fallback"]
-        )
-
+        # Complexity determines REASONING.
         reasoning_effort = (
             policy["reasoning_policy"]
                   [complexity]
@@ -443,81 +329,56 @@ def select_route(
         ) from exc
 
 
-    primary_agent = (
-        f"{primary_model}-"
-        f"{reasoning_effort}"
-    )
+    # Agent names must match files in:
+    #
+    # .opencode/agent/
+    #
+    # terra-low.md
+    # terra-medium.md
+    # terra-high.md
+    # sol-low.md
+    # sol-medium.md
+    # sol-high.md
 
-    fallback_agent = (
-        f"{fallback_model}-"
+    agent = (
+        f"{model}-"
         f"{reasoning_effort}"
     )
 
 
     return {
-
-        "primary": {
-            "model":
-                primary_model,
-
-            "reasoning_effort":
-                reasoning_effort,
-
-            "agent":
-                primary_agent,
-        },
-
-        "fallback": {
-            "model":
-                fallback_model,
-
-            "reasoning_effort":
-                reasoning_effort,
-
-            "agent":
-                fallback_agent,
-        },
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "agent": agent,
     }
 
 
 # ============================================================
-# STEP 4 — RUN OPENCODE CODING AGENT
+# STEP 4 — RUN SELECTED AGENT
 # ============================================================
 
 def execute_agent(
-    config: dict,
-    request_text: str,
-    request_name: str,
-    role: str,
+    route,
+    request_text,
+    request_name,
 ):
-    """
-    Run one coding agent.
-
-    role:
-        primary
-        fallback
-
-    Raw OpenCode JSONL is written to artifacts/.
-    """
 
     print()
     print("=" * 60)
-    print(
-        f"{role.upper()} EXECUTION"
-    )
+    print("3. AGENT EXECUTION")
     print("=" * 60)
 
     print(
-        f"Model     : {config['model']}"
+        f"Model     : {route['model']}"
     )
 
     print(
-        "Reasoning : "
-        f"{config['reasoning_effort']}"
+        f"Reasoning : "
+        f"{route['reasoning_effort']}"
     )
 
     print(
-        f"Agent     : {config['agent']}"
+        f"Agent     : {route['agent']}"
     )
 
 
@@ -525,7 +386,7 @@ def execute_agent(
         opencode_binary(),
         "run",
         "--agent",
-        config["agent"],
+        route["agent"],
         "--format",
         "json",
         request_text,
@@ -545,14 +406,12 @@ def execute_agent(
             timeout=300,
         )
 
-
     except subprocess.TimeoutExpired as exc:
 
         elapsed = (
             time.perf_counter()
             - start
         )
-
 
         stdout = exc.stdout or ""
 
@@ -561,35 +420,16 @@ def execute_agent(
                 errors="replace"
             )
 
-
         jsonl_path = save_jsonl(
             request_name,
-            role,
+            "primary",
             stdout,
         )
 
-
-        print(
-            "\nExecution Status: TIMEOUT"
-        )
-
-        print(
-            f"Wall Time       : "
-            f"{elapsed:.2f}s"
-        )
-
-        print(
-            f"Telemetry       : "
-            f"{jsonl_path}"
-        )
-
-
         return {
             "status": "TIMEOUT",
-            "jsonl_path":
-                str(jsonl_path),
-            "wall_seconds":
-                elapsed,
+            "wall_seconds": elapsed,
+            "jsonl_path": str(jsonl_path),
         }
 
 
@@ -601,37 +441,30 @@ def execute_agent(
 
     jsonl_path = save_jsonl(
         request_name,
-        role,
+        "primary",
         result.stdout,
     )
 
 
     if result.returncode != 0:
 
-        print(
-            "\nExecution Status: MODEL_ERROR"
-        )
+        print()
+        print("Execution Status: MODEL_ERROR")
 
-        print(
-            result.stderr[-1500:]
-        )
-
+        if result.stderr:
+            print(
+                result.stderr[-2000:]
+            )
 
         return {
-            "status":
-                "MODEL_ERROR",
-
-            "jsonl_path":
-                str(jsonl_path),
-
-            "wall_seconds":
-                elapsed,
+            "status": "MODEL_ERROR",
+            "wall_seconds": elapsed,
+            "jsonl_path": str(jsonl_path),
         }
 
 
-    print(
-        "\nExecution Status: COMPLETED"
-    )
+    print()
+    print("Execution Status: COMPLETED")
 
     print(
         f"Wall Time       : "
@@ -645,259 +478,10 @@ def execute_agent(
 
 
     return {
-        "status":
-            "COMPLETED",
-
-        "jsonl_path":
-            str(jsonl_path),
-
-        "wall_seconds":
-            elapsed,
+        "status": "COMPLETED",
+        "wall_seconds": elapsed,
+        "jsonl_path": str(jsonl_path),
     }
-
-
-# ============================================================
-# STEP 5 — DETERMINISTIC ACCEPTANCE TEST
-# ============================================================
-
-def verify(
-    request_name: str,
-):
-    """
-    Run the acceptance test for this request.
-
-    Exit code:
-        0 -> PASS
-        1 -> QUALITY FAILURE
-        anything else -> verification/infrastructure problem
-    """
-
-    print()
-    print("=" * 60)
-    print("ACCEPTANCE TEST")
-    print("=" * 60)
-
-
-    test_filename = TEST_MAP.get(
-        request_name
-    )
-
-
-    if not test_filename:
-
-        raise RuntimeError(
-            f"No acceptance test configured "
-            f"for {request_name}"
-        )
-
-
-    test_file = (
-        ACCEPTANCE_TEST_ROOT
-        / test_filename
-    )
-
-
-    if not test_file.exists():
-
-        raise FileNotFoundError(
-            f"Acceptance test not found:\n"
-            f"{test_file}"
-        )
-
-
-    env = os.environ.copy()
-
-    # Keep globally installed pytest plugins
-    # from contaminating the lab.
-    env[
-        "PYTEST_DISABLE_PLUGIN_AUTOLOAD"
-    ] = "1"
-
-
-    command = [
-        sys.executable,
-        "-m",
-        "pytest",
-        str(test_file),
-        "-q",
-        "--tb=short",
-        "-p",
-        "pytest_asyncio.plugin",
-    ]
-
-
-    try:
-
-        result = subprocess.run(
-            command,
-            cwd=SERVICE_ROOT,
-            capture_output=True,
-            text=True,
-            timeout=90,
-            env=env,
-        )
-
-
-    except subprocess.TimeoutExpired:
-
-        print(
-            "Verification: ERROR"
-        )
-
-        print(
-            "Acceptance tests timed out."
-        )
-
-
-        return {
-            "status":
-                "VERIFICATION_ERROR",
-
-            "passed":
-                None,
-
-            "output":
-                "Acceptance tests timed out.",
-        }
-
-
-    output = (
-        result.stdout
-        + "\n"
-        + result.stderr
-    ).strip()
-
-
-    # --------------------------------------------------------
-    # PASS
-    # --------------------------------------------------------
-
-    if result.returncode == 0:
-
-        print("Verification: PASSED")
-
-        print()
-
-        print(
-            result.stdout[-1500:]
-        )
-
-
-        return {
-            "status":
-                "PASSED",
-
-            "passed":
-                True,
-
-            "output":
-                output[-2000:],
-        }
-
-
-    # --------------------------------------------------------
-    # QUALITY FAILURE
-    # --------------------------------------------------------
-
-    if result.returncode == 1:
-
-        print("Verification: FAILED")
-
-        print()
-
-        print(
-            output[-2000:]
-        )
-
-
-        return {
-            "status":
-                "FAILED",
-
-            "passed":
-                False,
-
-            "output":
-                output[-2000:],
-        }
-
-
-    # --------------------------------------------------------
-    # INFRASTRUCTURE / PYTEST ERROR
-    # --------------------------------------------------------
-
-    print(
-        "Verification: ERROR"
-    )
-
-    print()
-
-    print(
-        output[-2000:]
-    )
-
-
-    return {
-        "status":
-            "VERIFICATION_ERROR",
-
-        "passed":
-            None,
-
-        "output":
-            output[-2000:],
-    }
-
-
-# ============================================================
-# RESET BEFORE FALLBACK
-# ============================================================
-
-def reset_repository():
-    """
-    Lab 4 does not teach context handoff yet.
-
-    Therefore fallback receives:
-        - original repository
-        - original engineering request
-
-    Context/state handoff can be introduced in a later lab.
-    """
-
-    print()
-    print("Resetting repository before fallback...")
-
-
-    if not RESET_SCRIPT.exists():
-
-        raise FileNotFoundError(
-            f"reset.sh not found:\n"
-            f"{RESET_SCRIPT}"
-        )
-
-
-    result = subprocess.run(
-        [
-            "bash",
-            str(RESET_SCRIPT),
-        ],
-        cwd=LAB_DIR,
-        capture_output=True,
-        text=True,
-    )
-
-
-    if result.returncode != 0:
-
-        raise RuntimeError(
-            "Repository reset failed:\n"
-            + result.stderr
-        )
-
-
-    print(
-        result.stdout.strip()
-    )
 
 
 # ============================================================
@@ -908,62 +492,39 @@ def save_result(
     request_name,
     classification,
     route,
-    primary,
-    primary_verification,
-    fallback,
-    fallback_verification,
+    execution,
 ):
-    """
-    Save routing/verification information.
-
-    Cost/token metrics remain in the raw JSONL
-    and are inspected using metrics_helper.py.
-    """
 
     result = {
 
-        "request":
-            request_name,
+        "request": request_name,
 
-        "classification":
-            classification,
+        "classification": classification,
 
-        "route":
-            route,
+        "routing": {
+            "model":
+                route["model"],
 
-        "primary": {
-            "execution":
-                primary,
+            "reasoning_effort":
+                route["reasoning_effort"],
 
-            "verification":
-                primary_verification,
+            "agent":
+                route["agent"],
         },
 
-        "fallback_used":
-            fallback is not None,
-
-        "fallback": (
-            {
-                "execution":
-                    fallback,
-
-                "verification":
-                    fallback_verification,
-            }
-            if fallback
-            else None
-        ),
+        "execution":
+            execution,
     }
 
 
-    ARTIFACTS_DIR.mkdir(
+    RUNS_DIR.mkdir(
         parents=True,
         exist_ok=True,
     )
 
 
     path = (
-        ARTIFACTS_DIR
+        RUNS_DIR
         / f"{request_name}_result.json"
     )
 
@@ -1000,6 +561,10 @@ def main():
         sys.exit(1)
 
 
+    # --------------------------------------------------------
+    # Read request
+    # --------------------------------------------------------
+
     request_path = Path(
         sys.argv[1]
     ).resolve()
@@ -1012,17 +577,7 @@ def main():
         )
 
 
-    request_name = (
-        request_path.stem
-    )
-
-
-    if request_name not in TEST_MAP:
-
-        raise RuntimeError(
-            f"No acceptance test mapped "
-            f"for {request_name}"
-        )
+    request_name = request_path.stem
 
 
     request_text = (
@@ -1035,7 +590,7 @@ def main():
     print()
     print("=" * 60)
     print(
-        "LAB 4 — ADAPTIVE MODEL + REASONING ROUTING"
+        "ADAPTIVE MODEL + REASONING ROUTER"
     )
     print("=" * 60)
 
@@ -1055,7 +610,7 @@ def main():
 
 
     # ========================================================
-    # 2. APPLY ROUTING POLICY
+    # 2. ROUTE
     # ========================================================
 
     policy = load_policy()
@@ -1074,171 +629,56 @@ def main():
 
 
     print(
-        "Primary Model  : "
-        f"{route['primary']['model']}"
+        f"Task Type  : "
+        f"{classification['task_type']}"
     )
 
     print(
-        "Fallback Model : "
-        f"{route['fallback']['model']}"
+        f"Complexity : "
+        f"{classification['complexity']}"
     )
 
     print(
-        "Reasoning      : "
-        f"{route['primary']['reasoning_effort']}"
+        f"Model      : "
+        f"{route['model']}"
+    )
+
+    print(
+        f"Reasoning  : "
+        f"{route['reasoning_effort']}"
+    )
+
+    print(
+        f"Agent      : "
+        f"{route['agent']}"
     )
 
 
     # ========================================================
-    # 3. PRIMARY EXECUTION
+    # 3. EXECUTE
     # ========================================================
 
-    primary = execute_agent(
-        route["primary"],
+    execution = execute_agent(
+        route,
         request_text,
         request_name,
-        "primary",
     )
 
 
-    # Operational failure.
-    #
-    # Do NOT fallback here.
-    # Retry/timeout/provider failover belongs to Lab 5.
-
-    if primary["status"] != "COMPLETED":
-
-        print()
-        print("=" * 60)
-        print("FINAL RESULT")
-        print("=" * 60)
-
-        print(
-            "Primary model did not complete "
-            "successfully."
-        )
-
-        print(
-            "No quality fallback attempted."
-        )
-
-        print(
-            "\nOperational resilience "
-            "is covered in Lab 5."
-        )
-
-        sys.exit(2)
-
-
     # ========================================================
-    # 4. VERIFY PRIMARY
-    # ========================================================
-
-    primary_verification = verify(
-        request_name
-    )
-
-
-    fallback = None
-    fallback_verification = None
-
-
-    # ========================================================
-    # 5. QUALITY FALLBACK
-    # ========================================================
-
-    if (
-        primary_verification["status"]
-        == "FAILED"
-    ):
-
-        print()
-        print("=" * 60)
-        print("QUALITY FALLBACK")
-        print("=" * 60)
-
-        print(
-            "Primary model did not meet "
-            "the quality bar."
-        )
-
-        print(
-            "Activating fallback model."
-        )
-
-
-        # ----------------------------------------------------
-        # No handoff in this lab.
-        #
-        # Restore baseline and give fallback the same
-        # original request.
-        # ----------------------------------------------------
-
-        reset_repository()
-
-
-        fallback = execute_agent(
-            route["fallback"],
-            request_text,
-            request_name,
-            "fallback",
-        )
-
-
-        if fallback["status"] == "COMPLETED":
-
-            fallback_verification = verify(
-                request_name
-            )
-
-
-        else:
-
-            print()
-            print(
-                "Fallback model encountered "
-                "an operational error."
-            )
-
-
-    # ========================================================
-    # 6. FINAL STATUS
-    # ========================================================
-
-    if fallback is None:
-
-        completed = (
-            primary_verification["status"]
-            == "PASSED"
-        )
-
-    else:
-
-        completed = bool(
-            fallback_verification
-            and
-            fallback_verification["status"]
-            == "PASSED"
-        )
-
-
-    # ========================================================
-    # 7. SAVE SUMMARY
+    # 4. SAVE RESULT
     # ========================================================
 
     result_path = save_result(
         request_name,
         classification,
         route,
-        primary,
-        primary_verification,
-        fallback,
-        fallback_verification,
+        execution,
     )
 
 
     # ========================================================
-    # 8. STUDENT OUTPUT
+    # FINAL RESULT
     # ========================================================
 
     print()
@@ -1248,56 +688,44 @@ def main():
 
 
     print(
-        "Completed     : "
-        f"{'YES' if completed else 'NO'}"
+        f"Status      : "
+        f"{execution['status']}"
     )
 
     print(
-        "Fallback Used : "
-        f"{'YES' if fallback else 'NO'}"
+        f"Model       : "
+        f"{route['model']}"
     )
 
+    print(
+        f"Reasoning   : "
+        f"{route['reasoning_effort']}"
+    )
 
     print(
-        f"\nResult artifact:\n"
+        f"Agent       : "
+        f"{route['agent']}"
+    )
+
+    print(
+        f"\nResult:\n"
         f"{result_path}"
     )
 
 
     print()
-    print("=" * 60)
-    print("METRICS")
-    print("=" * 60)
-
-
-    print(
-        "\nRun metrics for the primary:"
-    )
+    print("Run metrics with:")
 
     print(
         "python metrics_helper.py "
-        f"artifacts/{request_name}_primary.jsonl"
+        f"runs/{request_name}_primary.jsonl"
     )
 
 
-    if fallback:
-
-        print(
-            "\nRun metrics for the fallback:"
-        )
-
-        print(
-            "python metrics_helper.py "
-            f"artifacts/{request_name}_fallback.jsonl"
-        )
-
-
-    print()
-
-    if completed:
+    if execution["status"] == "COMPLETED":
         sys.exit(0)
 
-    sys.exit(1)
+    sys.exit(2)
 
 
 if __name__ == "__main__":
