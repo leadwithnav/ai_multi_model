@@ -1,0 +1,33 @@
+{
+  "final_status": "VERIFICATION_ERROR",
+  "classification": {
+    "task_type": "implementation",
+    "complexity": "low",
+    "signals": [
+      "explicitly labeled feature implementation",
+      "no detailed scope or complexity indicators provided"
+    ],
+    "classifier_wall_clock_seconds": 7.09,
+    "classifier_jsonl": "D:\\trainings\\AI_Multi_Model\\Lab6\\runs\\request_02_classifier.jsonl"
+  },
+  "initial_route": {
+    "task_type": "implementation",
+    "complexity": "low",
+    "model": "terra",
+    "reasoning": "low",
+    "agent": "terra-low",
+    "escalation_model": "sol"
+  },
+  "attempt1": {
+    "status": "COMPLETED",
+    "agent": "terra-low",
+    "wall_clock_seconds": 8.06,
+    "jsonl_file": "D:\\trainings\\AI_Multi_Model\\Lab6\\runs\\request_02_attempt1_terra-low.jsonl"
+  },
+  "verification1": {
+    "status": "VERIFICATION_ERROR",
+    "exit_code": 2,
+    "reason": "PYTEST_ERROR",
+    "output": "\n=================================== ERRORS ====================================\n__________ ERROR collecting Lab6/acceptance_tests/test_request_02.py __________\nImportError while importing test module 'D:\\trainings\\AI_Multi_Model\\Lab6\\acceptance_tests\\test_request_02.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\nC:\\Users\\Lenovo\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\importlib\\__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\Lab6\\acceptance_tests\\test_request_02.py:5: in <module>\n    from order_flow_service.src.main import app\nE   ModuleNotFoundError: No module named 'order_flow_service'\n============================== warnings summary ===============================\nC:\\Users\\Lenovo\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\fastapi\\testclient.py:1\n  C:\\Users\\Lenovo\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\nC:\\Users\\Lenovo\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\starlette\\testclient.py:53\n  C:\\Users\\Lenovo\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\starlette\\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.\n    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nERROR ..\\Lab6\\acceptance_tests\\test_request_02.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n2 warnings, 1 error in 1.43s\n\n"
+  }
+}

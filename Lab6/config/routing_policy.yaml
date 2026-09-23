@@ -1,0 +1,25 @@
+version: 1
+
+model_policy:
+
+  implementation:
+    primary: terra
+    escalation: sol
+
+  debugging:
+    primary: terra
+    escalation: sol
+
+  refactoring:
+    primary: terra
+    escalation: sol
+
+  testing:
+    primary: terra
+    escalation: sol
+
+reasoning_policy:
+
+  low: low
+  medium: medium
+  high: high
