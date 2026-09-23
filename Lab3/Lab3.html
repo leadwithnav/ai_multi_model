@@ -320,24 +320,19 @@ export AWS_REGION=us-east-1</pre>
             <p>Complete <code>routing_policy.yaml</code> based on your benchmarks done in Lab 2</p>
             <div class="code-container">
                 <div class="code-header"><span>routing_policy.yaml</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>max_attempts: 2
+                <pre>routing_policy:
 
-routing_policy:
-  implementation:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking
-    
-  refactoring:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking
+                implementation:
+                    primary: claude-3-5-haiku
 
-  debugging:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking
+                refactoring:
+                    primary: claude-3-5-sonnet
 
-  testing:
-    primary: add_from_lab2_benchmarking
-    fallback: add_from_lab2_benchmarking</pre>
+                debugging:
+                    primary: claude-3-5-sonnet
+
+                testing:
+                    primary: claude-3-5-haiku</pre>
             </div>
         </div>
 
