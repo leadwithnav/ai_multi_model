@@ -84,7 +84,6 @@ RUNS_DIR = LAB_DIR / "runs"
 # ============================================================
 
 TEST_MAP = {
-
     "request_01":
         "test_request_01.py",
 
@@ -104,15 +103,15 @@ def save_json(path, data):
 
     path.parent.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
     path.write_text(
         json.dumps(
             data,
-            indent=2
+            indent=2,
         ),
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
 
@@ -128,7 +127,7 @@ def load_recovery_policy():
     with open(
         RECOVERY_POLICY_FILE,
         "r",
-        encoding="utf-8"
+        encoding="utf-8",
     ) as f:
 
         return yaml.safe_load(f)
@@ -159,6 +158,65 @@ def clean_json_text(text):
 
 
 # ============================================================
+# PREFLIGHT CHECK
+# ============================================================
+
+def preflight_check(request_name):
+
+    print()
+    print("=" * 60)
+    print("PREFLIGHT CHECK")
+    print("=" * 60)
+
+    if not SERVICE_ROOT.exists():
+
+        raise FileNotFoundError(
+            "order_flow_service not found:\n"
+            f"{SERVICE_ROOT}"
+        )
+
+    if not ACCEPTANCE_TEST_ROOT.exists():
+
+        raise FileNotFoundError(
+            "Acceptance-test directory not found:\n"
+            f"{ACCEPTANCE_TEST_ROOT}"
+        )
+
+    test_filename = TEST_MAP.get(
+        request_name
+    )
+
+    if not test_filename:
+
+        raise RuntimeError(
+            "No acceptance test mapped for "
+            f"{request_name}"
+        )
+
+    test_file = (
+        ACCEPTANCE_TEST_ROOT
+        / test_filename
+    )
+
+    if not test_file.exists():
+
+        raise FileNotFoundError(
+            "Acceptance test not found:\n"
+            f"{test_file}"
+        )
+
+    print(
+        f"Service root    : {SERVICE_ROOT}"
+    )
+
+    print(
+        f"Acceptance test : {test_file}"
+    )
+
+    print("Preflight       : OK")
+
+
+# ============================================================
 # CODING AGENT
 # ============================================================
 
@@ -182,7 +240,7 @@ def execute_coding_agent(
 
     RUNS_DIR.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
     jsonl_path = (
@@ -225,6 +283,11 @@ def execute_coding_agent(
             - start
         )
 
+        print(
+            f"MODEL TIMEOUT after "
+            f"{elapsed:.2f}s"
+        )
+
         return {
             "status":
                 "MODEL_TIMEOUT",
@@ -233,7 +296,10 @@ def execute_coding_agent(
                 agent_name,
 
             "wall_clock_seconds":
-                round(elapsed, 2),
+                round(
+                    elapsed,
+                    2,
+                ),
 
             "jsonl_file":
                 str(jsonl_path),
@@ -246,7 +312,7 @@ def execute_coding_agent(
 
     jsonl_path.write_text(
         result.stdout or "",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     if result.returncode != 0:
@@ -254,6 +320,16 @@ def execute_coding_agent(
         print(
             "Operational model error."
         )
+
+        if result.stderr:
+
+            print()
+            print("Model stderr:")
+            print("-" * 60)
+            print(
+                result.stderr[-3000:]
+            )
+            print("-" * 60)
 
         return {
             "status":
@@ -263,13 +339,19 @@ def execute_coding_agent(
                 agent_name,
 
             "wall_clock_seconds":
-                round(elapsed, 2),
+                round(
+                    elapsed,
+                    2,
+                ),
 
             "jsonl_file":
                 str(jsonl_path),
 
             "stderr":
-                (result.stderr or "")[-2000:],
+                (
+                    result.stderr
+                    or ""
+                )[-3000:],
         }
 
     print(
@@ -280,6 +362,24 @@ def execute_coding_agent(
         f"Telemetry : {jsonl_path}"
     )
 
+    # --------------------------------------------------------
+    # Extract and show the model's human-readable response.
+    # --------------------------------------------------------
+
+    response_text = (
+        extract_text_from_jsonl(
+            result.stdout or ""
+        )
+    )
+
+    if response_text:
+
+        print()
+        print("Agent response:")
+        print("-" * 60)
+        print(response_text)
+        print("-" * 60)
+
     return {
         "status":
             "COMPLETED",
@@ -288,10 +388,16 @@ def execute_coding_agent(
             agent_name,
 
         "wall_clock_seconds":
-            round(elapsed, 2),
+            round(
+                elapsed,
+                2,
+            ),
 
         "jsonl_file":
             str(jsonl_path),
+
+        "response_text":
+            response_text,
     }
 
 
@@ -331,25 +437,51 @@ def verify(request_name):
             f"{test_file}"
         )
 
+    if not SERVICE_ROOT.exists():
+
+        raise FileNotFoundError(
+            "Service root not found:\n"
+            f"{SERVICE_ROOT}"
+        )
+
+    print(
+        f"Test    : {test_file}"
+    )
+
+    print(
+        f"Service : {SERVICE_ROOT}"
+    )
+
     env = os.environ.copy()
 
     env[
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD"
     ] = "1"
 
+    command = [
+        sys.executable,
+        "-m",
+        "pytest",
+        str(test_file),
+        "-q",
+        "-p",
+        "pytest_asyncio.plugin",
+        "--tb=short",
+    ]
+
+    print()
+    print(
+        "Running : "
+        + " ".join(
+            str(x)
+            for x in command
+        )
+    )
+
     try:
 
         result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                str(test_file),
-                "-q",
-                "-p",
-                "pytest_asyncio.plugin",
-                "--tb=short",
-            ],
+            command,
             cwd=SERVICE_ROOT,
             capture_output=True,
             text=True,
@@ -361,8 +493,14 @@ def verify(request_name):
 
     except subprocess.TimeoutExpired:
 
+        print()
         print(
-            "Verification timed out."
+            "RESULT : VERIFICATION ERROR"
+        )
+
+        print(
+            "Reason : acceptance test "
+            "timed out"
         )
 
         return {
@@ -380,16 +518,33 @@ def verify(request_name):
         (result.stdout or "")
         + "\n"
         + (result.stderr or "")
+    ).strip()
+
+    print()
+    print(
+        "Pytest exit code : "
+        f"{result.returncode}"
     )
 
-    # pytest:
-    # 0 = passed
-    # 1 = tests failed
-    # anything else = infrastructure/error
+    # --------------------------------------------------------
+    # pytest exit code 0
+    #
+    # Acceptance tests passed.
+    # --------------------------------------------------------
 
     if result.returncode == 0:
 
         print("RESULT : PASS")
+
+        if output:
+
+            print()
+            print("Pytest output:")
+            print("-" * 60)
+            print(
+                output[-5000:]
+            )
+            print("-" * 60)
 
         return {
             "status":
@@ -402,9 +557,29 @@ def verify(request_name):
                 output[-5000:],
         }
 
+    # --------------------------------------------------------
+    # pytest exit code 1
+    #
+    # Tests executed successfully, but the implementation
+    # failed the quality bar.
+    #
+    # This IS a coding-quality failure.
+    # Send it to the diagnostician.
+    # --------------------------------------------------------
+
     if result.returncode == 1:
 
         print("RESULT : FAIL")
+
+        print()
+        print(
+            "Acceptance test failure:"
+        )
+        print("-" * 60)
+        print(
+            output[-5000:]
+        )
+        print("-" * 60)
 
         return {
             "status":
@@ -417,9 +592,27 @@ def verify(request_name):
                 output[-5000:],
         }
 
+    # --------------------------------------------------------
+    # Any other pytest exit code
+    #
+    # pytest/test infrastructure itself failed.
+    #
+    # Do NOT send this to quality recovery.
+    # --------------------------------------------------------
+
     print(
         "RESULT : VERIFICATION ERROR"
     )
+
+    print()
+    print(
+        "Pytest infrastructure error:"
+    )
+    print("-" * 60)
+    print(
+        output[-5000:]
+    )
+    print("-" * 60)
 
     return {
         "status":
@@ -515,7 +708,7 @@ diagnostician instructions.
 
     jsonl_path.write_text(
         result.stdout or "",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     if result.returncode != 0:
@@ -573,7 +766,7 @@ diagnostician instructions.
         "wall_clock_seconds"
     ] = round(
         elapsed,
-        2
+        2,
     )
 
     diagnosis[
@@ -656,7 +849,7 @@ def choose_recovery(
             "reason":
                 rule.get(
                     "reason",
-                    "human_review"
+                    "human_review",
                 ),
         }
 
@@ -667,7 +860,6 @@ def choose_recovery(
     if action == "retry_same_configuration":
 
         recovery = {
-
             "action":
                 action,
 
@@ -683,7 +875,7 @@ def choose_recovery(
             "prompt_mode":
                 rule.get(
                     "prompt_mode",
-                    "targeted"
+                    "targeted",
                 ),
         }
 
@@ -695,7 +887,8 @@ def choose_recovery(
         return recovery
 
     # --------------------------------------------------------
-    # STRONGER MODEL
+    # ESCALATE MODEL
+    #
     # Keep reasoning effort unchanged.
     # --------------------------------------------------------
 
@@ -725,7 +918,6 @@ def choose_recovery(
         )
 
         recovery = {
-
             "action":
                 action,
 
@@ -741,7 +933,7 @@ def choose_recovery(
             "prompt_mode":
                 rule.get(
                     "prompt_mode",
-                    "targeted"
+                    "targeted",
                 ),
         }
 
@@ -771,7 +963,7 @@ def build_recovery_prompt(
 
     prompt_mode = recovery.get(
         "prompt_mode",
-        "targeted"
+        "targeted",
     )
 
     if prompt_mode == "syntax_strict":
@@ -861,7 +1053,7 @@ def main():
 
     RUNS_DIR.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
     # --------------------------------------------------------
@@ -889,7 +1081,18 @@ def main():
     )
 
     # --------------------------------------------------------
-    # 2. ATTEMPT 1
+    # 2. PREFLIGHT CHECK
+    #
+    # Check paths before spending another model call.
+    # This does NOT run the acceptance test.
+    # --------------------------------------------------------
+
+    preflight_check(
+        request_name
+    )
+
+    # --------------------------------------------------------
+    # 3. ATTEMPT 1
     # --------------------------------------------------------
 
     attempt1 = (
@@ -907,15 +1110,20 @@ def main():
         )
     )
 
+    # --------------------------------------------------------
     # Model/provider failed operationally.
+    #
     # Do NOT quality-recover.
+    # Operational retry/failover belongs to the
+    # resilience lab.
+    # --------------------------------------------------------
+
     if (
         attempt1["status"]
         != "COMPLETED"
     ):
 
         final_result = {
-
             "final_status":
                 "OPERATIONAL_MODEL_FAILURE",
 
@@ -949,12 +1157,16 @@ def main():
         return
 
     # --------------------------------------------------------
-    # 3. VERIFY ATTEMPT 1
+    # 4. VERIFY ATTEMPT 1
     # --------------------------------------------------------
 
     verification1 = verify(
         request_name
     )
+
+    # --------------------------------------------------------
+    # PASS FIRST TRY
+    # --------------------------------------------------------
 
     if (
         verification1["status"]
@@ -962,7 +1174,6 @@ def main():
     ):
 
         final_result = {
-
             "final_status":
                 "PASSED_FIRST_TRY",
 
@@ -986,21 +1197,28 @@ def main():
         )
 
         print()
+        print("=" * 60)
+        print("FINAL RESULT")
+        print("=" * 60)
+
         print(
-            "FINAL RESULT: "
-            "PASSED FIRST TRY"
+            "Status : PASSED_FIRST_TRY"
         )
 
         return
 
-    # pytest itself broke.
+    # --------------------------------------------------------
+    # pytest/test infrastructure itself failed.
+    #
+    # Do NOT diagnose this as a coding-quality failure.
+    # --------------------------------------------------------
+
     if (
         verification1["status"]
         == "VERIFICATION_ERROR"
     ):
 
         final_result = {
-
             "final_status":
                 "VERIFICATION_ERROR",
 
@@ -1024,15 +1242,29 @@ def main():
         )
 
         print()
+        print("=" * 60)
+        print("WORKFLOW STOPPED")
+        print("=" * 60)
+
         print(
-            "STOP: verification "
-            "infrastructure failed."
+            "Acceptance-test infrastructure "
+            "failed."
+        )
+
+        print(
+            "This is NOT being treated as a "
+            "coding-quality failure."
+        )
+
+        print(
+            "Fix the pytest/test-environment "
+            "problem and rerun the experiment."
         )
 
         return
 
     # --------------------------------------------------------
-    # 4. DIAGNOSE QUALITY FAILURE
+    # 5. DIAGNOSE QUALITY FAILURE
     # --------------------------------------------------------
 
     diagnosis = diagnose_failure(
@@ -1042,7 +1274,7 @@ def main():
     )
 
     # --------------------------------------------------------
-    # 5. APPLY RECOVERY POLICY
+    # 6. APPLY RECOVERY POLICY
     # --------------------------------------------------------
 
     recovery_policy = (
@@ -1056,13 +1288,12 @@ def main():
     )
 
     # --------------------------------------------------------
-    # 6. HUMAN STOP
+    # 7. HUMAN STOP
     # --------------------------------------------------------
 
     if recovery["action"] == "stop":
 
         final_result = {
-
             "final_status":
                 "HALTED_FOR_HUMAN_REVIEW",
 
@@ -1092,8 +1323,12 @@ def main():
         )
 
         print()
+        print("=" * 60)
+        print("FINAL RESULT")
+        print("=" * 60)
+
         print(
-            "FINAL RESULT: "
+            "Status : "
             "HUMAN REVIEW REQUIRED"
         )
 
@@ -1101,9 +1336,11 @@ def main():
 
     # --------------------------------------------------------
     # IMPORTANT:
+    #
     # NO RESET HERE.
     #
-    # Attempt 2 sees attempt 1's implementation.
+    # Attempt 2 sees Attempt 1's implementation.
+    #
     # This is deliberate context handoff.
     # --------------------------------------------------------
 
@@ -1117,7 +1354,7 @@ def main():
     )
 
     # --------------------------------------------------------
-    # 7. ATTEMPT 2
+    # 8. ATTEMPT 2
     # --------------------------------------------------------
 
     attempt2 = (
@@ -1149,7 +1386,7 @@ def main():
     else:
 
         # ----------------------------------------------------
-        # 8. VERIFY ATTEMPT 2
+        # 9. VERIFY ATTEMPT 2
         # ----------------------------------------------------
 
         verification2 = verify(
@@ -1181,11 +1418,10 @@ def main():
             )
 
     # --------------------------------------------------------
-    # 9. FINAL RESULT
+    # 10. FINAL RESULT
     # --------------------------------------------------------
 
     final_result = {
-
         "final_status":
             final_status,
 

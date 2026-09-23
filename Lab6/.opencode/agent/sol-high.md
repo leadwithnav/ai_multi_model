@@ -20,6 +20,15 @@ Investigate relevant production code as needed.
 
 Implement the smallest correct change that satisfies the request.
 
+Inspect the existing implementation.
+Implement the smallest correct change that satisfies the request.
+Do not run the acceptance_tests directory.
+Do not run the full project test suite.
+
+You may run lightweight syntax checks or focused existing tests if needed.
+
+The external workflow will perform authoritative verification.
+
 Preserve existing public interfaces.
 
 Do not modify unrelated functionality.
