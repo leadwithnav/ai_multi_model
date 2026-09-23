@@ -156,7 +156,7 @@
             color: #ffffff;
             border: 1px solid #30363d;
             border-radius: 4px;
-            padding: 4px 8px;
+            padding: 6px 10px;
             width: 100%;
         }
 
@@ -208,7 +208,7 @@
             <li class="nav-item"><a class="nav-link" href="#policy"><i class="bi bi-file-earmark-code"></i> Routing Policy</a></li>
             <li class="nav-item"><a class="nav-link" href="#tasks"><i class="bi bi-card-checklist"></i> Engineering Tasks</a></li>
             <li class="nav-item"><a class="nav-link" href="#run"><i class="bi bi-play-circle"></i> Strategy Execution Steps</a></li>
-            <li class="nav-item"><a class="nav-link" href="#compare-table"><i class="bi bi-table"></i> Strategy Comparison Table</a></li>
+            <li class="nav-item"><a class="nav-link" href="#compare-table"><i class="bi bi-table"></i> Routing Evidence Table</a></li>
         </ul>
     </div>
 
@@ -251,9 +251,9 @@
             </div>
         </div>
 
-                <div class="lab-card" id="step3-models">
+        <!-- AWS Configuration -->
+        <div class="lab-card" id="step3-models">
             <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Step 1 — Set your AWS Configuration</h2>
-
 
             <ul class="nav nav-tabs nav-tabs-custom mb-3" id="envTab" role="tablist">
                 <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#env-win"><i class="bi bi-windows"></i> Windows PowerShell</button></li>
@@ -322,17 +322,17 @@ export AWS_REGION=us-east-1</pre>
                 <div class="code-header"><span>routing_policy.yaml</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                 <pre>routing_policy:
 
-                implementation:
-                    primary: claude-3-5-haiku
+  implementation:
+    primary: claude-3-5-haiku
 
-                refactoring:
-                    primary: claude-3-5-sonnet
+  refactoring:
+    primary: claude-3-5-sonnet
 
-                debugging:
-                    primary: claude-3-5-sonnet
+  debugging:
+    primary: claude-3-5-sonnet
 
-                testing:
-                    primary: claude-3-5-haiku</pre>
+  testing:
+    primary: claude-3-5-haiku</pre>
             </div>
         </div>
 
@@ -372,8 +372,7 @@ export AWS_REGION=us-east-1</pre>
             <h2><i class="bi bi-play-circle-fill text-success me-2"></i> Strategy Evidence-Driven Routing</h2>
             <p>Run the implementation task (and other tasks) against evidence routing strategy:</p>
 
-
-            <!-- Evidence-Driven Routing -->
+            <!-- Evidence-Driven Routing: Debugging -->
             <div class="callout callout-success my-3">
                 <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Debugging Request</h5>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
@@ -387,9 +386,9 @@ export AWS_REGION=us-east-1</pre>
                 </div>
             </div>
 
-             <!-- Evidence-Driven Routing -->
+            <!-- Evidence-Driven Routing: Test generation -->
             <div class="callout callout-success my-3">
-                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Test generation Request</h5>
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Test Generation Request</h5>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
                 <div class="code-container mb-2">
                     <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -401,9 +400,9 @@ export AWS_REGION=us-east-1</pre>
                 </div>
             </div>
 
-               <!-- Evidence-Driven Routing -->
+            <!-- Evidence-Driven Routing: Refactoring -->
             <div class="callout callout-success my-3">
-                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Refactoringg Request</h5>
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Refactoring Request</h5>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
                 <div class="code-container mb-2">
                     <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -415,9 +414,9 @@ export AWS_REGION=us-east-1</pre>
                 </div>
             </div>
 
-                 <!-- Evidence-Driven Routing -->
+            <!-- Evidence-Driven Routing: Implementation -->
             <div class="callout callout-success my-3">
-                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Implement Request</h5>
+                <h5 class="text-success mb-2"><i class="bi bi-diagram-3-fill me-2"></i> Execute Implementation Request</h5>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
                 <div class="code-container mb-2">
                     <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -429,7 +428,42 @@ export AWS_REGION=us-east-1</pre>
                 </div>
             </div>
 
-      
+        </div>
+
+        <!-- Task Routing Evidence Table -->
+        <div class="lab-card" id="compare-table">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h2><i class="bi bi-table text-success me-2"></i> Task Routing Evidence &amp; Classification Table</h2>
+                    <p class="text-muted mb-0">Fill in Lab 2 evidence findings, task classification, router selected model, and LLM selected model for each request.</p>
+                </div>
+                <button class="btn btn-outline-success btn-sm mt-2 mt-md-0" onclick="downloadRoutingEvidenceCSV()">
+                    <i class="bi bi-download me-1"></i> Export Routing Evidence CSV
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered align-middle text-center mb-0">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-start" style="width: 20%;">Task</th>
+                            <th style="width: 20%;">Lab 2 Evidence Said</th>
+                            <th style="width: 20%;">Task Classification</th>
+                            <th style="width: 20%;">Router Selected</th>
+                            <th style="width: 20%;">LLM Selected</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routing_evidence_table_body">
+                        <!-- Rows rendered via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-text text-muted mt-2">
+                <i class="bi bi-info-circle me-1"></i> All inputs automatically save to your browser's local storage.
+            </div>
+        </div>
+
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -447,33 +481,29 @@ export AWS_REGION=us-east-1</pre>
             });
         }
 
-        const strategies = [
-            { name: "Cheapest Everywhere", model: "claude-3-5-haiku", id: "cheapest" },
-            { name: "Strongest Everywhere", model: "claude-3-opus", id: "strongest" },
-            { name: "Evidence-Driven Routing", model: "Policy Derived", id: "evidence" }
+        const routingRequests = [
+            { id: "req1", name: "Request 1", file: "tasks/request_01.md", defaultType: "Debugging" },
+            { id: "req2", name: "Request 2", file: "tasks/request_02.md", defaultType: "Testing" },
+            { id: "req3", name: "Request 3", file: "tasks/request_03.md", defaultType: "Refactoring" },
+            { id: "req4", name: "Request 4", file: "tasks/request_04.md", defaultType: "Implementation" }
         ];
 
-        function buildComparisonTable() {
-            const tbody = document.getElementById("comparison_table_body");
+        function buildRoutingEvidenceTable() {
+            const tbody = document.getElementById("routing_evidence_table_body");
+            if (!tbody) return;
             let html = "";
-            strategies.forEach((s, idx) => {
-                const idPrefix = `l3_s${idx + 1}`;
+            routingRequests.forEach((req, idx) => {
+                const prefix = `l3_r${idx + 1}`;
                 html += `
                     <tr>
-                        <td class="text-start"><strong>${s.name}</strong></td>
-                        <td><code>${s.model}</code></td>
-                        <td><input type="text" class="table-input text-center" id="${idPrefix}_success" placeholder="4/4" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${idPrefix}_cost" placeholder="e.g. $0.045" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${idPrefix}_cps" placeholder="e.g. $0.011" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${idPrefix}_lat" placeholder="e.g. 45s" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${idPrefix}_esc" placeholder="e.g. 1" oninput="saveData()"></td>
-                        <td>
-                            <select class="table-input text-center" id="${idPrefix}_bar" onchange="saveData()">
-                                <option value="">PASS / FAIL</option>
-                                <option value="PASS">PASS</option>
-                                <option value="FAIL">FAIL</option>
-                            </select>
+                        <td class="text-start">
+                            <strong>${req.name}</strong><br>
+                            <small class="text-muted"><code>${req.file}</code></small>
                         </td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_evidence" placeholder="e.g. Sonnet for Debugging" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_classification" placeholder="e.g. ${req.defaultType}" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_router" placeholder="e.g. claude-3-5-sonnet" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_llm" placeholder="e.g. claude-3-5-sonnet" oninput="saveData()"></td>
                     </tr>
                 `;
             });
@@ -481,48 +511,46 @@ export AWS_REGION=us-east-1</pre>
         }
 
         function saveData() {
-            for(let i=1; i<=3; i++) {
-                ['success', 'cost', 'cps', 'lat', 'esc', 'bar'].forEach(k => {
-                    const id = `l3_s${i}_${k}`;
+            for (let i = 1; i <= 4; i++) {
+                ['evidence', 'classification', 'router', 'llm'].forEach(k => {
+                    const id = `l3_r${i}_${k}`;
                     const el = document.getElementById(id);
-                    if(el) localStorage.setItem(id, el.value);
+                    if (el) localStorage.setItem(id, el.value);
                 });
             }
         }
 
         function loadData() {
-            buildComparisonTable();
-            for(let i=1; i<=3; i++) {
-                ['success', 'cost', 'cps', 'lat', 'esc', 'bar'].forEach(k => {
-                    const id = `l3_s${i}_${k}`;
+            buildRoutingEvidenceTable();
+            for (let i = 1; i <= 4; i++) {
+                ['evidence', 'classification', 'router', 'llm'].forEach(k => {
+                    const id = `l3_r${i}_${k}`;
                     const val = localStorage.getItem(id);
                     const el = document.getElementById(id);
-                    if(val && el) el.value = val;
+                    if (val && el) el.value = val;
                 });
             }
         }
 
-        function downloadComparisonCSV() {
-            let csvContent = "Routing Strategy,Primary Model,Successful Tasks,Total Cost ($),Cost / Success ($),Total Latency,Escalations,Quality Bar\n";
-            strategies.forEach((s, idx) => {
-                const prefix = `l3_s${idx + 1}`;
-                const success = (document.getElementById(prefix + "_success")?.value || "").replace(/"/g, '""');
-                const cost = (document.getElementById(prefix + "_cost")?.value || "").replace(/"/g, '""');
-                const cps = (document.getElementById(prefix + "_cps")?.value || "").replace(/"/g, '""');
-                const lat = (document.getElementById(prefix + "_lat")?.value || "").replace(/"/g, '""');
-                const esc = (document.getElementById(prefix + "_esc")?.value || "").replace(/"/g, '""');
-                const bar = (document.getElementById(prefix + "_bar")?.value || "").replace(/"/g, '""');
-                csvContent += `"${s.name}","${s.model}","${success}","${cost}","${cps}","${lat}","${esc}","${bar}"\n`;
+        function downloadRoutingEvidenceCSV() {
+            let csvContent = "Task,File,Lab 2 Evidence Said,Task Classification,Router Selected,LLM Selected\n";
+            routingRequests.forEach((req, idx) => {
+                const prefix = `l3_r${idx + 1}`;
+                const evidence = (document.getElementById(prefix + "_evidence")?.value || "").replace(/"/g, '""');
+                const classification = (document.getElementById(prefix + "_classification")?.value || "").replace(/"/g, '""');
+                const router = (document.getElementById(prefix + "_router")?.value || "").replace(/"/g, '""');
+                const llm = (document.getElementById(prefix + "_llm")?.value || "").replace(/"/g, '""');
+                csvContent += `"${req.name}","${req.file}","${evidence}","${classification}","${router}","${llm}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'lab3_strategy_comparison_results.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'lab3_task_routing_evidence.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         window.addEventListener('DOMContentLoaded', loadData);

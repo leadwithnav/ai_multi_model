@@ -1,9 +1,8 @@
 ---
-description: Solve engineering task with reasoning effort high
+description: Solve engineering task with reasoning effort none
 mode: primary
-model: amazon-bedrock/us.openai.gpt-5.6-luna
-options:
-  reasoning_effort: high
+model: amazon-bedrock/us.openai.gpt-5.6-terra
+reasoningEffort: medium
 tools:
   read: true
   write: true
