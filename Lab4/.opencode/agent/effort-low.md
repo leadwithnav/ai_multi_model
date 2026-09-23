@@ -1,10 +1,8 @@
 ---
 description: Solve engineering task with reasoning effort none
 mode: primary
-model: amazon-bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0
-thinking:
-  type: enabled
-  budgetTokens: 1024
+model: amazon-bedrock/us.openai.gpt-5.6-sol
+reasoningEffort: low
 tools:
   read: true
   write: true
