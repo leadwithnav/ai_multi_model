@@ -31,5 +31,3 @@ Rules:
 - Implement the smallest correct change.
 - Preserve existing public interfaces.
 - Do not modify unrelated functionality.
-- Run relevant tests or focused sanity checks after implementation.
-- When finished, briefly state what changed.
