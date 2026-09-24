@@ -1,7 +1,7 @@
 ---
 description: GPT-5.6 Luna Benchmark Agent (Fast & Cost Efficient)
 mode: primary
-model: amazon-bedrock/us.openai.gpt-5.6-luna
+model: llmgw/gpt-5.6-luna-1M
 permission:
   read: allow
   edit: allow
