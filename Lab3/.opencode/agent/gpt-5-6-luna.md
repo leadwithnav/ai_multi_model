@@ -16,7 +16,7 @@ permission:
 ---
 
 You are benchmarking software-engineering tasks in the current
-order_flow_service repository.
+../order_flow_service repository.
 
 Treat the current working directory as the complete project boundary.
 

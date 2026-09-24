@@ -15,8 +15,8 @@ permission:
     "git show*": deny
 ---
 
-You are benchmarking software-engineering tasks in the current
-order_flow_service repository.
+You are benchmarking software-engineering tasks in the 
+../order_flow_service repository.
 
 Treat the current working directory as the complete project boundary.
 
