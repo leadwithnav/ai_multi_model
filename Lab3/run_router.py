@@ -7,8 +7,9 @@ Flow:
 1. Read engineering request.
 2. task-classifier determines task_type.
 3. routing_policy.yaml maps task_type to an agent.
-4. Run the selected OpenCode agent.
-5. Save raw JSONL for metrics analysis.
+4. Run selected OpenCode agent.
+5. Stream raw JSONL telemetry live into runs/.
+6. Save final routing/execution result.
 
 No fallback.
 No acceptance testing.
@@ -16,8 +17,10 @@ No acceptance testing.
 
 import json
 import os
+import queue
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -30,15 +33,28 @@ import yaml
 
 LAB_DIR = Path(__file__).resolve().parent
 
+WORKSPACE_ROOT = LAB_DIR.parent
+
+SERVICE_ROOT = (
+    WORKSPACE_ROOT
+    / "order_flow_service"
+)
+
+RUNS_DIR = (
+    LAB_DIR
+    / "runs"
+)
+
 POLICY_FILE = (
     LAB_DIR
     / "config"
     / "routing_policy.yaml"
 )
 
-RUNS_DIR = LAB_DIR / "runs"
-
 CLASSIFIER_AGENT = "task-classifier"
+
+CLASSIFIER_TIMEOUT = 120
+AGENT_TIMEOUT = 300
 
 
 # ============================================================
@@ -57,7 +73,11 @@ def opencode_binary():
 # SAVE RAW JSONL
 # ============================================================
 
-def save_jsonl(request_name, role, stdout):
+def save_jsonl(
+    request_name,
+    role,
+    stdout,
+):
 
     RUNS_DIR.mkdir(
         parents=True,
@@ -70,7 +90,7 @@ def save_jsonl(request_name, role, stdout):
     )
 
     path.write_text(
-        stdout,
+        stdout or "",
         encoding="utf-8",
     )
 
@@ -98,7 +118,10 @@ def parse_opencode_output(stdout):
         except json.JSONDecodeError:
             continue
 
-        part = event.get("part", {})
+        part = event.get(
+            "part",
+            {},
+        )
 
         if part.get("type") == "text":
 
@@ -107,19 +130,124 @@ def parse_opencode_output(stdout):
             if text:
                 text_parts.append(text)
 
-    return "\n".join(text_parts).strip()
+    return "\n".join(
+        text_parts
+    ).strip()
+
+
+# ============================================================
+# EXTRACT ERROR FROM OPENCODE JSONL
+# ============================================================
+
+def extract_opencode_error(stdout):
+
+    if not stdout:
+        return None
+
+    for line in stdout.splitlines():
+
+        line = line.strip()
+
+        if not line:
+            continue
+
+        try:
+            event = json.loads(line)
+
+        except json.JSONDecodeError:
+            continue
+
+        if event.get("type") != "error":
+            continue
+
+        error = event.get(
+            "error",
+            {},
+        )
+
+        data = error.get(
+            "data",
+            {},
+        )
+
+        message = data.get(
+            "message"
+        )
+
+        reference = data.get(
+            "ref"
+        )
+
+        if message and reference:
+
+            return (
+                f"{message} "
+                f"(reference: {reference})"
+            )
+
+        if message:
+            return message
+
+        return str(error)
+
+    return None
+
+
+# ============================================================
+# VALIDATE ENVIRONMENT
+# ============================================================
+
+def validate_environment():
+
+    if not SERVICE_ROOT.exists():
+
+        raise FileNotFoundError(
+            "Service workspace not found:\n"
+            f"{SERVICE_ROOT}"
+        )
+
+    agents_dir = (
+        SERVICE_ROOT
+        / ".opencode"
+        / "agent"
+    )
+
+    if not agents_dir.exists():
+
+        raise FileNotFoundError(
+            "OpenCode agent directory not found:\n"
+            f"{agents_dir}"
+        )
+
+    if not POLICY_FILE.exists():
+
+        raise FileNotFoundError(
+            "Routing policy not found:\n"
+            f"{POLICY_FILE}"
+        )
 
 
 # ============================================================
 # STEP 1 — CLASSIFY TASK
 # ============================================================
 
-def classify_task(request_text, request_name):
+def classify_task(
+    request_text,
+    request_name,
+):
 
     print()
     print("=" * 60)
     print("1. TASK CLASSIFICATION")
     print("=" * 60)
+
+    print(
+        f"Workspace : {SERVICE_ROOT}"
+    )
+
+    print(
+        f"Agent     : {CLASSIFIER_AGENT}"
+    )
 
     # Compact request only for classification.
     compact_request = " ".join(
@@ -140,10 +268,12 @@ def classify_task(request_text, request_name):
 
         result = subprocess.run(
             command,
-            cwd=LAB_DIR,
+            cwd=SERVICE_ROOT,
             capture_output=True,
             text=True,
-            timeout=120,
+            encoding="utf-8",
+            errors="replace",
+            timeout=CLASSIFIER_TIMEOUT,
         )
 
     except subprocess.TimeoutExpired:
@@ -152,7 +282,6 @@ def classify_task(request_text, request_name):
             "Task classifier timed out."
         )
 
-
     # Save classifier telemetry.
     classifier_path = save_jsonl(
         request_name,
@@ -160,28 +289,38 @@ def classify_task(request_text, request_name):
         result.stdout,
     )
 
-
     if result.returncode != 0:
+
+        error_message = (
+            extract_opencode_error(
+                result.stdout
+            )
+        )
+
+        details = (
+            error_message
+            or result.stderr[-2000:]
+            or result.stdout[-2000:]
+            or "Unknown OpenCode error"
+        )
 
         raise RuntimeError(
             "Task classifier failed.\n\n"
-            + result.stderr[-2000:]
+            + details
         )
-
 
     response = parse_opencode_output(
         result.stdout
     )
 
-
-    # Remove accidental Markdown fences.
+    # Remove Markdown fences.
     response = (
         response
         .replace("```json", "")
+        .replace("```JSON", "")
         .replace("```", "")
         .strip()
     )
-
 
     try:
 
@@ -197,11 +336,9 @@ def classify_task(request_text, request_name):
             + response
         ) from exc
 
-
     task_type = classification.get(
         "task_type"
     )
-
 
     allowed_task_types = {
         "implementation",
@@ -210,19 +347,17 @@ def classify_task(request_text, request_name):
         "testing",
     }
 
-
     if task_type not in allowed_task_types:
 
         raise RuntimeError(
-            f"Invalid task_type returned "
+            "Invalid task_type returned "
             f"by classifier: {task_type}"
         )
 
-
+    print()
     print(
         f"Task Type : {task_type}"
     )
-
 
     signals = classification.get(
         "signals",
@@ -231,17 +366,20 @@ def classify_task(request_text, request_name):
 
     if signals:
 
-        print("\nSignals:")
+        print()
+        print("Signals:")
 
         for signal in signals:
-            print(f"  - {signal}")
 
+            print(
+                f"  - {signal}"
+            )
 
+    print()
     print(
-        f"\nClassifier telemetry:\n"
+        f"Classifier telemetry: "
         f"{classifier_path}"
     )
-
 
     return classification
 
@@ -252,20 +390,23 @@ def classify_task(request_text, request_name):
 
 def load_policy():
 
-    if not POLICY_FILE.exists():
-
-        raise FileNotFoundError(
-            f"Routing policy not found:\n"
-            f"{POLICY_FILE}"
-        )
-
-
     with POLICY_FILE.open(
         "r",
         encoding="utf-8",
     ) as f:
 
-        return yaml.safe_load(f)
+        policy = yaml.safe_load(f)
+
+    if not isinstance(
+        policy,
+        dict,
+    ):
+
+        raise RuntimeError(
+            "routing_policy.yaml is empty or invalid."
+        )
+
+    return policy
 
 
 # ============================================================
@@ -277,8 +418,9 @@ def select_agent(
     policy,
 ):
 
-    task_type = classification["task_type"]
-
+    task_type = classification[
+        "task_type"
+    ]
 
     try:
 
@@ -295,12 +437,197 @@ def select_agent(
             f"a mapping for: {exc}"
         ) from exc
 
-
     return agent
 
 
 # ============================================================
-# STEP 4 — RUN SELECTED AGENT
+# STREAM READER
+# ============================================================
+
+def stream_reader(
+    stream,
+    output_queue,
+    stream_name,
+):
+    """
+    Read stdout/stderr without blocking the main thread.
+
+    Each line is placed into a queue so that the main thread
+    can enforce the overall wall-clock timeout.
+    """
+
+    try:
+
+        for line in iter(
+            stream.readline,
+            "",
+        ):
+
+            output_queue.put(
+                (
+                    stream_name,
+                    line,
+                )
+            )
+
+    finally:
+
+        stream.close()
+
+        output_queue.put(
+            (
+                stream_name,
+                None,
+            )
+        )
+
+
+# ============================================================
+# DISPLAY LIVE EVENT
+# ============================================================
+
+def display_live_event(line):
+
+    try:
+
+        event = json.loads(
+            line
+        )
+
+    except json.JSONDecodeError:
+
+        return
+
+    event_type = event.get(
+        "type"
+    )
+
+    part = event.get(
+        "part",
+        {},
+    )
+
+    # --------------------------------------------------------
+    # Agent text
+    # --------------------------------------------------------
+
+    if event_type == "text":
+
+        text = part.get(
+            "text"
+        )
+
+        if text:
+
+            print()
+            print(text)
+            print()
+
+        return
+
+    # --------------------------------------------------------
+    # Tool activity
+    # --------------------------------------------------------
+
+    if event_type in {
+        "tool_use",
+        "tool",
+    }:
+
+        tool_name = (
+            part.get("tool")
+            or part.get("name")
+        )
+
+        if tool_name:
+
+            print(
+                f"[tool] {tool_name}"
+            )
+
+        return
+
+    # --------------------------------------------------------
+    # Step completion
+    # --------------------------------------------------------
+
+    if event_type == "step_finish":
+
+        tokens = part.get(
+            "tokens",
+            {},
+        )
+
+        total_tokens = tokens.get(
+            "total",
+            0,
+        )
+
+        cost = part.get(
+            "cost",
+            0,
+        )
+
+        print(
+            "[step] "
+            f"tokens={total_tokens} "
+            f"cost=${cost:.6f}"
+        )
+
+        return
+
+    # --------------------------------------------------------
+    # Error
+    # --------------------------------------------------------
+
+    if event_type == "error":
+
+        error = event.get(
+            "error",
+            {},
+        )
+
+        data = error.get(
+            "data",
+            {},
+        )
+
+        message = (
+            data.get("message")
+            or str(error)
+        )
+
+        print(
+            f"[error] {message}"
+        )
+
+
+# ============================================================
+# TERMINATE PROCESS
+# ============================================================
+
+def terminate_process(process):
+
+    if process.poll() is not None:
+        return
+
+    try:
+
+        process.terminate()
+
+        process.wait(
+            timeout=5
+        )
+
+    except subprocess.TimeoutExpired:
+
+        process.kill()
+
+        process.wait()
+
+
+# ============================================================
+# STEP 4 — RUN SELECTED AGENT WITH LIVE STREAMING
 # ============================================================
 
 def execute_agent(
@@ -314,11 +641,13 @@ def execute_agent(
     print("3. AGENT EXECUTION")
     print("=" * 60)
 
-
     print(
-        f"Agent : {agent}"
+        f"Agent     : {agent}"
     )
 
+    print(
+        f"Workspace : {SERVICE_ROOT}"
+    )
 
     command = [
         opencode_binary(),
@@ -330,93 +659,316 @@ def execute_agent(
         request_text,
     ]
 
+    # --------------------------------------------------------
+    # Create telemetry file BEFORE OpenCode starts
+    # --------------------------------------------------------
+
+    RUNS_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    jsonl_path = (
+        RUNS_DIR
+        / f"{request_name}_primary.jsonl"
+    )
+
+    print(
+        f"Telemetry : {jsonl_path}"
+    )
+
+    print()
+    print(
+        "OpenCode running..."
+    )
+    print()
+
+    # --------------------------------------------------------
+    # Start timer
+    # --------------------------------------------------------
 
     start = time.perf_counter()
 
+    # --------------------------------------------------------
+    # Start OpenCode
+    # --------------------------------------------------------
 
-    try:
+    process = subprocess.Popen(
+        command,
+        cwd=SERVICE_ROOT,
 
-        result = subprocess.run(
-            command,
-            cwd=LAB_DIR,
-            capture_output=True,
-            text=True,
-            timeout=300,
-        )
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
 
-    except subprocess.TimeoutExpired as exc:
+        text=True,
+        encoding="utf-8",
+        errors="replace",
 
-        elapsed = (
-            time.perf_counter()
-            - start
-        )
+        bufsize=1,
+    )
 
-        stdout = exc.stdout or ""
+    # --------------------------------------------------------
+    # Queue used by stdout/stderr reader threads
+    # --------------------------------------------------------
 
-        if isinstance(stdout, bytes):
+    output_queue = queue.Queue()
 
-            stdout = stdout.decode(
-                errors="replace"
+    stdout_thread = threading.Thread(
+        target=stream_reader,
+        args=(
+            process.stdout,
+            output_queue,
+            "stdout",
+        ),
+        daemon=True,
+    )
+
+    stderr_thread = threading.Thread(
+        target=stream_reader,
+        args=(
+            process.stderr,
+            output_queue,
+            "stderr",
+        ),
+        daemon=True,
+    )
+
+    stdout_thread.start()
+    stderr_thread.start()
+
+    stdout_finished = False
+    stderr_finished = False
+
+    stderr_lines = []
+
+    timed_out = False
+
+    # --------------------------------------------------------
+    # Stream telemetry to disk
+    # --------------------------------------------------------
+
+    with jsonl_path.open(
+        "w",
+        encoding="utf-8",
+        buffering=1,
+    ) as telemetry_file:
+
+        while True:
+
+            elapsed = (
+                time.perf_counter()
+                - start
             )
 
+            # ------------------------------------------------
+            # TRUE WALL-CLOCK TIMEOUT
+            # ------------------------------------------------
 
-        jsonl_path = save_jsonl(
-            request_name,
-            "primary",
-            stdout,
-        )
+            if elapsed >= AGENT_TIMEOUT:
 
+                timed_out = True
 
-        print(
-            "\nExecution Status: TIMEOUT"
-        )
+                print()
+                print(
+                    f"[timeout] Agent exceeded "
+                    f"{AGENT_TIMEOUT} seconds."
+                )
 
+                terminate_process(
+                    process
+                )
 
-        return {
-            "status": "TIMEOUT",
-            "wall_seconds": elapsed,
-            "jsonl_path": str(jsonl_path),
-        }
+                break
 
+            # ------------------------------------------------
+            # Read next available output
+            # ------------------------------------------------
+
+            try:
+
+                stream_name, line = (
+                    output_queue.get(
+                        timeout=0.2
+                    )
+                )
+
+            except queue.Empty:
+
+                # Process exited and both streams drained.
+                if (
+                    process.poll()
+                    is not None
+                    and stdout_finished
+                    and stderr_finished
+                ):
+                    break
+
+                continue
+
+            # ------------------------------------------------
+            # Stream completed
+            # ------------------------------------------------
+
+            if line is None:
+
+                if stream_name == "stdout":
+                    stdout_finished = True
+
+                elif stream_name == "stderr":
+                    stderr_finished = True
+
+                if (
+                    process.poll()
+                    is not None
+                    and stdout_finished
+                    and stderr_finished
+                ):
+                    break
+
+                continue
+
+            # ------------------------------------------------
+            # STDOUT = OpenCode JSONL telemetry
+            # ------------------------------------------------
+
+            if stream_name == "stdout":
+
+                telemetry_file.write(
+                    line
+                )
+
+                # Make event visible on disk immediately.
+                telemetry_file.flush()
+
+                display_live_event(
+                    line
+                )
+
+            # ------------------------------------------------
+            # STDERR
+            # ------------------------------------------------
+
+            elif stream_name == "stderr":
+
+                stderr_lines.append(
+                    line
+                )
+
+    # --------------------------------------------------------
+    # Wait for reader threads briefly
+    # --------------------------------------------------------
+
+    stdout_thread.join(
+        timeout=1
+    )
+
+    stderr_thread.join(
+        timeout=1
+    )
 
     elapsed = (
         time.perf_counter()
         - start
     )
 
+    # --------------------------------------------------------
+    # Timeout
+    # --------------------------------------------------------
 
-    jsonl_path = save_jsonl(
-        request_name,
-        "primary",
-        result.stdout,
-    )
-
-
-    if result.returncode != 0:
+    if timed_out:
 
         print()
+        print("=" * 60)
+        print(
+            "Execution Status: TIMEOUT"
+        )
+        print("=" * 60)
+
+        print(
+            f"Wall Time       : "
+            f"{elapsed:.2f}s"
+        )
+
+        print(
+            f"Telemetry       : "
+            f"{jsonl_path}"
+        )
+
+        return {
+            "status":
+                "TIMEOUT",
+
+            "wall_seconds":
+                elapsed,
+
+            "jsonl_path":
+                str(jsonl_path),
+        }
+
+    # --------------------------------------------------------
+    # Obtain return code
+    # --------------------------------------------------------
+
+    return_code = (
+        process.wait()
+    )
+
+    # --------------------------------------------------------
+    # Model / OpenCode failure
+    # --------------------------------------------------------
+
+    if return_code != 0:
+
+        print()
+        print("=" * 60)
         print(
             "Execution Status: MODEL_ERROR"
         )
+        print("=" * 60)
 
-        if result.stderr:
+        print(
+            f"Return Code     : "
+            f"{return_code}"
+        )
 
+        stderr = "".join(
+            stderr_lines
+        )
+
+        if stderr:
+
+            print()
+            print("STDERR:")
             print(
-                result.stderr[-2000:]
+                stderr[-5000:]
             )
 
+        print(
+            f"Telemetry       : "
+            f"{jsonl_path}"
+        )
 
         return {
-            "status": "MODEL_ERROR",
-            "wall_seconds": elapsed,
-            "jsonl_path": str(jsonl_path),
+            "status":
+                "MODEL_ERROR",
+
+            "wall_seconds":
+                elapsed,
+
+            "jsonl_path":
+                str(jsonl_path),
         }
 
+    # --------------------------------------------------------
+    # Success
+    # --------------------------------------------------------
 
     print()
+    print("=" * 60)
     print(
         "Execution Status: COMPLETED"
     )
+    print("=" * 60)
 
     print(
         f"Wall Time       : "
@@ -428,16 +980,20 @@ def execute_agent(
         f"{jsonl_path}"
     )
 
-
     return {
-        "status": "COMPLETED",
-        "wall_seconds": elapsed,
-        "jsonl_path": str(jsonl_path),
+        "status":
+            "COMPLETED",
+
+        "wall_seconds":
+            elapsed,
+
+        "jsonl_path":
+            str(jsonl_path),
     }
 
 
 # ============================================================
-# SAVE RESULT
+# SAVE FINAL RESULT
 # ============================================================
 
 def save_result(
@@ -458,22 +1014,22 @@ def save_result(
         "selected_agent":
             agent,
 
+        "workspace":
+            str(SERVICE_ROOT),
+
         "execution":
             execution,
     }
-
 
     RUNS_DIR.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-
     path = (
         RUNS_DIR
         / f"{request_name}_result.json"
     )
-
 
     path.write_text(
         json.dumps(
@@ -482,7 +1038,6 @@ def save_result(
         ),
         encoding="utf-8",
     )
-
 
     return path
 
@@ -496,9 +1051,7 @@ def main():
     if len(sys.argv) != 2:
 
         print()
-        print(
-            "Usage:"
-        )
+        print("Usage:")
 
         print(
             "python run_router.py "
@@ -507,6 +1060,11 @@ def main():
 
         sys.exit(1)
 
+    # --------------------------------------------------------
+    # Validate environment
+    # --------------------------------------------------------
+
+    validate_environment()
 
     # --------------------------------------------------------
     # Read engineering request
@@ -516,18 +1074,15 @@ def main():
         sys.argv[1]
     ).resolve()
 
-
     if not request_path.exists():
 
         raise FileNotFoundError(
             request_path
         )
 
-
     request_name = (
         request_path.stem
     )
-
 
     request_text = (
         request_path.read_text(
@@ -535,18 +1090,36 @@ def main():
         )
     )
 
+    # --------------------------------------------------------
+    # Header
+    # --------------------------------------------------------
 
     print()
     print("=" * 60)
+
     print(
         "LAB 3 — BENCHMARK-DERIVED MODEL ROUTER"
     )
+
     print("=" * 60)
 
+    print()
     print(
-        f"\nRequest: {request_name}"
+        f"Request   : {request_name}"
     )
 
+    print(
+        f"Lab       : {LAB_DIR}"
+    )
+
+    print(
+        f"Workspace : {SERVICE_ROOT}"
+    )
+
+    print(
+        "Agents    : "
+        f"{SERVICE_ROOT / '.opencode' / 'agent'}"
+    )
 
     # ========================================================
     # 1. CLASSIFY
@@ -557,25 +1130,21 @@ def main():
         request_name,
     )
 
-
     # ========================================================
-    # 2. LOAD POLICY + SELECT AGENT
+    # 2. ROUTE
     # ========================================================
 
     policy = load_policy()
-
 
     agent = select_agent(
         classification,
         policy,
     )
 
-
     print()
     print("=" * 60)
     print("2. ROUTING DECISION")
     print("=" * 60)
-
 
     print(
         f"Task Type : "
@@ -583,10 +1152,8 @@ def main():
     )
 
     print(
-        f"Agent     : "
-        f"{agent}"
+        f"Agent     : {agent}"
     )
-
 
     # ========================================================
     # 3. EXECUTE
@@ -597,7 +1164,6 @@ def main():
         request_text,
         request_name,
     )
-
 
     # ========================================================
     # 4. SAVE RESULT
@@ -610,7 +1176,6 @@ def main():
         execution,
     )
 
-
     # ========================================================
     # FINAL RESULT
     # ========================================================
@@ -620,22 +1185,29 @@ def main():
     print("FINAL RESULT")
     print("=" * 60)
 
-
     print(
-        f"Status : "
+        f"Status    : "
         f"{execution['status']}"
     )
 
     print(
-        f"Agent  : "
+        f"Agent     : "
         f"{agent}"
     )
 
     print(
-        f"\nResult artifact:\n"
-        f"{result_path}"
+        f"Workspace : "
+        f"{SERVICE_ROOT}"
     )
 
+    print()
+    print(
+        "Result artifact:"
+    )
+
+    print(
+        result_path
+    )
 
     print()
     print(
@@ -646,7 +1218,6 @@ def main():
         "python metrics_helper.py "
         f"runs/{request_name}_primary.jsonl"
     )
-
 
     if execution["status"] == "COMPLETED":
         sys.exit(0)
