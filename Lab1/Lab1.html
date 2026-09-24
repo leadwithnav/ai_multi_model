@@ -409,26 +409,27 @@ export AWS_REGION=us-east-1</pre>
                     <div id="m1" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
                         <div class="accordion-body">
                             <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
-                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m1-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m1-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
                             </ul>
-                            <div class="tab-content mb-3">
-                                <div class="tab-pane fade show active" id="m1-ps" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-sonnet --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="m1-bash" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to &amp; Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd Lab1</pre>
+                            </div>
+                             <div class="code-container">
+                                    <div class="code-header"><span>Run task against Sonnet-3-5</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/TASK.md)" > runs/sonnet.jsonl</pre>
                             </div>
                             <div class="code-container">
-                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; bash reset.sh</pre>
+                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py claude-3-5-sonnet runs/sonnet.jsonl</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh</pre>
                             </div>
                         </div>
                     </div>
