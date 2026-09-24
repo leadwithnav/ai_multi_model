@@ -339,30 +339,28 @@ export AWS_REGION=us-east-1</pre>
                             <h2><i class="bi bi-1-circle-fill text-primary me-2"></i> Workload 1 — Feature Implementation</h2>
                             <p><strong>Requirement:</strong> Implement order cancellation and inventory stock restoration (`cancel_order` &amp; `POST /orders/{id}/cancel`).</p>
                             
-
-                            <div class="code-container">
-                                <div class="code-header"><span>Go to Lab2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd Lab2</pre>
+                          <div class="code-container">
+                                <div class="code-header"><span>Check Implementation Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\implementation\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark\implementation\TASK.md</pre>
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Implementation Task using claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/implementation/TASK.md)" > runs/implementation-claude-3-5-sonnet.jsonl;</pre>
+                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-claude-3-5-sonnet.jsonl;</pre>
                             </div>
-
 
                               <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>python metrics_helper.py claude-3-5-sonnet runs/implementation-claude-3-5-sonnet.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/implementation-claude-3-5-sonnet.jsonl</pre>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Instructor Evaluation — Task 1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_implementation_acceptance.py -v</pre>
+                                <pre>pytest hidden_eval/test_implementation_acceptance.py -v</pre>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -377,24 +375,29 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Refactor `src/services/order_service.py` to improve readability and maintainability while preserving public API contracts.</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark\refactoring\TASK.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\refactoring\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div> 
+
+                            <div class="code-container">
                                 <div class="code-header"><span>Run Refactoring task aganist claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/refactoring/TASK.md)" > runs/refactor-claude-3-5-sonnet.jsonl</pre>
+                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-claude-3-5-sonnet.jsonl</pre>
                             </div>
 
                             
                               <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and Record it Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>python metrics_helper.py claude-3-5-sonnet runs/refactor-claude-3-5-sonnet.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/refactor-claude-3-5-sonnet.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_refactoring_regression.py -v</pre>
+                                <pre>pytest hidden_eval/test_refactoring_regression.py -v</pre>
                             </div>
 
                               <div class="code-container">
@@ -409,24 +412,31 @@ export AWS_REGION=us-east-1</pre>
                             <h2><i class="bi bi-3-circle-fill text-primary me-2"></i> Workload 3 — Debugging</h2>
                             <p><strong>Requirement:</strong> Diagnose and fix incident INC-8821 (inventory stock leak during multi-item order reservation failure).</p>
 
-                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark/debugging/Task.md</pre>
+                            
+                            <div class="code-container">
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\debugging\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>  
+                            
+
+                            <div class="code-container">
                                 <div class="code-header"><span>Run task against claude-3-5-sonnet </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/debugging/TASK.md)" > runs/debugging-claude-3-5-sonnet.jsonl;</pre>
+                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-claude-3-5-sonnet.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py claude-3-5-sonnet runs/debugging-claude-3-5-sonnet.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/debugging-claude-3-5-sonnet.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_debugging_acceptance.py</pre>
+                                <pre>pytest hidden_eval/test_debugging_acceptance.py</pre>
                             </div>
 
                             <div class="code-container">
@@ -441,26 +451,30 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Generate an automated test suite for `InventoryService` in `tests/test_inventory_generated.py`. Evaluated via hidden mutation testing.</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark/testing/Task.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\testing\TASK.md</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run testing task against claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/testing/TASK.md)" > runs/testing-claude-3-5-sonnet.jsonl</pre>
+                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-claude-3-5-sonnet.jsonl</pre>
                             </div>
 
-                              <div class="code-container">
-                                <div class="code-header"><span>Run testing task against claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py claude-3-5-sonnet runs/testing-claude-3-5-sonnet.jsonl</pre>
+                            <div class="code-container">
+                                <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/testing-claude-3-5-sonnet.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Instructor Mutation Evaluator — Task 4</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python acceptance_tests/testing_eval/evaluator.py</pre>
+                                <pre>python hidden_eval/testing_eval/evaluator.py</pre>
                             </div>
 
-                            
                             <div class="code-container">
                                 <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>bash reset.sh</pre>
@@ -487,28 +501,30 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Implement order cancellation and inventory stock restoration (`cancel_order` &amp; `POST /orders/{id}/cancel`).</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Go to Lab2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd Lab2</pre>
+                                <div class="code-header"><span>Check Implementation Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\implementation\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark\implementation\TASK.md</pre>
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Implementation Task using claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat benchmark/implementation/TASK.md)" > runs/implementation-claude-3-5-haiku.jsonl;</pre>
+                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-claude-3-5-haiku.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>python metrics_helper.py claude-3-5-haiku runs/implementation-claude-3-5-haiku.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/implementation-claude-3-5-haiku.jsonl</pre>
                             </div>
+
                             <div class="code-container">
                                 <div class="code-header"><span>Instructor Evaluation — Task 1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_implementation_acceptance.py -v</pre>
+                                <pre>pytest hidden_eval/test_implementation_acceptance.py -v</pre>
                             </div>
+
                             <div class="code-container">
                                 <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>bash reset.sh</pre>
@@ -521,23 +537,28 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Refactor `src/services/order_service.py` to improve readability and maintainability while preserving public API contracts.</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark\refactoring\TASK.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\refactoring\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Refactoring task against claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat benchmark/refactoring/TASK.md)" > runs/refactor-claude-3-5-haiku.jsonl</pre>
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Extract Metrics and Record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>python metrics_helper.py claude-3-5-haiku runs/refactor-claude-3-5-haiku.jsonl</pre>
+                                <div class="code-header"><span>Run Refactoring task aganist claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-claude-3-5-haiku.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Extract Metrics and Record it Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/refactor-claude-3-5-haiku.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_refactoring_regression.py -v</pre>
+                                <pre>pytest hidden_eval/test_refactoring_regression.py -v</pre>
                             </div>
 
                             <div class="code-container">
@@ -552,23 +573,28 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Diagnose and fix incident INC-8821 (inventory stock leak during multi-item order reservation failure).</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark/debugging/Task.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\debugging\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run task against claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat benchmark/debugging/TASK.md)" > runs/debugging-claude-3-5-haiku.jsonl;</pre>
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Run task against claude-3-5-haiku </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-claude-3-5-haiku.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py claude-3-5-haiku runs/debugging-claude-3-5-haiku.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/debugging-claude-3-5-haiku.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_debugging_acceptance.py</pre>
+                                <pre>pytest hidden_eval/test_debugging_acceptance.py</pre>
                             </div>
 
                             <div class="code-container">
@@ -583,23 +609,28 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Generate an automated test suite for `InventoryService` in `tests/test_inventory_generated.py`. Evaluated via hidden mutation testing.</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark/testing/Task.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\testing\TASK.md</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run testing task against claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat benchmark/testing/TASK.md)" > runs/testing-claude-3-5-haiku.jsonl</pre>
+                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-claude-3-5-haiku.jsonl</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py claude-3-5-haiku runs/testing-claude-3-5-haiku.jsonl</pre>
+                                <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/testing-claude-3-5-haiku.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Instructor Mutation Evaluator — Task 4</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python acceptance_tests/testing_eval/evaluator.py</pre>
+                                <pre>python hidden_eval/testing_eval/evaluator.py</pre>
                             </div>
 
                             <div class="code-container">
@@ -628,28 +659,30 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Implement order cancellation and inventory stock restoration (`cancel_order` &amp; `POST /orders/{id}/cancel`).</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Go to Lab2</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd Lab2</pre>
+                                <div class="code-header"><span>Check Implementation Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\implementation\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark\implementation\TASK.md</pre>
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Implementation Task using claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat benchmark/implementation/TASK.md)" > runs/implementation-claude-3-opus.jsonl;</pre>
+                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-claude-3-opus.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>python metrics_helper.py claude-3-opus runs/implementation-claude-3-opus.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/implementation-claude-3-opus.jsonl</pre>
                             </div>
+
                             <div class="code-container">
                                 <div class="code-header"><span>Instructor Evaluation — Task 1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_implementation_acceptance.py -v</pre>
+                                <pre>pytest hidden_eval/test_implementation_acceptance.py -v</pre>
                             </div>
+
                             <div class="code-container">
                                 <div class="code-header"><span>Clean working directory:</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>bash reset.sh</pre>
@@ -662,23 +695,28 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Refactor `src/services/order_service.py` to improve readability and maintainability while preserving public API contracts.</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark\refactoring\TASK.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\refactoring\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Refactoring task against claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat benchmark/refactoring/TASK.md)" > runs/refactor-claude-3-opus.jsonl</pre>
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Extract Metrics and Record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>python metrics_helper.py claude-3-opus runs/refactor-claude-3-opus.jsonl</pre>
+                                <div class="code-header"><span>Run Refactoring task aganist claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-claude-3-opus.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Extract Metrics and Record it Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/refactor-claude-3-opus.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_refactoring_regression.py -v</pre>
+                                <pre>pytest hidden_eval/test_refactoring_regression.py -v</pre>
                             </div>
 
                             <div class="code-container">
@@ -693,23 +731,28 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Diagnose and fix incident INC-8821 (inventory stock leak during multi-item order reservation failure).</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark/debugging/Task.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\debugging\TASK.md</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run task against claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat benchmark/debugging/TASK.md)" > runs/debugging-claude-3-opus.jsonl;</pre>
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Run task against claude-3-opus </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-claude-3-opus.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py claude-3-opus runs/debugging-claude-3-opus.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/debugging-claude-3-opus.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest acceptance_tests/test_debugging_acceptance.py</pre>
+                                <pre>pytest hidden_eval/test_debugging_acceptance.py</pre>
                             </div>
 
                             <div class="code-container">
@@ -724,23 +767,28 @@ export AWS_REGION=us-east-1</pre>
                             <p><strong>Requirement:</strong> Generate an automated test suite for `InventoryService` in `tests/test_inventory_generated.py`. Evaluated via hidden mutation testing.</p>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Check Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>benchmark/testing/Task.md</pre>
+                                <div class="code-header"><span>Check Task (Don't Run)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>task\testing\TASK.md</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Go to order_flow_service and cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service;bash reset.sh;rm -rf .pytest_cache/</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Run testing task against claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat benchmark/testing/TASK.md)" > runs/testing-claude-3-opus.jsonl</pre>
+                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-claude-3-opus.jsonl</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py claude-3-opus runs/testing-claude-3-opus.jsonl</pre>
+                                <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
+                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/testing-claude-3-opus.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Instructor Mutation Evaluator — Task 4</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python acceptance_tests/testing_eval/evaluator.py</pre>
+                                <pre>python hidden_eval/testing_eval/evaluator.py</pre>
                             </div>
 
                             <div class="code-container">
