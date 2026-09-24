@@ -8,8 +8,8 @@ failure context perform differently from retrying cold with only the
 original engineering request?"
 
 Experiment Setup:
-- Model: Claude 3.5 Haiku (held constant)
-- Coding Agent: haiku.md
+- Model: openai.gpt-5.6-terra (held constant)
+- Coding Agent: terra.md
 - Diagnostician Agent: diagnostician.md (Sonnet)
 - Repository Baseline: order_flow_service
 - Trials: 3 trials for COLD RETRY vs 3 trials for CONTEXT-AWARE RETRY
@@ -229,7 +229,7 @@ def main():
     print("LAB 8 — CONTEXT HANDOFF EXPERIMENT PIPELINE")
     print("=" * 60)
     print(f"Task File        : {task_path}")
-    print("Model            : Claude 3.5 Haiku (Held Constant)")
+    print("Model            : openai.gpt-5.6-terra (Held Constant)")
     print("Branch A         : Cold Retry (Original Request Only, 3 Trials)")
     print("Branch B         : Context-Aware Retry (Request + Handoff Brief, 3 Trials)")
     print("=" * 60)
@@ -247,11 +247,6 @@ def main():
     test_1 = run_acceptance_tests()
     git_diff_1 = get_git_diff()
     print(f"Attempt 1 Test Result: {test_1['status']}")
-
-    if test_1['status'] == "PASS":
-        print("Note: Attempt 1 passed. Forcing failure state to proceed with failure handoff experiment...")
-        test_1['status'] = "FAIL"
-        test_1['output'] = "AssertionError: Race condition detected! Expected 5 successful reservations, got 15"
 
     # ------------------------------------------------------------
     # STEP 3: BRANCH A — COLD RETRY (3 TRIALS)
@@ -285,9 +280,16 @@ def main():
     print("BRANCH B: CONTEXT-AWARE RETRY (3 TRIALS)")
     print("=" * 60)
 
-    # Generate Structured Failure Handoff Brief specifically for Branch B
-    handoff_brief = generate_failure_handoff(original_prompt, test_1['output'], git_diff_1)
-    context_prompt = format_handoff_prompt(original_prompt, handoff_brief)
+    # Generate Structured Failure Handoff Brief ONLY if Attempt 1 FAILED
+    if test_1['status'] == "FAIL":
+        print("Attempt 1 FAILED. Running Diagnostician to generate Failure Handoff Brief...")
+        handoff_brief = generate_failure_handoff(original_prompt, test_1['output'], git_diff_1)
+        context_prompt = format_handoff_prompt(original_prompt, handoff_brief)
+    else:
+        print("Attempt 1 PASSED. No failure handoff brief required.")
+        handoff_brief = {"info": "Attempt 1 passed on initial execution."}
+        context_prompt = original_prompt
+
     handoff_trials = []
     for trial_idx in range(1, 4):
         print(f"\n--- Context-Aware Retry Trial {trial_idx}/3 ---")
@@ -339,7 +341,7 @@ def main():
     report_payload = {
         "lab": "Lab8_Context_Handoff",
         "task": str(task_path),
-        "model": "Claude 3.5 Haiku",
+        "model": "openai.gpt-5.6-terra",
         "disclaimer": "n=3 per branch -- directional signal, not statistical proof...",
         "attempt_1_status": test_1['status'],
         "handoff_brief": handoff_brief,
