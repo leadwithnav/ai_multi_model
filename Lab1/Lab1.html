@@ -289,23 +289,8 @@
             <p>Each model receives the exact same implementation requirement task defined in <code>benchmark/TASK.md</code>:</p>
 
             <div class="code-container">
-                <div class="code-header"><span>benchmark/TASK.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre>Implement the in-memory rate limiter in:
-
-../order-flow-service/src/utils/rate_limiter.py
-
-The rate limiter should prevent a client from exceeding a configurable
-number of requests within a configurable time window.
-
-The implementation should be suitable for use in a concurrent web application.
-
-Requirements:
-
-- Preserve the existing public interface.
-- Do not modify unrelated files.
-- Keep the implementation simple and maintainable.
-
-When finished, return a short summary of what you changed.</pre>
+                <div class="code-header"><span>Understand the Task</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                <pre>check the task in Lab1/task/TASK.md</pre>
             </div>
         </div>
 
@@ -373,7 +358,7 @@ export AWS_REGION=us-east-1</pre>
                             <span class="badge bg-primary mb-2">Step 2</span>
                             <h6 class="text-white mb-1"><i class="bi bi-check-circle-fill me-1 text-info"></i> Run Tests</h6>
                             <p class="small text-white mb-1">Evaluate acceptance quality:</p>
-                            <code class="small text-info d-block p-1 bg-black rounded">pytest -q tests/test_rate_limiter.py</code>
+                            <code class="small text-info d-block p-1 bg-black rounded">pytest -q hidden_evals/test_rate_limiter.py</code>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-3">
@@ -412,12 +397,21 @@ export AWS_REGION=us-east-1</pre>
                                 <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m1-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
                             </ul>
                              <div class="code-container">
-                                <div class="code-header"><span>Go to &amp; Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd Lab1</pre>
+                                <div class="code-header"><span>Go to &amp; order_flow_service</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service</pre>
                             </div>
                              <div class="code-container">
+                                <div class="code-header"><span>cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                             <div class="code-container">
                                     <div class="code-header"><span>Run task against Sonnet-3-5</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat benchmark/TASK.md)" > runs/sonnet.jsonl</pre>
+                                    <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab1/task/TASK.md)" > ../Lab1/runs/sonnet.jsonl</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../Lab1</pre>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -429,77 +423,96 @@ export AWS_REGION=us-east-1</pre>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>bash reset.sh</pre>
+                                <pre>bash reset.sh;</pre>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Model 2: Claude 3.5 Haiku -->
+                
+                    <!-- Model 2: Claude 3.5 Haiku -->
                 <div class="accordion-item bg-dark border text-main rounded mb-2">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m2">
-                            2. Claude 3.5 Haiku (<code>claude-3-5-haiku</code>)
-                        </button>
+                           2. Claude 3.5 Haiku (<code>claude-3-5-haiku</code>)
                     </h2>
                     <div id="m2" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
                         <div class="accordion-body">
                             <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
-                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m2-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m2-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
                             </ul>
-                            <div class="tab-content mb-3">
-                                <div class="tab-pane fade show active" id="m2-ps" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-haiku --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="m2-bash" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-5-haiku --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to &amp; order_flow_service</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                             <div class="code-container">
+                                    <div class="code-header"><span>Run task against haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent  claude-3-5-haiku --format json "$(cat ../Lab1/task/TASK.md)" > ../Lab1/runs/haiku.jsonl</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../Lab1</pre>
                             </div>
                             <div class="code-container">
-                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py;  bash reset.sh</pre>
+                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py haiku runs/haiku.jsonl</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;</pre>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Model 3: Claude 3 Opus -->
+
+                 <!-- Model 3: Claude 3 Opus -->
                 <div class="accordion-item bg-dark border text-main rounded mb-2">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m3">
-                            3. Claude 3 Opus (<code>claude-3-opus</code>)
-                        </button>
+                           3. Claude 3 Opus (<code>claude-3-opus</code>)
                     </h2>
                     <div id="m3" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
                         <div class="accordion-body">
                             <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
-                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m3-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m3-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
                             </ul>
-                            <div class="tab-content mb-3">
-                                <div class="tab-pane fade show active" id="m3-ps" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-opus --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="m3-bash" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent claude-3-opus --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to &amp; order_flow_service</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                             <div class="code-container">
+                                    <div class="code-header"><span>Run task against haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent  claude-3-opus --format json "$(cat ../Lab1/task/TASK.md)" > ../Lab1/runs/opus.jsonl</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../Lab1</pre>
                             </div>
                             <div class="code-container">
-                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; bash reset.sh</pre>
+                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py opus runs/opus.jsonl</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;</pre>
                             </div>
                         </div>
                     </div>
@@ -510,66 +523,84 @@ export AWS_REGION=us-east-1</pre>
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m4">
                             4. GPT-5.6 Luna (<code>gpt-5-6-luna</code>)
-                        </button>
                     </h2>
                     <div id="m4" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
                         <div class="accordion-body">
                             <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
-                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m4-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m4-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
                             </ul>
-                            <div class="tab-content mb-3">
-                                <div class="tab-pane fade show active" id="m4-ps" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-luna --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="m4-bash" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-luna --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to &amp; order_flow_service</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                             <div class="code-container">
+                                    <div class="code-header"><span>Run task against haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent  gpt-5-6-luna  --format json "$(cat ../Lab1/task/TASK.md)" > ../Lab1/runs/luna.jsonl</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../Lab1</pre>
                             </div>
                             <div class="code-container">
-                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; bash reset.sh</pre>
+                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py luna runs/luna.jsonl</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;</pre>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Model 5: GPT-5.6 Terra -->
+                  <!-- Model 5: GPT-5.6 Terra -->
                 <div class="accordion-item bg-dark border text-main rounded mb-2">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m5">
                             5. GPT-5.6 Terra (<code>gpt-5-6-terra</code>)
-                        </button>
                     </h2>
                     <div id="m5" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
                         <div class="accordion-body">
                             <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
-                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m5-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m5-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
                             </ul>
-                            <div class="tab-content mb-3">
-                                <div class="tab-pane fade show active" id="m5-ps" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-terra --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="m5-bash" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-terra --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to &amp; order_flow_service</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                             <div class="code-container">
+                                    <div class="code-header"><span>Run task against haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent  gpt-5-6-terra   --format json "$(cat ../Lab1/task/TASK.md)" > ../Lab1/runs/terra.jsonl</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../Lab1</pre>
                             </div>
                             <div class="code-container">
-                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; bash reset.sh</pre>
+                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py terra runs/terra.jsonl</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;</pre>
                             </div>
                         </div>
                     </div>
@@ -580,38 +611,71 @@ export AWS_REGION=us-east-1</pre>
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m6">
                             6. GPT-5.6 Sol (<code>gpt-5-6-sol</code>)
-                        </button>
                     </h2>
                     <div id="m6" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
                         <div class="accordion-body">
                             <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
-                                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#m6-ps" type="button" role="tab"><i class="bi bi-windows"></i> PowerShell</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m6-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
                             </ul>
-                            <div class="tab-content mb-3">
-                                <div class="tab-pane fade show active" id="m6-ps" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-sol --format json "$(Get-Content benchmark/TASK.md -Raw)" | Select-String '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="m6-bash" role="tabpanel">
-                                    <div class="code-container">
-                                        <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                        <pre>opencode run --agent gpt-5-6-sol --format json "$(cat benchmark/TASK.md)" | grep '"type":"step_finish"'</pre>
-                                    </div>
-                                </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to &amp; order_flow_service</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd order_flow_service</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;rm -rf .pytest_cache/</pre>
+                            </div>
+
+                             <div class="code-container">
+                                    <div class="code-header"><span>Run task against haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run --agent gpt-5-6-sol   --format json "$(cat ../Lab1/task/TASK.md)" > ../Lab1/runs/sol.jsonl</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd ../Lab1</pre>
                             </div>
                             <div class="code-container">
-                                <div class="code-header"><span>Run Tests &amp; Reset</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../order-flow-service; pytest -q tests/test_rate_limiter.py; bash reset.sh</pre>
+                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py sol runs/sol.jsonl</pre>
+                            </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>bash reset.sh;</pre>
                             </div>
                         </div>
                     </div>
                 </div>
 
-            </div>
-        </div>
+
+         <!-- BenchMark Analyzer -->
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#m7">
+                            7. Run <code> Benchmark Analyzer Agent</code>) to analyze all runs
+                           
+                    </h2>
+                    <div id="m7" class="accordion-collapse collapse" data-bs-parent="#modelCmdsAccordion">
+                        <div class="accordion-body">
+                            <ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#m7-bash" type="button" role="tab"><i class="bi bi-terminal"></i> Bash</button></li>
+                            </ul>
+                             <div class="code-container">
+                                <div class="code-header"><span>Go to &amp; Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd Lab1</pre>
+                            </div>
+
+                             <div class="code-container">
+                                    <div class="code-header"><span>Run task Banchmark analyzer agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                    <pre>opencode run   --agent benchmark-analyzer   "Analyze the benchmark runs in runs/"</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
         <!-- Step 5: Benchmark Table -->
         <div class="lab-card" id="step5-table">
