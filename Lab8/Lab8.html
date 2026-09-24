@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 8 — Context Handoff: Cold vs Context-Aware Retry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+            width: 260px;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1f242d;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #e6edf3;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .btn-copy {
+            background-color: #21262d;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy:hover {
+            background-color: #30363d;
+            color: #ffffff;
+        }
+
+        .table-custom {
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+
+        .table-custom th {
+            background-color: #21262d;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .table-custom td {
+            background-color: var(--card-bg);
+            vertical-align: middle;
+        }
+
+        .table-input {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .table-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .diagram-box {
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: monospace;
+            white-space: pre;
+            color: #58a6ff;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <h5 class="text-white mb-4 px-2"><i class="bi bi-cpu text-primary"></i> AI Multi-Model</h5>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="../Lab0/Lab0.html"><i class="bi bi-check-circle"></i> Lab 0 — Setup</a>
+            <a class="nav-link" href="../Lab1/Lab1.html"><i class="bi bi-check-circle"></i> Lab 1 — Prompts</a>
+            <a class="nav-link" href="../Lab2/Lab2.html"><i class="bi bi-check-circle"></i> Lab 2 — Evaluation</a>
+            <a class="nav-link" href="../Lab3/Lab3.html"><i class="bi bi-check-circle"></i> Lab 3 — Routing</a>
+            <a class="nav-link" href="../Lab4/Lab4.html"><i class="bi bi-check-circle"></i> Lab 4 — Agents</a>
+            <a class="nav-link" href="../Lab5/Lab5.html"><i class="bi bi-check-circle"></i> Lab 5 — Task Classifier</a>
+            <a class="nav-link" href="../Lab6/Lab6.html"><i class="bi bi-check-circle"></i> Lab 6 — Recovery</a>
+            <a class="nav-link" href="../Lab7/Lab7.html"><i class="bi bi-check-circle"></i> Lab 7 — Tiering</a>
+            <a class="nav-link active" href="Lab8.html"><i class="bi bi-play-circle-fill"></i> Lab 8 — Context Handoff</a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge-course mb-2 d-inline-block">AI Multi-Model Engineering</span>
+                <h1>Lab 8 — Context Handoff Experiment</h1>
+                <p class="text-secondary mb-0">Cold Retry vs. Context-Aware Failure Handoff Retry</p>
+            </div>
+        </div>
+
+        <!-- Overview Card -->
+        <div class="lab-card">
+            <h2><i class="bi bi-diagram-3 text-info me-2"></i> Empirical Question</h2>
+            <p>
+                When an initial AI coding attempt fails, how does retrying <strong>cold</strong> (with only the original engineering request) 
+                compare to retrying with a <strong>structured failure handoff brief</strong> (root cause diagnosis, failed assumptions, suggested remedy)?
+            </p>
+            
+            <div class="alert alert-dark border-secondary mt-3 mb-0">
+                <i class="bi bi-info-circle text-accent me-2"></i>
+                <strong>Controlled Variables:</strong> Model (GPT-5.6 Terra), Coding Agent (`terra.md`), Target Repo (`order_flow_service`), Task (`request_01.md`), and Hidden Test Suite are held strictly constant across 3 trials per branch.
+            </div>
+        </div>
+
+        <!-- Flow Diagram Card -->
+        <div class="lab-card">
+            <h3><i class="bi bi-arrow-repeat text-warning me-2"></i> Experiment Pipeline Flow</h3>
+            <div class="diagram-box">
+                      ┌──────────────────────────────────────────────┐
+                      │              Attempt 1 Execution             │
+                      │          Model: GPT-5.6 Terra             │
+                      └──────────────────────┬───────────────────────┘
+                                             │
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │       Acceptance Test: FAILED               │
+                      │       (INC-9204 TOCTOU Race Condition)       │
+                      └──────────────────────┬───────────────────────┘
+                                             │
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │          Diagnostician Agent                 │
+                      │  Synthesizes artifacts/handoff_brief.json    │
+                      └──────────────────────┬───────────────────────┘
+                                             │
+             ┌───────────────────────────────┴───────────────────────────────┐
+             │                                                               │
+             ▼                                                               ▼
+┌───────────────────────────┐                               ┌───────────────────────────┐
+│   BRANCH A: COLD RETRY    │                               │  BRANCH B: HANDOFF RETRY  │
+│  (3 Trials x GPT-5.6)     │                               │  (3 Trials x GPT-5.6)     │
+│   Original Request Only   │                               │   Request + Handoff Brief │
+└────────────┬──────────────┘                               └────────────┬──────────────┘
+             │                                                           │
+             └───────────────────────────────┬───────────────────────────┘
+                                             │
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │    Metrics & Side-by-Side Analysis Report    │
+                      │   (Pass Rate %, Latency, Token Cost)         │
+                      └──────────────────────────────────────────────┘
+            </div>
+        </div>
+
+        <!-- Execution Scenarios -->
+        <div class="lab-card">
+            <h3><i class="bi bi-terminal text-success me-2"></i> Execution Steps</h3>
+            
+            <h5 class="mt-4 text-white">Step 1 — Run Context Handoff Experiment Pipeline</h5>
+            <p class="text-secondary">Executes Attempt 1, triggers Diagnostician, and executes 3 Cold Trials vs 3 Handoff Trials.</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerShell / Bash</span>
+                    <button class="btn-copy" onclick="copyCode('cmd-1')"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre id="cmd-1">python run_context_handoff.py task/request_01.md</pre>
+            </div>
+
+            <h5 class="mt-4 text-white">Step 2 — Measure & Analyze Metrics</h5>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerShell / Bash</span>
+                    <button class="btn-copy" onclick="copyCode('cmd-2')"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre id="cmd-2">python measure_metrics.py runs/cold_trial_1.jsonl runs/handoff_trial_1.jsonl</pre>
+            </div>
+
+            <h5 class="mt-4 text-white">Step 3 — Clean & Reset Working Directory</h5>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerShell / Bash</span>
+                    <button class="btn-copy" onclick="copyCode('cmd-3')"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>
+                <pre id="cmd-3">bash reset.sh</pre>
+            </div>
+        </div>
+
+        <!-- Student Fillable Benchmark Table -->
+        <div class="lab-card">
+            <h3><i class="bi bi-table text-primary me-2"></i> Student Experiment Benchmark Record</h3>
+            <p class="text-secondary">Fill in your empirical trial results from `artifacts/context_handoff_report.json` below:</p>
+            
+            <div class="table-responsive">
+                <table class="table table-custom table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Retry Strategy</th>
+                            <th>Trial</th>
+                            <th>Model</th>
+                            <th>Test Status</th>
+                            <th>Latency (s)</th>
+                            <th>Input Tokens</th>
+                            <th>Output Tokens</th>
+                            <th>Cost ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="3" class="fw-bold align-middle text-warning">Branch A: Cold Retry</td>
+                            <td>Trial 1</td>
+                            <td>GPT-5.6 Terra</td>
+                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 18.2"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 12500"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 840"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. $0.012"></td>
+                        </tr>
+                        <tr>
+                            <td>Trial 2</td>
+                            <td>GPT-5.6 Terra</td>
+                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 17.5"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 12100"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 810"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. $0.011"></td>
+                        </tr>
+                        <tr>
+                            <td>Trial 3</td>
+                            <td>GPT-5.6 Terra</td>
+                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 19.1"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 12800"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 890"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. $0.013"></td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3" class="fw-bold align-middle text-success">Branch B: Context-Aware Handoff</td>
+                            <td>Trial 1</td>
+                            <td>GPT-5.6 Terra</td>
+                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 12.4"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 14200"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 620"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. $0.014"></td>
+                        </tr>
+                        <tr>
+                            <td>Trial 2</td>
+                            <td>GPT-5.6 Terra</td>
+                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 11.8"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 14000"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 590"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. $0.013"></td>
+                        </tr>
+                        <tr>
+                            <td>Trial 3</td>
+                            <td>GPT-5.6 Terra</td>
+                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 13.0"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 14500"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. 640"></td>
+                            <td><input type="text" class="table-input" placeholder="e.g. $0.014"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-warning border-warning mt-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Statistical Disclaimer:</strong> <em>n=3 per branch -- directional signal, not statistical proof...</em>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(id) {
+            const el = document.getElementById(id);
+            const text = el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied command to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
