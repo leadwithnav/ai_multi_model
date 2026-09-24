@@ -34,7 +34,8 @@ RUNS_DIR = LAB_DIR / "runs"
 
 # Vertical Tier Progression for Vendor A (OpenAI / Bedrock)
 VERTICAL_TIERS = [
-    {"tier": "FAST", "agent": "terra", "vendor": "OpenAI/Bedrock", "model": "GPT-5.6 Terra"},
+    {"tier": "FAST", "agent": "luna", "vendor": "OpenAI/Bedrock", "model": "GPT-5.6 Luna"},
+    {"tier": "MID", "agent": "terra", "vendor": "OpenAI/Bedrock", "model": "GPT-5.6 Terra"},
     {"tier": "HIGH", "agent": "sol", "vendor": "OpenAI/Bedrock", "model": "GPT-5.6 Sol"}
 ]
 
