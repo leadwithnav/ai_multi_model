@@ -9,17 +9,17 @@ max_attempts: 2
 routing_policy:
 
   implementation:
-    primary: claude-3-5-haiku
-    fallback: claude-3-5-sonnet
+    primary: gpt-5-6-sol
+    fallback: gpt-5-6-luna
 
   refactoring:
-    primary: claude-3-5-sonnet
-    fallback: claude-3-opus
+    primary: gpt-5-6-luna
+    fallback: gpt-5-6-terra
 
   debugging:
-    primary: claude-3-5-sonnet
-    fallback: claude-3-opus
+    primary: gpt-5-6-luna
+    fallback: gpt-5-6-terra
 
   testing:
-    primary: claude-3-5-haiku
-    fallback: claude-3-5-sonnet
+    primary: gpt-5-6-sol
+    fallback: gpt-5-6-luna

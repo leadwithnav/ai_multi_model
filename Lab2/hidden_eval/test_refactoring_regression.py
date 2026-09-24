@@ -1,9 +1,9 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models import CreateOrderRequest, OrderItem, OrderStatus
-from src.services.order_service import OrderService
-from src.services.inventory_service import InventoryService
-from src.database import OrderRecord
+from order_flow_service.src.models import CreateOrderRequest, OrderItem, OrderStatus
+from order_flow_service.src.services.order_service import OrderService
+from order_flow_service.src.services.inventory_service import InventoryService
+from order_flow_service.src.database import OrderRecord
 
 @pytest.mark.asyncio
 async def test_refactoring_create_order_single_item(db_session: AsyncSession):

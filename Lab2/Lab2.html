@@ -323,6 +323,33 @@ export AWS_REGION=us-east-1</pre>
             </div>
         </div>
 
+        
+            <!-- Troubleshooting: Kill Stuck Pytest Process -->
+            <div class="callout callout-warning my-3">
+                <h5 class="text-warning mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i> Troubleshooting: If Pytest / Python gets stuck</h5>
+                <p class="small text-white mb-2">If pytest or a python process hangs or gets stuck in your terminal, open a new terminal window/tab and run the command to force-kill stuck python processes:</p>
+                
+                <ul class="nav nav-tabs nav-tabs-custom mb-2" id="killTab" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#kill-win"><i class="bi bi-windows"></i> Windows PowerShell</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#kill-nix"><i class="bi bi-terminal"></i> macOS / Linux</button></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="kill-win">
+                        <div class="code-container my-1">
+                            <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                            <pre>Get-Process python* | Stop-Process -Force</pre>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="kill-nix">
+                        <div class="code-container my-1">
+                            <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                            <pre>tasklist | grep -i python</pre>
+                            <pre>taskkill //F //PID replace_pid_here</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         <!-- Model Workloads: gpt-5-6-luna -->
         <div class="accordion accordion-flush mb-4" id="modelCmdsAccordion">
             <div class="accordion-item bg-dark border text-main rounded mb-2">

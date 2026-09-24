@@ -277,6 +277,32 @@ export AWS_REGION=us-east-1</pre>
             </div>
         </div>
 
+        
+            <!-- Troubleshooting: Kill Stuck Pytest Process -->
+            <div class="callout callout-warning my-3">
+                <h5 class="text-warning mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i> Troubleshooting: If Pytest / Python gets stuck</h5>
+                <p class="small text-white mb-2">If pytest or a python process hangs or gets stuck in your terminal, open a new terminal window/tab and run the command to force-kill stuck python processes:</p>
+                
+                <ul class="nav nav-tabs nav-tabs-custom mb-2" id="killTab" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#kill-win"><i class="bi bi-windows"></i> Windows PowerShell</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#kill-nix"><i class="bi bi-terminal"></i> macOS / Linux</button></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="kill-win">
+                        <div class="code-container my-1">
+                            <div class="code-header"><span>PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                            <pre>Get-Process python* | Stop-Process -Force</pre>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="kill-nix">
+                        <div class="code-container my-1">
+                            <div class="code-header"><span>Bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                            <pre>pkill -f pytest || pkill -f python</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         <!-- Target Architecture -->
         <div class="lab-card" id="arch">
             <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Target Architecture</h2>
@@ -287,7 +313,7 @@ export AWS_REGION=us-east-1</pre>
                     <div class="p-3 bg-dark border border-secondary rounded h-100">
                         <span class="badge bg-info text-dark mb-2">Classifier Agent</span>
                         <h6 class="text-white">TaskClassifier LLM Agent</h6>
-                        <small class="text-white">Invokes <code>claude-3-5-haiku</code> agent to answer: <em>What kind of task is this?</em> (Does NOT select execution model)</small>
+                        <small class="text-white">Invokes <code>gpt-5-6-sol</code> agent to answer: <em>What kind of task is this?</em> (Does NOT select execution model)</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -323,16 +349,16 @@ export AWS_REGION=us-east-1</pre>
                 <pre>routing_policy:
 
   implementation:
-    primary: claude-3-5-haiku
+    primary: gpt-5-6-sol
 
   refactoring:
-    primary: claude-3-5-sonnet
+    primary: gpt-5-6-luna
 
   debugging:
-    primary: claude-3-5-sonnet
+    primary: gpt-5-6-luna
 
   testing:
-    primary: claude-3-5-haiku</pre>
+    primary: gpt-5-6-sol</pre>
             </div>
         </div>
 
@@ -378,7 +404,7 @@ export AWS_REGION=us-east-1</pre>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
                 <div class="code-container mb-2">
                     <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>python run_router.py tasks/request_01.md</pre>
+                    <pre>cd Lab3; bash reset.sh; python run_router.py tasks/request_01.md</pre>
                 </div>
                 <div class="code-container mb-0">
                     <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -392,7 +418,7 @@ export AWS_REGION=us-east-1</pre>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
                 <div class="code-container mb-2">
                     <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>python run_router.py tasks/request_02.md</pre>
+                    <pre>cd Lab3; bash reset.sh; python run_router.py tasks/request_02.md</pre>
                 </div>
                 <div class="code-container mb-0">
                     <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -420,7 +446,7 @@ export AWS_REGION=us-east-1</pre>
                 <p class="small text-white">Routes tasks based on <code>routing_policy.yaml</code> derived from Lab 2 benchmark evidence.</p>
                 <div class="code-container mb-2">
                     <div class="code-header"><span>Run Implementation Task against Evidence-Driven Strategy</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                    <pre>python run_router.py tasks/request_04.md</pre>
+                    <pre>cd Lab3; bash reset.sh;python run_router.py tasks/request_04.md</pre>
                 </div>
                 <div class="code-container mb-0">
                     <div class="code-header"><span>Reset order_flow_service Repository</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -500,10 +526,10 @@ export AWS_REGION=us-east-1</pre>
                             <strong>${req.name}</strong><br>
                             <small class="text-muted"><code>${req.file}</code></small>
                         </td>
-                        <td><input type="text" class="table-input text-center" id="${prefix}_evidence" placeholder="e.g. Sonnet for Debugging" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_evidence" placeholder="e.g. gpt-5-6-luna for Debugging" oninput="saveData()"></td>
                         <td><input type="text" class="table-input text-center" id="${prefix}_classification" placeholder="e.g. ${req.defaultType}" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${prefix}_router" placeholder="e.g. claude-3-5-sonnet" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${prefix}_llm" placeholder="e.g. claude-3-5-sonnet" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_router" placeholder="e.g. gpt-5-6-luna" oninput="saveData()"></td>
+                        <td><input type="text" class="table-input text-center" id="${prefix}_llm" placeholder="e.g. gpt-5-6-luna" oninput="saveData()"></td>
                     </tr>
                 `;
             });
