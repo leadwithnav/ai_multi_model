@@ -6,11 +6,17 @@ model: amazon-bedrock/us.openai.gpt-5.6-luna
 options:
   reasoning_effort: none
 
-tools:
-  read: true
-  write: true
-  edit: true
-  bash: true
+permission:
+  read: allow
+  edit: allow
+  grep: allow
+  glob: allow
+  external_directory: allow
+
+  bash:
+    "*": allow
+    "git log*": deny
+    "git show*": deny
 ---
 
 You are a software engineer working on the order_flow_service.
