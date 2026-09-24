@@ -1,4 +1,4 @@
-# Engineering Task — Debugging Incident INC-8821
+# Engineering Task — Incident INC-8821
 
 ## Symptom Report
 Production incident INC-8821:

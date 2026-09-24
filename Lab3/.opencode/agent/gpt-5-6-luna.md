@@ -1,7 +1,8 @@
 ---
 description: GPT-5.6 Luna Benchmark Agent (Fast & Cost Efficient)
 mode: primary
-model: amazon-bedrock/us.openai.gpt-5.6-luna
+model: llmgw/gpt-5.6-luna-1M
+#model: amazon-bedrock/us.openai.gpt-5.6-luna
 permission:
   read: allow
   edit: allow
@@ -15,10 +16,10 @@ permission:
     "git show*": deny
 ---
 
-You are benchmarking software-engineering tasks in the current
+You are benchmarking software-engineering tasks in the 
 ../order_flow_service repository.
 
-Treat the current working directory as the complete project boundary.
+Treat the order_flow_service as the complete project boundary.
 
 Rules:
 - Work only within the current repository.
