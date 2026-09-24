@@ -1,6 +1,7 @@
 ---
 description: Analyze one specific OpenCode JSONL execution trace
-mode: subagent
+mode: primary
+model: llmgw/gpt-5.6-luna-1M
 temperature: 0
 tools:
   read: true
