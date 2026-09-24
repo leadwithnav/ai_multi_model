@@ -413,6 +413,15 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>cd ../Lab1</pre>
                             </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py claude-3-5-sonnet runs/sonnet.jsonl</pre>
+                            </div>
+                             <div class="code-container">
+                                <div class="code-header"><span>Detailed Analysis</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>  opencode run  --agent run_analyzer   "runs/sonnet.jsonl"</pre>
+                            </div>
+                          
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
@@ -546,14 +555,17 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>cd ../Lab1</pre>
                             </div>
-                            <div class="code-container">
-                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
-                            </div>
+
                             <div class="code-container">
                                 <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>python metrics_helper.py luna runs/luna.jsonl</pre>
                             </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
+                            </div>
+                         
                             <div class="code-container">
                                 <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>bash reset.sh;</pre>
@@ -590,14 +602,17 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>cd ../Lab1</pre>
                             </div>
+
+                              <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py terra runs/terra.jsonl</pre>
+                            </div>
+
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
                             </div>
-                            <div class="code-container">
-                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py terra runs/terra.jsonl</pre>
-                            </div>
+                          
                             <div class="code-container">
                                 <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>bash reset.sh;</pre>
@@ -634,14 +649,17 @@ export AWS_REGION=us-east-1</pre>
                                 <div class="code-header"><span>Go to Lab1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>cd ../Lab1</pre>
                             </div>
+
+                             <div class="code-container">
+                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>python metrics_helper.py sol runs/sol.jsonl</pre>
+                            </div>
+    
                             <div class="code-container">
                                 <div class="code-header"><span>Run Acceptance test</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>pytest -q hidden_eval/test_rate_limiter.py;</pre>
                             </div>
-                            <div class="code-container">
-                                <div class="code-header"><span>Measure metrics</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>python metrics_helper.py sol runs/sol.jsonl</pre>
-                            </div>
+                    
                             <div class="code-container">
                                 <div class="code-header"><span>Reset Repo</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
                                 <pre>bash reset.sh;</pre>
