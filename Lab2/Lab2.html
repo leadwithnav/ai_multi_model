@@ -221,9 +221,9 @@
         <ul class="nav flex-column">
             <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
             <li class="nav-item"><a class="nav-link" href="#loop"><i class="bi bi-arrow-repeat"></i> Execution Loop</a></li>
-            <li class="nav-item"><a class="nav-link" href="#claude-3-5-sonnet"><i class="bi bi-cpu-fill"></i> claude-3-5-sonnet</a></li>
-            <li class="nav-item"><a class="nav-link" href="#claude-3-5-haiku"><i class="bi bi-cpu-fill"></i> claude-3-5-haiku</a></li>
-            <li class="nav-item"><a class="nav-link" href="#claude-3-opus"><i class="bi bi-cpu-fill"></i> claude-3-opus</a></li>
+            <li class="nav-item"><a class="nav-link" href="#gpt-5-6-luna"><i class="bi bi-cpu-fill"></i> gpt-5-6-luna</a></li>
+            <li class="nav-item"><a class="nav-link" href="#gpt-5-6-sol"><i class="bi bi-cpu-fill"></i> gpt-5-6-sol</a></li>
+            <li class="nav-item"><a class="nav-link" href="#gpt-5-6-terra"><i class="bi bi-cpu-fill"></i> gpt-5-6-terra</a></li>
             <li class="nav-item"><a class="nav-link" href="#table"><i class="bi bi-table"></i> Benchmark Table</a></li>
             <li class="nav-item"><a class="nav-link" href="#matrix"><i class="bi bi-diagram-3"></i> Capability Matrix</a></li>
         </ul>
@@ -323,15 +323,15 @@ export AWS_REGION=us-east-1</pre>
             </div>
         </div>
 
-        <!-- Model Workloads: claude-3-5-sonnet -->
+        <!-- Model Workloads: gpt-5-6-luna -->
         <div class="accordion accordion-flush mb-4" id="modelCmdsAccordion">
             <div class="accordion-item bg-dark border text-main rounded mb-2">
-                <h2 class="accordion-header" id="heading-claude-3-5-sonnet">
-                    <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#claude-3-5-sonnet" aria-expanded="false" aria-controls="claude-3-5-sonnet">
-                        <i class="bi bi-cpu-fill text-primary me-2"></i> claude-3-5-sonnet
+                <h2 class="accordion-header" id="heading-gpt-5-6-luna">
+                    <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#gpt-5-6-luna" aria-expanded="false" aria-controls="gpt-5-6-luna">
+                        <i class="bi bi-cpu-fill text-primary me-2"></i> gpt-5-6-luna
                     </button>
                 </h2>
-                <div id="claude-3-5-sonnet" class="accordion-collapse collapse" aria-labelledby="heading-claude-3-5-sonnet" data-bs-parent="#modelCmdsAccordion">
+                <div id="gpt-5-6-luna" class="accordion-collapse collapse" aria-labelledby="heading-gpt-5-6-luna" data-bs-parent="#modelCmdsAccordion">
                     <div class="accordion-body p-3">
 
                         <!-- Task 1: Feature Implementation -->
@@ -350,13 +350,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Implementation Task using claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-claude-3-5-sonnet.jsonl;</pre>
+                                <div class="code-header"><span>Run Implementation Task using gpt-5-6-luna</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-luna --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-gpt-5-6-luna.jsonl;</pre>
                             </div>
 
                               <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/implementation-claude-3-5-sonnet.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-luna runs/implementation-gpt-5-6-luna.jsonl</pre>
                             </div>
                             <div class="code-container">
                                 <div class="code-header"><span>Instructor Evaluation — Task 1</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
@@ -385,14 +385,14 @@ export AWS_REGION=us-east-1</pre>
                             </div> 
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Refactoring task aganist claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-claude-3-5-sonnet.jsonl</pre>
+                                <div class="code-header"><span>Run Refactoring task aganist gpt-5-6-luna</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-luna --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-gpt-5-6-luna.jsonl</pre>
                             </div>
 
                             
                               <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and Record it Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/refactor-claude-3-5-sonnet.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-luna runs/refactor-gpt-5-6-luna.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -425,13 +425,13 @@ export AWS_REGION=us-east-1</pre>
                             
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run task against claude-3-5-sonnet </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-claude-3-5-sonnet.jsonl;</pre>
+                                <div class="code-header"><span>Run task against gpt-5-6-luna </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-luna --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-gpt-5-6-luna.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/debugging-claude-3-5-sonnet.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-luna runs/debugging-gpt-5-6-luna.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -461,13 +461,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run testing task against claude-3-5-sonnet</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-sonnet --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-claude-3-5-sonnet.jsonl</pre>
+                                <div class="code-header"><span>Run testing task against gpt-5-6-luna</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-luna --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-gpt-5-6-luna.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-sonnet runs/testing-claude-3-5-sonnet.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-luna runs/testing-gpt-5-6-luna.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -485,14 +485,14 @@ export AWS_REGION=us-east-1</pre>
                 </div>
             </div>
 
-            <!-- Model 2: claude-3-5-haiku -->
+            <!-- Model 2: gpt-5-6-sol -->
             <div class="accordion-item bg-dark border text-main rounded mb-2">
-                <h2 class="accordion-header" id="heading-claude-3-5-haiku">
-                    <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#claude-3-5-haiku" aria-expanded="false" aria-controls="claude-3-5-haiku">
-                        <i class="bi bi-cpu-fill text-info me-2"></i> claude-3-5-haiku
+                <h2 class="accordion-header" id="heading-gpt-5-6-sol">
+                    <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#gpt-5-6-sol" aria-expanded="false" aria-controls="gpt-5-6-sol">
+                        <i class="bi bi-cpu-fill text-info me-2"></i> gpt-5-6-sol
                     </button>
                 </h2>
-                <div id="claude-3-5-haiku" class="accordion-collapse collapse" aria-labelledby="heading-claude-3-5-haiku" data-bs-parent="#modelCmdsAccordion">
+                <div id="gpt-5-6-sol" class="accordion-collapse collapse" aria-labelledby="heading-gpt-5-6-sol" data-bs-parent="#modelCmdsAccordion">
                     <div class="accordion-body p-3">
 
                         <!-- Task 1: Feature Implementation -->
@@ -511,13 +511,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Implementation Task using claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-claude-3-5-haiku.jsonl;</pre>
+                                <div class="code-header"><span>Run Implementation Task using gpt-5-6-sol</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-sol --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-gpt-5-6-sol.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/implementation-claude-3-5-haiku.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-sol runs/implementation-gpt-5-6-sol.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -547,13 +547,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Refactoring task aganist claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-claude-3-5-haiku.jsonl</pre>
+                                <div class="code-header"><span>Run Refactoring task aganist gpt-5-6-sol</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-sol --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-gpt-5-6-sol.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and Record it Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/refactor-claude-3-5-haiku.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-sol runs/refactor-gpt-5-6-sol.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -583,13 +583,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run task against claude-3-5-haiku </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-claude-3-5-haiku.jsonl;</pre>
+                                <div class="code-header"><span>Run task against gpt-5-6-sol </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-sol --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-gpt-5-6-sol.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/debugging-claude-3-5-haiku.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-sol runs/debugging-gpt-5-6-sol.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -619,13 +619,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run testing task against claude-3-5-haiku</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-5-haiku --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-claude-3-5-haiku.jsonl</pre>
+                                <div class="code-header"><span>Run testing task against gpt-5-6-sol</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-sol --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-gpt-5-6-sol.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-5-haiku runs/testing-claude-3-5-haiku.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-sol runs/testing-gpt-5-6-sol.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -643,14 +643,14 @@ export AWS_REGION=us-east-1</pre>
                 </div>
             </div>
 
-            <!-- Model 3: claude-3-opus -->
+            <!-- Model 3: gpt-5-6-terra -->
             <div class="accordion-item bg-dark border text-main rounded mb-2">
-                <h2 class="accordion-header" id="heading-claude-3-opus">
-                    <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#claude-3-opus" aria-expanded="false" aria-controls="claude-3-opus">
-                        <i class="bi bi-cpu-fill text-warning me-2"></i> claude-3-opus
+                <h2 class="accordion-header" id="heading-gpt-5-6-terra">
+                    <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#gpt-5-6-terra" aria-expanded="false" aria-controls="gpt-5-6-terra">
+                        <i class="bi bi-cpu-fill text-warning me-2"></i> gpt-5-6-terra
                     </button>
                 </h2>
-                <div id="claude-3-opus" class="accordion-collapse collapse" aria-labelledby="heading-claude-3-opus" data-bs-parent="#modelCmdsAccordion">
+                <div id="gpt-5-6-terra" class="accordion-collapse collapse" aria-labelledby="heading-gpt-5-6-terra" data-bs-parent="#modelCmdsAccordion">
                     <div class="accordion-body p-3">
 
                         <!-- Task 1: Feature Implementation -->
@@ -669,13 +669,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Implementation Task using claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-claude-3-opus.jsonl;</pre>
+                                <div class="code-header"><span>Run Implementation Task using gpt-5-6-terra</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-terra --format json "$(cat ../Lab2/task/implementation/TASK.md)" > ../Lab2/runs/implementation-gpt-5-6-terra.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/implementation-claude-3-opus.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-terra runs/implementation-gpt-5-6-terra.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -705,13 +705,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run Refactoring task aganist claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-claude-3-opus.jsonl</pre>
+                                <div class="code-header"><span>Run Refactoring task aganist gpt-5-6-terra</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-terra --format json "$(cat ../Lab2/task/refactoring/TASK.md)" > ../Lab2/runs/refactor-gpt-5-6-terra.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and Record it Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/refactor-claude-3-opus.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-terra runs/refactor-gpt-5-6-terra.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -741,13 +741,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run task against claude-3-opus </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-claude-3-opus.jsonl;</pre>
+                                <div class="code-header"><span>Run task against gpt-5-6-terra </span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-terra --format json "$(cat ../Lab2/task/debugging/TASK.md)" > ../Lab2/runs/debugging-gpt-5-6-terra.jsonl;</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/debugging-claude-3-opus.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-terra runs/debugging-gpt-5-6-terra.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -777,13 +777,13 @@ export AWS_REGION=us-east-1</pre>
                             </div>
 
                             <div class="code-container">
-                                <div class="code-header"><span>Run testing task against claude-3-opus</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                <pre>opencode run --agent claude-3-opus --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-claude-3-opus.jsonl</pre>
+                                <div class="code-header"><span>Run testing task against gpt-5-6-terra</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent gpt-5-6-terra --format json "$(cat ../Lab2/task/testing/TASK.md)" > ../Lab2/runs/testing-gpt-5-6-terra.jsonl</pre>
                             </div>
 
                             <div class="code-container">
                                 <div class="code-header"><span>Extract Metrics and record it in Benchmark table</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div> 
-                                <pre>cd ../Lab2;python measure_metrics.py claude-3-opus runs/testing-claude-3-opus.jsonl</pre>
+                                <pre>cd ../Lab2;python measure_metrics.py gpt-5-6-terra runs/testing-gpt-5-6-terra.jsonl</pre>
                             </div>
 
                             <div class="code-container">
@@ -876,26 +876,26 @@ export AWS_REGION=us-east-1</pre>
                     <tbody>
                         <tr>
                             <td><strong>Feature Implementation</strong></td>
-                            <td><input type="text" class="table-input" id="mat_imp_qual" placeholder="e.g. Sonnet, Opus"></td>
-                            <td><input type="text" class="table-input" id="mat_imp_sel" placeholder="e.g. Sonnet"></td>
+                            <td><input type="text" class="table-input" id="mat_imp_qual" placeholder="e.g. gpt-5-6-luna, gpt-5-6-terra"></td>
+                            <td><input type="text" class="table-input" id="mat_imp_sel" placeholder="e.g. gpt-5-6-luna"></td>
                             <td><input type="text" class="table-input" id="mat_imp_rat" placeholder="Rationale..."></td>
                         </tr>
                         <tr>
                             <td><strong>Refactoring</strong></td>
-                            <td><input type="text" class="table-input" id="mat_ref_qual" placeholder="e.g. Haiku, Sonnet"></td>
-                            <td><input type="text" class="table-input" id="mat_ref_sel" placeholder="e.g. Haiku"></td>
+                            <td><input type="text" class="table-input" id="mat_ref_qual" placeholder="e.g. gpt-5-6-sol, gpt-5-6-luna"></td>
+                            <td><input type="text" class="table-input" id="mat_ref_sel" placeholder="e.g. gpt-5-6-sol"></td>
                             <td><input type="text" class="table-input" id="mat_ref_rat" placeholder="Rationale..."></td>
                         </tr>
                         <tr>
                             <td><strong>Debugging</strong></td>
-                            <td><input type="text" class="table-input" id="mat_dbg_qual" placeholder="e.g. Sonnet, Opus"></td>
-                            <td><input type="text" class="table-input" id="mat_dbg_sel" placeholder="e.g. Sonnet"></td>
+                            <td><input type="text" class="table-input" id="mat_dbg_qual" placeholder="e.g. gpt-5-6-luna, gpt-5-6-terra"></td>
+                            <td><input type="text" class="table-input" id="mat_dbg_sel" placeholder="e.g. gpt-5-6-luna"></td>
                             <td><input type="text" class="table-input" id="mat_dbg_rat" placeholder="Rationale..."></td>
                         </tr>
                         <tr>
                             <td><strong>Test Generation</strong></td>
-                            <td><input type="text" class="table-input" id="mat_tst_qual" placeholder="e.g. Haiku, Sonnet"></td>
-                            <td><input type="text" class="table-input" id="mat_tst_sel" placeholder="e.g. Haiku"></td>
+                            <td><input type="text" class="table-input" id="mat_tst_qual" placeholder="e.g. gpt-5-6-sol, gpt-5-6-luna"></td>
+                            <td><input type="text" class="table-input" id="mat_tst_sel" placeholder="e.g. gpt-5-6-sol"></td>
                             <td><input type="text" class="table-input" id="mat_tst_rat" placeholder="Rationale..."></td>
                         </tr>
                     </tbody>
@@ -931,7 +931,7 @@ export AWS_REGION=us-east-1</pre>
         }
 
         const tasks = ["Implementation", "Refactoring", "Debugging", "Testing"];
-        const models = ["Claude 3.5 Haiku", "Claude 3.5 Sonnet", "Claude 3 Opus"];
+        const models = ["gpt-5-6-luna", "gpt-5-6-sol", "gpt-5-6-terra"];
 
         function buildTable() {
             const tbody = document.getElementById("benchmark_table_body");

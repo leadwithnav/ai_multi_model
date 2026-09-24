@@ -1,7 +1,7 @@
 ---
 description: GPT-5.6 Sol Benchmark Agent (High Reasoning & Agentic)
 mode: primary
-model: amazon-bedrock/us.openai.gpt-5.6-sol
+model: llmgw/gpt-5.6-sol-1M
 permission:
   read: allow
   edit: allow
