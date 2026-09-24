@@ -1,9 +1,0 @@
-{
-  "failure_summary": "Attempt 1 failed race condition test under concurrent stock reservations.",
-  "root_cause_analysis": "InventoryService.reserve_stock performed stock check and sleep before update without atomic row locking or single-statement SQL decrement.",
-  "failed_assumptions": "Assumed standard Python in-memory decrement without concurrency control would be sufficient.",
-  "suggested_remedy": "Use single-statement atomic SQL update (UPDATE inventory SET stock = stock - :qty WHERE sku = :sku AND stock >= :qty) or SELECT ... FOR UPDATE row locking.",
-  "key_files_modified": [
-    "src/services/inventory_service.py"
-  ]
-}

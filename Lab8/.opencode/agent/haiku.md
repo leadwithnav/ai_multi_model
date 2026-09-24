@@ -1,7 +1,7 @@
 ---
 description: Engineering task using Claude 3 Haiku (Fast Tier)
 mode: primary
-model: amazon-bedrock/us.anthropic.claude-3-haiku-20240307-v1:0
+model: amazon-bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0
 tools:
   read: true
   write: true
