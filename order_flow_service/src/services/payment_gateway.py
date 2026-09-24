@@ -18,7 +18,7 @@ class PaymentGatewayClient:
         }
         
         attempt = 0
-        while True:  # Intentional infinite loop vulnerability
+        while True: 
             try:
                 async with httpx.AsyncClient() as client:
                     resp = await client.post(
@@ -31,11 +31,10 @@ class PaymentGatewayClient:
                         return resp.json()
                     elif resp.status_code == 400:
                         return {"status": "FAILED", "reason": "Bad Request"}
-                    # Any 500 error causes infinite retry without incrementing towards a break
                     attempt += 1
             except httpx.RequestError:
                 attempt += 1
-                if attempt > 10:  # Hardcoded mismatch with settings.max_retries
+                if attempt > 10: 
                     raise RuntimeError("Gateway unreachable")
 
     def verify_webhook_signature(self, signature: str, payload_bytes: bytes) -> bool:

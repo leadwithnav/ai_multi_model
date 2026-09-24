@@ -18,7 +18,6 @@ class CreateOrderRequest(BaseModel):
     customer_id: str
     items: List[OrderItem]
     currency: str = "USD"
-    # Defect #1: Schema mismatch - metadata is typed as dict, but parser expects JSON string in tests
     metadata: Optional[dict] = None
 
 class OrderResponse(BaseModel):

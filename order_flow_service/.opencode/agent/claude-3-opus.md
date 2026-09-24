@@ -7,7 +7,7 @@ permission:
   edit: allow
   grep: allow
   glob: allow
-  external_directory: deny
+  external_directory: allow
 
   bash:
     "*": allow

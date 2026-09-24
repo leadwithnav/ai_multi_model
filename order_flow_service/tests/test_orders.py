@@ -20,8 +20,6 @@ async def test_partial_reservation_rollback(db_session):
     service = OrderService()
     with pytest.raises(ValueError, match="Insufficient stock"):
         await service.create_order(db_session, req)
-
-    # ITEM_A stock must remain 10 because the transaction failed
     remaining_a = await InventoryService.get_stock(db_session, "ITEM_A")
     assert remaining_a == 10, f"Leaked allocation! Expected 10, got {remaining_a}"
 
@@ -38,6 +36,4 @@ async def test_float_precision_order_total(db_session):
     )
     service = OrderService()
     order = await service.create_order(db_session, req)
-    
-    # 3 * 0.1 + 0.2 in floating point is 0.5000000000000001
     assert order.total_amount == 0.5, f"Precision drift detected: {order.total_amount}"
