@@ -8,8 +8,8 @@ failure context perform differently from retrying cold with only the
 original engineering request?"
 
 Experiment Setup:
-- Model: GPT-5.6 Terra (held constant)
-- Coding Agent: terra.md
+- Model: Claude 3.5 Haiku (held constant)
+- Coding Agent: haiku.md
 - Diagnostician Agent: diagnostician.md (Sonnet)
 - Repository Baseline: order_flow_service
 - Trials: 3 trials for COLD RETRY vs 3 trials for CONTEXT-AWARE RETRY
@@ -124,8 +124,16 @@ def run_opencode_agent(agent_name: str, prompt_text: str, output_jsonl: Path):
         _, stderr = proc.communicate()
 
     wall_latency = time.time() - start_time
-    if proc.returncode != 0 and stderr:
-        print(f"OpenCode warning (exit {proc.returncode}): {stderr[:200]}")
+    if proc.returncode != 0:
+        err_msg = stderr.strip() if stderr else ""
+        if not err_msg and output_jsonl.exists():
+            try:
+                content = output_jsonl.read_text(encoding="utf-8").strip()
+                if content:
+                    err_msg = content[-300:]
+            except Exception:
+                pass
+        print(f"--> OpenCode Error (Exit Code {proc.returncode}): {err_msg[:300]}")
 
     return wall_latency
 
@@ -221,7 +229,7 @@ def main():
     print("LAB 8 — CONTEXT HANDOFF EXPERIMENT PIPELINE")
     print("=" * 60)
     print(f"Task File        : {task_path}")
-    print("Model            : GPT-5.6 Terra (Held Constant)")
+    print("Model            : Claude 3.5 Haiku (Held Constant)")
     print("Branch A         : Cold Retry (Original Request Only, 3 Trials)")
     print("Branch B         : Context-Aware Retry (Request + Handoff Brief, 3 Trials)")
     print("=" * 60)
@@ -231,10 +239,10 @@ def main():
     # ------------------------------------------------------------
     reset_repository()
     print("\n--- STAGE 1: Attempt 1 Initial Execution ---")
-    att1_jsonl = RUNS_DIR / "attempt_1_terra.jsonl"
+    att1_jsonl = RUNS_DIR / "attempt_1_haiku.jsonl"
     
     # Attempt 1 executes using the original prompt
-    run_opencode_agent("terra", original_prompt, att1_jsonl)
+    run_opencode_agent("haiku", original_prompt, att1_jsonl)
     
     test_1 = run_acceptance_tests()
     git_diff_1 = get_git_diff()
@@ -244,11 +252,6 @@ def main():
         print("Note: Attempt 1 passed. Forcing failure state to proceed with failure handoff experiment...")
         test_1['status'] = "FAIL"
         test_1['output'] = "AssertionError: Race condition detected! Expected 5 successful reservations, got 15"
-
-    # ------------------------------------------------------------
-    # STEP 2: GENERATE STRUCTURED FAILURE HANDOFF BRIEF
-    # ------------------------------------------------------------
-    handoff_brief = generate_failure_handoff(original_prompt, test_1['output'], git_diff_1)
 
     # ------------------------------------------------------------
     # STEP 3: BRANCH A — COLD RETRY (3 TRIALS)
@@ -262,7 +265,7 @@ def main():
         print(f"\n--- Cold Retry Trial {trial_idx}/3 ---")
         reset_repository()
         jsonl_path = RUNS_DIR / f"cold_trial_{trial_idx}.jsonl"
-        wall_time = run_opencode_agent("terra", original_prompt, jsonl_path)
+        wall_time = run_opencode_agent("haiku", original_prompt, jsonl_path)
         test_res = run_acceptance_tests()
         metrics = parse_jsonl(jsonl_path)
 
@@ -282,13 +285,15 @@ def main():
     print("BRANCH B: CONTEXT-AWARE RETRY (3 TRIALS)")
     print("=" * 60)
 
+    # Generate Structured Failure Handoff Brief specifically for Branch B
+    handoff_brief = generate_failure_handoff(original_prompt, test_1['output'], git_diff_1)
     context_prompt = format_handoff_prompt(original_prompt, handoff_brief)
     handoff_trials = []
     for trial_idx in range(1, 4):
         print(f"\n--- Context-Aware Retry Trial {trial_idx}/3 ---")
         reset_repository()
         jsonl_path = RUNS_DIR / f"handoff_trial_{trial_idx}.jsonl"
-        wall_time = run_opencode_agent("terra", context_prompt, jsonl_path)
+        wall_time = run_opencode_agent("haiku", context_prompt, jsonl_path)
         test_res = run_acceptance_tests()
         metrics = parse_jsonl(jsonl_path)
 
@@ -334,7 +339,7 @@ def main():
     report_payload = {
         "lab": "Lab8_Context_Handoff",
         "task": str(task_path),
-        "model": "GPT-5.6 Terra",
+        "model": "Claude 3.5 Haiku",
         "disclaimer": "n=3 per branch -- directional signal, not statistical proof...",
         "attempt_1_status": test_1['status'],
         "handoff_brief": handoff_brief,

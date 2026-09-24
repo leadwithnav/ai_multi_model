@@ -1,13 +1,12 @@
-# Engineering Task — Inventory Concurrency Incident INC-9204
+# Engineering Task — Implement Inventory Stock Reservation
 
-## Symptom Report
-Production incident INC-9204:
-Under high traffic flash sales, customer orders are overcommitted.
-Multiple purchase requests for the same SKU succeed even when remaining inventory stock is insufficient.
+## Feature Request
+We need to implement stock reservation logic in the `order_flow_service`.
+
+When a customer initiates an order, `InventoryService.reserve_stock` should verify whether there is enough stock for the requested SKU. If stock is available, decrement the inventory quantity and return `True`. If stock is insufficient, return `False`.
 
 ## Requirements
 1. Inspect `src/services/inventory_service.py`.
-2. Implement `InventoryService.reserve_stock` to check stock availability and update inventory accordingly.
-3. Ensure stock never drops below 0 and over-reservation is strictly prevented.
-4. Ensure `reserve_stock` returns `True` if reservation succeeded, and `False` if stock was insufficient.
-5. Preserve existing function signature (`async def reserve_stock(session: AsyncSession, sku: str, quantity: int) -> bool:`) and existing interfaces.
+2. Implement `InventoryService.reserve_stock` to check stock availability and decrement stock accordingly.
+3. Ensure `reserve_stock` returns `True` if reservation succeeded, and `False` if stock was insufficient.
+4. Preserve function signature (`async def reserve_stock(session: AsyncSession, sku: str, quantity: int) -> bool:`).

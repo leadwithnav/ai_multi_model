@@ -1,0 +1,176 @@
+{
+  "lab": "Lab8_Context_Handoff",
+  "task": "D:\\trainings\\AI_Multi_Model\\Lab8\\task\\request_01.md",
+  "model": "Claude 3.5 Haiku",
+  "disclaimer": "n=3 per branch -- directional signal, not statistical proof...",
+  "attempt_1_status": "FAIL",
+  "handoff_brief": {
+    "failure_summary": "Attempt 1 failed race condition test under concurrent stock reservations.",
+    "root_cause_analysis": "InventoryService.reserve_stock performed stock check and sleep before update without atomic row locking or single-statement SQL decrement.",
+    "failed_assumptions": "Assumed standard Python in-memory decrement without concurrency control would be sufficient.",
+    "suggested_remedy": "Use single-statement atomic SQL update (UPDATE inventory SET stock = stock - :qty WHERE sku = :sku AND stock >= :qty) or SELECT ... FOR UPDATE row locking.",
+    "key_files_modified": [
+      "src/services/inventory_service.py"
+    ]
+  },
+  "cold_retry_branch": {
+    "summary": {
+      "trials_count": 3,
+      "pass_rate_pct": 0.0,
+      "passed_trials": 0,
+      "mean_wall_latency_s": 2.84,
+      "mean_cost_usd": 0.0,
+      "mean_input_tokens": 0.0,
+      "mean_output_tokens": 0.0,
+      "mean_processed_tokens": 0.0
+    },
+    "trials": [
+      {
+        "trial": 1,
+        "branch": "COLD",
+        "test_status": "FAIL",
+        "wall_latency": 2.88,
+        "metrics": {
+          "file": "D:\\trainings\\AI_Multi_Model\\Lab8\\runs\\cold_trial_1.jsonl",
+          "status": "OK",
+          "latency_seconds": 0.0,
+          "cost_usd": 0.0,
+          "llm_steps": 0,
+          "tool_calls": 0,
+          "processed_tokens": 0,
+          "tokens": {
+            "direct_input": 0,
+            "cache_read": 0,
+            "cache_write": 0,
+            "output": 0,
+            "reasoning": 0
+          }
+        }
+      },
+      {
+        "trial": 2,
+        "branch": "COLD",
+        "test_status": "FAIL",
+        "wall_latency": 2.74,
+        "metrics": {
+          "file": "D:\\trainings\\AI_Multi_Model\\Lab8\\runs\\cold_trial_2.jsonl",
+          "status": "OK",
+          "latency_seconds": 0.0,
+          "cost_usd": 0.0,
+          "llm_steps": 0,
+          "tool_calls": 0,
+          "processed_tokens": 0,
+          "tokens": {
+            "direct_input": 0,
+            "cache_read": 0,
+            "cache_write": 0,
+            "output": 0,
+            "reasoning": 0
+          }
+        }
+      },
+      {
+        "trial": 3,
+        "branch": "COLD",
+        "test_status": "FAIL",
+        "wall_latency": 2.91,
+        "metrics": {
+          "file": "D:\\trainings\\AI_Multi_Model\\Lab8\\runs\\cold_trial_3.jsonl",
+          "status": "OK",
+          "latency_seconds": 0.0,
+          "cost_usd": 0.0,
+          "llm_steps": 0,
+          "tool_calls": 0,
+          "processed_tokens": 0,
+          "tokens": {
+            "direct_input": 0,
+            "cache_read": 0,
+            "cache_write": 0,
+            "output": 0,
+            "reasoning": 0
+          }
+        }
+      }
+    ]
+  },
+  "context_aware_branch": {
+    "summary": {
+      "trials_count": 3,
+      "pass_rate_pct": 0.0,
+      "passed_trials": 0,
+      "mean_wall_latency_s": 2.77,
+      "mean_cost_usd": 0.0,
+      "mean_input_tokens": 0.0,
+      "mean_output_tokens": 0.0,
+      "mean_processed_tokens": 0.0
+    },
+    "trials": [
+      {
+        "trial": 1,
+        "branch": "CONTEXT_AWARE",
+        "test_status": "FAIL",
+        "wall_latency": 2.76,
+        "metrics": {
+          "file": "D:\\trainings\\AI_Multi_Model\\Lab8\\runs\\handoff_trial_1.jsonl",
+          "status": "OK",
+          "latency_seconds": 0.0,
+          "cost_usd": 0.0,
+          "llm_steps": 0,
+          "tool_calls": 0,
+          "processed_tokens": 0,
+          "tokens": {
+            "direct_input": 0,
+            "cache_read": 0,
+            "cache_write": 0,
+            "output": 0,
+            "reasoning": 0
+          }
+        }
+      },
+      {
+        "trial": 2,
+        "branch": "CONTEXT_AWARE",
+        "test_status": "FAIL",
+        "wall_latency": 2.8,
+        "metrics": {
+          "file": "D:\\trainings\\AI_Multi_Model\\Lab8\\runs\\handoff_trial_2.jsonl",
+          "status": "OK",
+          "latency_seconds": 0.0,
+          "cost_usd": 0.0,
+          "llm_steps": 0,
+          "tool_calls": 0,
+          "processed_tokens": 0,
+          "tokens": {
+            "direct_input": 0,
+            "cache_read": 0,
+            "cache_write": 0,
+            "output": 0,
+            "reasoning": 0
+          }
+        }
+      },
+      {
+        "trial": 3,
+        "branch": "CONTEXT_AWARE",
+        "test_status": "FAIL",
+        "wall_latency": 2.76,
+        "metrics": {
+          "file": "D:\\trainings\\AI_Multi_Model\\Lab8\\runs\\handoff_trial_3.jsonl",
+          "status": "OK",
+          "latency_seconds": 0.0,
+          "cost_usd": 0.0,
+          "llm_steps": 0,
+          "tool_calls": 0,
+          "processed_tokens": 0,
+          "tokens": {
+            "direct_input": 0,
+            "cache_read": 0,
+            "cache_write": 0,
+            "output": 0,
+            "reasoning": 0
+          }
+        }
+      }
+    ]
+  }
+}

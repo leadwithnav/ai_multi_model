@@ -11,8 +11,8 @@ This is an empirical experiment comparing two retry strategies on AI coding task
 ## Controlled vs Variable Conditions
 
 ### Controlled Variables (Held Constant Across All Runs)
-- **Model**: `GPT-5.6 Terra` (`amazon-bedrock/us.openai.gpt-5.6-terra`)
-- **Coding Agent**: `terra.md`
+- **Model**: `Claude 3.5 Haiku` (`amazon-bedrock/us.anthropic.claude-3-5-haiku-20241022-v1:0`)
+- **Coding Agent**: `haiku.md`
 - **Diagnostician Agent**: `diagnostician.md` (Sonnet)
 - **Task**: Inventory Concurrency Incident INC-9204 (`task/request_01.md`)
 - **Target Repository**: `order_flow_service`
