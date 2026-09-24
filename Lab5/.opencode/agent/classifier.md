@@ -1,7 +1,8 @@
 ---
 description: Classify engineering task type and complexity
 mode: primary
-model: amazon-bedrock/us.openai.gpt-5.6-luna
+model: llmgw/gpt-5.6-luna-1M
+#model: amazon-bedrock/us.openai.gpt-5.6-luna
 tools:
   read: true
   write: false

@@ -1,7 +1,8 @@
 ---
 description: Solve engineering task with reasoning effort high
 mode: primary
-model: amazon-bedrock/us.openai.gpt-5.6-terra
+model: llmgw/gpt-5.6-terra-1M
+#model: amazon-bedrock/us.openai.gpt-5.6-terra
 reasoningEffort: low
 tools:
   read: true

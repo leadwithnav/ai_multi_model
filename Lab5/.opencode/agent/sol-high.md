@@ -1,7 +1,8 @@
 ---
 description: Engineering task using GPT-5.6 Sol with low reasoning
 mode: primary
-model: amazon-bedrock/us.openai.gpt-5.6-sol
+#model: amazon-bedrock/us.openai.gpt-5.6-sol
+model: llmgw/gpt-5.6-sol-1M
 reasoningEffort: high
 tools:
   read: true
