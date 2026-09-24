@@ -1,7 +1,7 @@
 ---
 description: Classifies engineering tasks for evidence-based model routing
 mode: primary
-model: amazon-bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0
+model: llmgw/gpt-5.6-terra-1M
 
 tools:
   read: false
