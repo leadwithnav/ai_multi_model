@@ -5,7 +5,6 @@ from src.models import CreateOrderRequest, OrderItem
 
 @pytest.mark.asyncio
 async def test_partial_reservation_rollback(db_session):
-    """Exposes Defect #7: partial allocation leak."""
     await InventoryService.set_stock(db_session, "ITEM_A", 10)
     await InventoryService.set_stock(db_session, "ITEM_B", 0)  # out of stock
 
@@ -25,7 +24,6 @@ async def test_partial_reservation_rollback(db_session):
 
 @pytest.mark.asyncio
 async def test_float_precision_order_total(db_session):
-    """Exposes Defect #6: floating point errors."""
     await InventoryService.set_stock(db_session, "CANDY", 100)
     req = CreateOrderRequest(
         customer_id="cust_101",
