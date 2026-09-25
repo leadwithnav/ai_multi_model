@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab 7 — Horizontal vs Vertical Tiering</title>
+    <title>Lab 7 — Vertical Model Tiering Evaluation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
@@ -39,11 +39,12 @@
             overflow-y: auto;
             border-right: 1px solid var(--border-color);
             background-color: #090d13;
+            width: 270px;
         }
 
         .sidebar .nav-link {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             padding: 8px 12px;
             border-radius: 6px;
             margin-bottom: 4px;
@@ -61,7 +62,7 @@
         }
 
         .main-content {
-            margin-left: 280px;
+            margin-left: 270px;
             padding: 30px 40px;
         }
 
@@ -114,7 +115,7 @@
             padding: 16px;
             color: #d6deeb;
             font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             overflow-x: auto;
         }
 
@@ -157,18 +158,9 @@
             background-color: rgba(137, 87, 229, 0.08);
         }
 
-        .table-input {
-            background-color: #0d1117;
-            color: #ffffff;
-            border: 1px solid #30363d;
-            border-radius: 4px;
-            padding: 6px 10px;
-            width: 100%;
-        }
-
-        .table-input:focus {
-            border-color: var(--accent-color);
-            outline: none;
+        .callout-danger {
+            border-left-color: var(--accent-red);
+            background-color: rgba(248, 81, 73, 0.08);
         }
 
         .accordion-button {
@@ -176,14 +168,12 @@
             color: #ffffff !important;
             border: 1px solid var(--border-color);
             border-radius: 8px !important;
-            font-weight: 600;
         }
 
         .accordion-button:not(.collapsed) {
             background-color: #21262d !important;
             color: var(--accent-color) !important;
             box-shadow: none;
-            border-bottom: 1px solid var(--border-color);
         }
 
         .accordion-button:focus {
@@ -195,34 +185,58 @@
             filter: invert(1);
         }
 
-        .accordion-item {
-            background-color: transparent;
-            border: none;
-            margin-bottom: 16px;
-        }
-
-        .accordion-body {
-            background-color: #11161d;
+        .tier-card {
+            background-color: #0d1117;
             border: 1px solid var(--border-color);
-            border-top: none;
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
+            border-radius: 8px;
             padding: 20px;
+            height: 100%;
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        .step-badge {
-            background-color: #21262d;
-            color: var(--accent-color);
+        .tier-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-color);
+        }
+
+        .quiz-card {
+            background-color: #0d1117;
             border: 1px solid var(--border-color);
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-right: 10px;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .quiz-option {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            background-color: #21262d;
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.12);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--accent-green) !important;
+            background-color: rgba(46, 160, 67, 0.15) !important;
+            color: #ffffff;
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent-red) !important;
+            background-color: rgba(248, 81, 73, 0.15) !important;
+            color: #ffffff;
         }
 
         @media (max-width: 992px) {
@@ -234,19 +248,18 @@
 <body>
 
     <!-- Sidebar Navigation -->
-    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+    <div class="sidebar">
         <div class="mb-4">
             <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
             <h5 class="text-white mt-2 mb-0">Lab 7 Walkthrough</h5>
-            <small class="text-muted">Horizontal vs Vertical Tiering</small>
+            <small class="text-white">Vertical Model Tiering Evaluation</small>
         </div>
         <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-question-circle"></i> Which Direction to Move?</a></li>
-            <li class="nav-item"><a class="nav-link" href="#matrix"><i class="bi bi-diagram-3"></i> Model Tiering Matrix</a></li>
-            <li class="nav-item"><a class="nav-link" href="#task-def"><i class="bi bi-file-earmark-text"></i> Task Requirement</a></li>
-            <li class="nav-item"><a class="nav-link" href="#scenarios"><i class="bi bi-play-circle"></i> Execution Scenarios</a></li>
-            <li class="nav-item"><a class="nav-link" href="#benchmark"><i class="bi bi-table"></i> Tiering Benchmark Table</a></li>
-            <li class="nav-item"><a class="nav-link" href="#takeaways"><i class="bi bi-lightbulb"></i> Key Takeaways</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#roster"><i class="bi bi-people-fill"></i> Model Agent Roster</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-simple"><i class="bi bi-1-circle-fill"></i> Scenario 1: Simple Task</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-complex"><i class="bi bi-2-circle-fill"></i> Scenario 2: Complex Task</a></li>
+            <li class="nav-item"><a class="nav-link" href="#matrix"><i class="bi bi-table"></i> Model Tiering Matrix</a></li>
         </ul>
     </div>
 
@@ -257,279 +270,366 @@
         <div class="lab-card">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <span class="badge-course"><i class="bi bi-award-fill"></i> Lab 7</span>
-                    <h1 class="text-white mt-2 mb-1">Horizontal vs Vertical Tiering</h1>
-                    <p class="text-white mb-0">Architecting Multi-Model Pipelines: Intra-Vendor Scaling vs Cross-Vendor Equivalence</p>
+                    <span class="badge-course"><i class="bi bi-layers-fill"></i> Lab 7</span>
+                    <h1 class="text-white mt-2 mb-1">Vertical Model Tiering Evaluation</h1>
+                    <p class="text-white mb-0">Evaluating GPT-5.6 Luna, Terra, and Sol Agents on Latency, Cost, Token Efficiency &amp; Code Quality</p>
                 </div>
             </div>
         </div>
 
-        <!-- Overview & Core Concept -->
+        <!-- Goal & Overview -->
         <div class="lab-card" id="overview">
-            <h2><i class="bi bi-compass text-warning me-2"></i> Which Direction Should We Move?</h2>
-            <p class="fs-5 text-white">When an engineering workload requires architectural adjustment, system designers must decide between <strong>Vertical Tiering</strong> (scaling capability within a vendor family) and <strong>Horizontal Tiering</strong> (switching providers at a comparable capability level).</p>
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Evaluate three distinct model capability tiers across simple and complex software engineering tasks:</p>
 
-            <div class="p-4 bg-dark border border-secondary rounded text-center my-3">
-                <h5 class="text-info mb-3">Horizontal vs Vertical Decision Framework</h5>
-
-                <div class="row align-items-stretch g-3 text-start">
-                    <!-- Vertical Card -->
-                    <div class="col-md-6">
-                        <div class="p-3 bg-body-tertiary border border-primary rounded h-100">
-                            <span class="badge bg-primary mb-2"><i class="bi bi-arrow-up-circle me-1"></i> VERTICAL TIERING</span>
-                            <h6 class="text-white">Same Vendor — Different Capability Tier</h6>
-                            <p class="small text-muted mb-2"><strong>Question:</strong> <em>"Need more capability or reasoning?"</em></p>
-                            <p class="small text-white mb-2">Move within a single vendor family from <code>FAST</code> &rarr; <code>MID</code> &rarr; <code>HIGH</code>.</p>
-                            <div class="bg-dark p-2 rounded small text-info font-monospace mb-2">
-                                Luna &rarr; Terra &rarr; Sol<br>
-                                Haiku &rarr; Sonnet &rarr; Opus
-                            </div>
-                            <small class="text-muted"><strong>Use when:</strong> The task complexity requires deeper reasoning or higher problem-solving capacity.</small>
-                        </div>
+            <div class="row g-3 my-3">
+                <div class="col-md-4">
+                    <div class="tier-card border-info">
+                        <span class="badge bg-info text-dark mb-2">Fast &amp; Cheap</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> LUNA (luna-agent)</h5>
+                        <p class="small text-white mb-0"><code>gpt-5.6-luna</code> — Optimized for maximum speed and minimal token cost. Ideal for simple scripts and straightforward formatting tasks.</p>
                     </div>
-
-                    <!-- Horizontal Card -->
-                    <div class="col-md-6">
-                        <div class="p-3 bg-body-tertiary border border-success rounded h-100">
-                            <span class="badge bg-success mb-2"><i class="bi bi-arrow-left-right me-1"></i> HORIZONTAL TIERING</span>
-                            <h6 class="text-white">Different Vendor — Comparable Capability Tier</h6>
-                            <p class="small text-muted mb-2"><strong>Question:</strong> <em>"Need another provider option at the same tier?"</em></p>
-                            <p class="small text-white mb-2">Move across vendors at equivalent capability levels (Vendor A &leftrightarrow; Vendor B).</p>
-                            <div class="bg-dark p-2 rounded small text-success font-monospace mb-2">
-                                Sol &leftrightarrow; Opus / Sonnet<br>
-                                Terra &leftrightarrow; Haiku 4.5
-                            </div>
-                            <small class="text-muted"><strong>Use when:</strong> Cost, latency, regional availability, governance, or provider resilience favors another model.</small>
-                        </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="tier-card border-success">
+                        <span class="badge bg-success mb-2">Balanced</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-speedometer2 text-success me-2"></i> TERRA (terra-agent)</h5>
+                        <p class="small text-white mb-0"><code>gpt-5.6-terra</code> — Balanced production model tier providing an optimal trade-off between intelligence, speed, and cost.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="tier-card border-warning">
+                        <span class="badge bg-warning text-dark mb-2">High Reasoning</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-stars text-warning me-2"></i> SOL (sol-agent)</h5>
+                        <p class="small text-white mb-0"><code>gpt-5.6-sol</code> — High reasoning and agentic model tier designed for complex software architectures, transaction sagas, and edge cases.</p>
                     </div>
                 </div>
             </div>
+
+            <div class="callout callout-purple">
+                <h6 class="text-white mb-2"><i class="bi bi-diagram-3 me-2"></i> Execution &amp; Analysis Pipeline</h6>
+                <p class="small text-white mb-0">For each task level, run <code>luna-agent</code> → <code>terra-agent</code> → <code>sol-agent</code> sequentially, capture telemetry JSONL logs, and execute the <code>run-analyzer</code> agent to extract deterministic metrics via <code>measure_metrics.py</code> and perform static code quality analysis.</p>
+            </div>
         </div>
 
-        <!-- Model Tiering Matrix -->
-        <div class="lab-card" id="matrix">
-            <h2><i class="bi bi-diagram-3-fill text-info me-2"></i> Model Family Tiering Matrix</h2>
-            <p>Mapping models across vendor families and capability tiers:</p>
+        <!-- Subagent Team Roster -->
+        <div class="lab-card" id="roster">
+            <h2><i class="bi bi-people-fill text-primary me-2"></i> Model Agent Team Roster</h2>
+            <p>The 4 specialized agent definitions configured in <code>.opencode/agent/</code>:</p>
 
             <div class="table-responsive my-3">
-                <table class="table table-dark table-bordered align-middle text-center mb-0">
-                    <thead class="table-secondary">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
                         <tr>
-                            <th>Capability Tier</th>
-                            <th>Vendor A (OpenAI / Bedrock)</th>
-                            <th>Horizontal Equivalent &leftrightarrow;</th>
-                            <th>Vendor B (Anthropic Claude)</th>
+                            <th>Agent Name</th>
+                            <th>File Location</th>
+                            <th>Model Tier</th>
+                            <th>Primary Role</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><span class="badge bg-secondary">FAST / ENTRY</span></td>
-                            <td><code>GPT-5.6 Luna</code> / <code>Terra</code></td>
-                            <td><i class="bi bi-arrow-left-right text-success"></i></td>
-                            <td><code>Claude Haiku 4.5</code></td>
+                            <td><strong class="text-info"><i class="bi bi-lightning-fill me-2"></i> luna-agent</strong></td>
+                            <td><code>.opencode/agent/luna-agent.md</code></td>
+                            <td><code>gpt-5.6-luna</code></td>
+                            <td>Fast, cost-efficient benchmark agent for basic tasks.</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-primary">MID TIER</span></td>
-                            <td><code>GPT-5.6 Terra</code></td>
-                            <td><i class="bi bi-arrow-left-right text-success"></i></td>
-                            <td><code>Claude Sonnet 4.5/4.6</code></td>
+                            <td><strong class="text-success"><i class="bi bi-speedometer2 me-2"></i> terra-agent</strong></td>
+                            <td><code>.opencode/agent/terra-agent.md</code></td>
+                            <td><code>gpt-5.6-terra</code></td>
+                            <td>Balanced benchmark agent for standard production feature implementations.</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-danger">HIGH TIER</span></td>
-                            <td><code>GPT-5.6 Sol</code></td>
-                            <td><i class="bi bi-arrow-left-right text-success"></i></td>
-                            <td><code>Claude Opus</code> / <code>Sonnet</code></td>
+                            <td><strong class="text-warning"><i class="bi bi-stars me-2"></i> sol-agent</strong></td>
+                            <td><code>.opencode/agent/sol-agent.md</code></td>
+                            <td><code>gpt-5.6-sol</code></td>
+                            <td>High reasoning benchmark agent for complex architectural tasks &amp; edge cases.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-purple" style="color: var(--accent-purple);"><i class="bi bi-search me-2"></i> run-analyzer</strong></td>
+                            <td><code>.opencode/agent/run-analyzer.md</code></td>
+                            <td><code>gpt-5.6-sol</code></td>
+                            <td>Executes <code>measure_metrics.py</code> against JSONL runs &amp; compares Luna, Terra, Sol code quality.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Task Requirement -->
-        <div class="lab-card" id="task-def">
-            <h2><i class="bi bi-file-earmark-text-fill text-primary me-2"></i> Benchmark Task (task/request_01.md)</h2>
-            <p>Both vertical and horizontal runs execute against the exact same engineering request:</p>
-            <div class="code-container">
-                <div class="code-header"><span>task/request_01.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                <pre># Engineering Task — Debugging Incident INC-8821
+        <!-- Scenario 1: Simple Task -->
+        <div class="lab-card" id="scenario-simple">
+            <h2><i class="bi bi-1-circle-fill text-info me-2"></i> Scenario 1 — Vertical Benchmark on Simple Task</h2>
+            <p>Execute Luna, Terra, and Sol model tiers sequentially against <code>task/simple_task.md</code>, followed by metrics and quality analysis via <code>run-analyzer</code>:</p>
 
-## Symptom Report
-Production incident INC-8821:
-When payment processing fails or payment webhook receives status "FAILED", customer inventory stock remains reserved in `InventoryRecord` instead of being restored.
-Additionally, if multi-item stock reservation fails halfway through in `create_order`, previously reserved items in the same request are not restored.
-
-## Requirements
-1. Investigate `src/services/order_service.py` (and `handle_payment_webhook`).
-2. Identify the root cause of the stock leakage when payment fails or when partial order reservation fails.
-3. Fix the defect so that inventory stock is properly released back when payment status is FAILED or when order reservation fails.
-4. Preserve existing interfaces and avoid breaking unrelated functionality.</pre>
-            </div>
-        </div>
-
-        <!-- Execution Scenarios -->
-        <div class="lab-card" id="scenarios">
-            <h2><i class="bi bi-play-circle-fill text-success me-2"></i> Execution Scenarios</h2>
-            <p>Execute the single task using Vertical Tiering (intravendor scaling) and Horizontal Tiering (cross-vendor comparison).</p>
-
-            <div class="accordion" id="scenarioAccordion">
-
-                <!-- Scenario 1: Vertical Tiering -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                            <i class="bi bi-arrow-up-circle-fill text-primary me-2"></i> Scenario 1 — Vertical Tiering (Luna &rarr; Terra &rarr; Sol)
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionSimpleTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headSimpleCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSimpleCommands" aria-expanded="false" aria-controls="collapseSimpleCommands">
+                            <i class="bi bi-terminal-fill text-info me-2"></i> View Execution Commands — task/simple_task.md
                         </button>
                     </h2>
-                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#scenarioAccordion">
-                        <div class="accordion-body">
-                            <p class="text-white small mb-3">Scale capability vertically within the Vendor A family (Luna &rarr; Terra &rarr; Sol) to measure latency, cost, and code quality trade-offs as reasoning depth increases.</p>
+                    <div id="collapseSimpleCommands" class="accordion-collapse collapse" aria-labelledby="headSimpleCommands" data-bs-parent="#accordionSimpleTask">
+                        <div class="accordion-body p-3">
 
-                            <div class="mb-3">
-                                <span class="step-badge">1</span><strong>Go to Lab7 Directory</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>cd Lab7</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd lab7;rm -rf runs/* .pytest_cache</pre>
                             </div>
 
-                            <div class="mb-3">
-                                <span class="step-badge">2</span><strong>Inspect Task Requirements</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>task\request_01.md</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Execute LUNA Agent (Simple Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent luna-agent --format json \
+"Engineering Task: task/simple_task.md
+Output: runs/simple_luna_solution.py" \
+| python -u live_view.py runs/simple_luna.jsonl</pre>
                             </div>
 
-                            <div class="mb-3">
-                                <span class="step-badge">3</span><strong>Run Vertical Tiering Pipeline</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>python run_vertical.py task/request_01.md</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Execute TERRA Agent (Simple Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent terra-agent --format json \
+"Engineering Task: task/simple_task.md
+Output: runs/simple_terra_solution.py" \
+| python -u live_view.py runs/simple_terra.jsonl</pre>
                             </div>
 
-                            <div class="mb-3">
-                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>python measure_metrics.py runs/vertical_sol.jsonl runs/vertical_terra.jsonl</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Execute SOL Agent (Simple Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent sol-agent --format json \
+"Engineering Task: task/simple_task.md
+Output: runs/simple_sol_solution.py" \
+| python -u live_view.py runs/simple_sol.jsonl</pre>
                             </div>
 
-                            <div class="mb-0">
-                                <span class="step-badge">5</span><strong>Clean Working Directory</strong>
-                                <div class="code-container mb-0">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>bash reset.sh</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 4: Execute Run Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent run-analyzer \
+"Task: task/simple_task.md
+Luna Run: runs/simple_luna.jsonl
+Luna Code: runs/simple_luna_solution.py
+Terra Run: runs/simple_terra.jsonl
+Terra Code: runs/simple_terra_solution.py
+Sol Run: runs/simple_sol.jsonl
+Sol Code: runs/simple_sol_solution.py"</pre>
                             </div>
 
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Scenario 2: Horizontal Tiering -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            <i class="bi bi-arrow-left-right text-success me-2"></i> Scenario 2 — Horizontal Tiering (Sol &leftrightarrow; Opus / Sonnet)
+            <!-- Interactive Quiz for Scenario 1 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-info me-2"></i> Interactive Knowledge Check — Scenario 1 (Simple Task)</h5>
+
+                <!-- Question 1: Latency -->
+                <div class="quiz-card" id="s1_q1">
+                    <h6 class="text-white">Q1: Which model agent has the lowest latency on simple tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 0, 0, 'LUNA (luna-agent) has the fastest response times and lowest per-token latency.')">A) LUNA</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 1, 0, 'LUNA (luna-agent) has the fastest response times and lowest per-token latency.')">B) TERRA</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 2, 0, 'LUNA (luna-agent) has the fastest response times and lowest per-token latency.')">C) SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 3, 0, 'LUNA (luna-agent) has the fastest response times and lowest per-token latency.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2: Cost -->
+                <div class="quiz-card" id="s1_q2">
+                    <h6 class="text-white">Q2: Which model agent incurs the minimum token cost for simple tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 0, 0, 'LUNA (luna-agent) uses the cheapest model tier, consuming minimum total cost.')">A) LUNA</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 1, 0, 'LUNA (luna-agent) uses the cheapest model tier, consuming minimum total cost.')">B) TERRA</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 2, 0, 'LUNA (luna-agent) uses the cheapest model tier, consuming minimum total cost.')">C) SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 3, 0, 'LUNA (luna-agent) uses the cheapest model tier, consuming minimum total cost.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3: Quality -->
+                <div class="quiz-card" id="s1_q3">
+                    <h6 class="text-white">Q3: How does code quality compare across Luna, Terra, and Sol on simple input validation tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 0, 3, 'For simple requirements, all three model tiers achieve 100% test pass rates with equivalent functional quality.')">A) LUNA is significantly worse than SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 1, 3, 'For simple requirements, all three model tiers achieve 100% test pass rates with equivalent functional quality.')">B) SOL is the only model that passes unit tests</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 2, 3, 'For simple requirements, all three model tiers achieve 100% test pass rates with equivalent functional quality.')">C) TERRA fails basic syntax formatting</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 3, 3, 'For simple requirements, all three model tiers achieve 100% test pass rates with equivalent functional quality.')">D) ALL_OF_ABOVE achieve comparable passing code quality</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4: Optimal Model -->
+                <div class="quiz-card" id="s1_q4">
+                    <h6 class="text-white">Q4: Which model agent is the most cost-effective choice for simple engineering tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 0, 0, 'LUNA delivers 100% correctness at a fraction of the cost and latency of SOL.')">A) LUNA</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 1, 0, 'LUNA delivers 100% correctness at a fraction of the cost and latency of SOL.')">B) TERRA</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 2, 0, 'LUNA delivers 100% correctness at a fraction of the cost and latency of SOL.')">C) SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 3, 0, 'LUNA delivers 100% correctness at a fraction of the cost and latency of SOL.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Scenario 2: Complex Task -->
+        <div class="lab-card" id="scenario-complex">
+            <h2><i class="bi bi-2-circle-fill text-warning me-2"></i> Scenario 2 — Vertical Benchmark on Complex Task</h2>
+            <p>Execute Luna, Terra, and Sol model tiers sequentially against <code>task/complex_task.md</code> (Asynchronous Multi-Item Order Saga Orchestrator), followed by metrics and quality analysis via <code>run-analyzer</code>:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionComplexTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headComplexCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComplexCommands" aria-expanded="false" aria-controls="collapseComplexCommands">
+                            <i class="bi bi-terminal-fill text-warning me-2"></i> View Execution Commands — task/complex_task.md
                         </button>
                     </h2>
-                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#scenarioAccordion">
-                        <div class="accordion-body">
-                            <p class="text-white small mb-3">Switch horizontally across vendor ecosystems at comparable capability levels (e.g. GPT-5.6 Sol &leftrightarrow; Claude Sonnet/Opus) to evaluate multi-provider resilience and cost-performance.</p>
+                    <div id="collapseComplexCommands" class="accordion-collapse collapse" aria-labelledby="headComplexCommands" data-bs-parent="#accordionComplexTask">
+                        <div class="accordion-body p-3">
 
-                            <div class="mb-3">
-                                <span class="step-badge">1</span><strong>Go to Lab7 Directory</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>cd Lab7</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd lab7;rm -rf runs/* .pytest_cache</pre>
                             </div>
 
-                            <div class="mb-3">
-                                <span class="step-badge">2</span><strong>Inspect Task Requirements</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>task\request_01.md</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Execute LUNA Agent (Complex Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent luna-agent --format json \
+"Engineering Task: task/complex_task.md
+Output: runs/complex_luna_solution.py" \
+| python -u live_view.py runs/complex_luna.jsonl</pre>
                             </div>
 
-                            <div class="mb-3">
-                                <span class="step-badge">3</span><strong>Run Horizontal Tiering Pipeline</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Bash / PowerShell</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>python run_horizontal.py task/request_01.md</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Execute TERRA Agent (Complex Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent terra-agent --format json \
+"Engineering Task: task/complex_task.md
+Output: runs/complex_terra_solution.py" \
+| python -u live_view.py runs/complex_terra.jsonl</pre>
                             </div>
 
-                            <div class="mb-3">
-                                <span class="step-badge">4</span><strong>Extract Metrics and Record in Benchmark Table</strong>
-                                <div class="code-container">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>python measure_metrics.py runs/horizontal_sol.jsonl runs/horizontal_sonnet.jsonl</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Execute SOL Agent (Complex Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent sol-agent --format json \
+"Engineering Task: task/complex_task.md
+Output: runs/complex_sol_solution.py" \
+| python -u live_view.py runs/complex_sol.jsonl</pre>
                             </div>
 
-                            <div class="mb-0">
-                                <span class="step-badge">5</span><strong>Clean Working Directory</strong>
-                                <div class="code-container mb-0">
-                                    <div class="code-header"><span>Terminal</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
-                                    <pre>bash reset.sh</pre>
-                                </div>
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 4: Execute Run Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent run-analyzer \
+"Task: task/complex_task.md
+Luna Run: runs/complex_luna.jsonl
+Luna Code: runs/complex_luna_solution.py
+Terra Run: runs/complex_terra.jsonl
+Terra Code: runs/complex_terra_solution.py
+Sol Run: runs/complex_sol.jsonl
+Sol Code: runs/complex_sol_solution.py"</pre>
                             </div>
 
                         </div>
                     </div>
                 </div>
-
             </div>
+
+            <!-- Interactive Quiz for Scenario 2 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i> Interactive Knowledge Check — Scenario 2 (Complex Task)</h5>
+
+                <!-- Question 1: Latency -->
+                <div class="quiz-card" id="s2_q1">
+                    <h6 class="text-white">Q1: Which model agent has the highest latency on complex architectural tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 0, 2, 'SOL (sol-agent) uses deep reasoning chains to handle complex sagas, resulting in higher execution latency.')">A) LUNA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 1, 2, 'SOL (sol-agent) uses deep reasoning chains to handle complex sagas, resulting in higher execution latency.')">B) TERRA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 2, 2, 'SOL (sol-agent) uses deep reasoning chains to handle complex sagas, resulting in higher execution latency.')">C) SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 3, 2, 'SOL (sol-agent) uses deep reasoning chains to handle complex sagas, resulting in higher execution latency.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2: Cost -->
+                <div class="quiz-card" id="s2_q2">
+                    <h6 class="text-white">Q2: Which model agent consumes the highest token cost on complex tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 0, 2, 'SOL (sol-agent) consumes the highest token cost due to extensive reasoning tokens and larger model tier pricing.')">A) LUNA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 1, 2, 'SOL (sol-agent) consumes the highest token cost due to extensive reasoning tokens and larger model tier pricing.')">B) TERRA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 2, 2, 'SOL (sol-agent) consumes the highest token cost due to extensive reasoning tokens and larger model tier pricing.')">C) SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 3, 2, 'SOL (sol-agent) consumes the highest token cost due to extensive reasoning tokens and larger model tier pricing.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3: Quality -->
+                <div class="quiz-card" id="s2_q3">
+                    <h6 class="text-white">Q3: Which model agent produces the highest code quality &amp; edge-case handling for complex distributed sagas?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 0, 2, 'SOL (sol-agent) excels at complex tasks by correctly structuring 2PC rollbacks and boundary edge cases.')">A) LUNA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 1, 2, 'SOL (sol-agent) excels at complex tasks by correctly structuring 2PC rollbacks and boundary edge cases.')">B) TERRA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 2, 2, 'SOL (sol-agent) excels at complex tasks by correctly structuring 2PC rollbacks and boundary edge cases.')">C) SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 3, 2, 'SOL (sol-agent) excels at complex tasks by correctly structuring 2PC rollbacks and boundary edge cases.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4: Optimal Tier -->
+                <div class="quiz-card" id="s2_q4">
+                    <h6 class="text-white">Q4: Which model agent offers the best production balance between cost and reasoning performance on complex tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 0, 1, 'TERRA (terra-agent) provides a balanced production tier, delivering strong code quality at moderate cost compared to SOL.')">A) LUNA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 1, 1, 'TERRA (terra-agent) provides a balanced production tier, delivering strong code quality at moderate cost compared to SOL.')">B) TERRA</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 2, 1, 'TERRA (terra-agent) provides a balanced production tier, delivering strong code quality at moderate cost compared to SOL.')">C) SOL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 3, 1, 'TERRA (terra-agent) provides a balanced production tier, delivering strong code quality at moderate cost compared to SOL.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Benchmark Table -->
-        <div class="lab-card" id="benchmark">
-            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-                <div>
-                    <h2><i class="bi bi-table text-success me-2"></i> Tiering Benchmark Table</h2>
-                    <p class="text-muted mb-0">Record and compare metrics for Vertical vs Horizontal runs on <code>request_01.md</code>.</p>
-                </div>
-                <button class="btn btn-outline-success btn-sm mt-2 mt-md-0" onclick="downloadBenchmarkCSV()">
-                    <i class="bi bi-download me-1"></i> Export Tiering CSV
-                </button>
-            </div>
+        <!-- Model Tiering Comparison Matrix -->
+        <div class="lab-card" id="matrix">
+            <h2><i class="bi bi-table text-primary me-2"></i> Vertical Model Tiering Summary</h2>
+            <p>Summary of trade-offs across model capability tiers:</p>
 
-            <div class="table-responsive">
-                <table class="table table-dark table-bordered align-middle text-center mb-0">
-                    <thead class="table-secondary">
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
                         <tr>
-                            <th class="text-start">Tiering Strategy</th>
-                            <th>Vendor / Ecosystem</th>
-                            <th>Model Selected</th>
-                            <th>Capability Tier</th>
-                            <th style="width: 14%;">Latency (s)</th>
-                            <th style="width: 14%;">Total Cost ($)</th>
-                            <th style="width: 14%;">LLM Calls / Steps</th>
-                            <th style="width: 15%;">Pass / Fail</th>
+                            <th>Metric / Dimension</th>
+                            <th><code>LUNA</code> Agent</th>
+                            <th><code>TERRA</code> Agent</th>
+                            <th><code>SOL</code> Agent</th>
                         </tr>
                     </thead>
-                    <tbody id="benchmark_table_body">
-                        <!-- Rows rendered via JavaScript -->
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-cpu me-2"></i> Model Tier</strong></td>
+                            <td><code>gpt-5.6-luna</code></td>
+                            <td><code>gpt-5.6-terra</code></td>
+                            <td><code>gpt-5.6-sol</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-clock-history me-2"></i> Latency &amp; Speed</strong></td>
+                            <td><span class="badge bg-success">Lowest Latency</span></td>
+                            <td><span class="badge bg-info text-dark">Moderate Latency</span></td>
+                            <td><span class="badge bg-warning text-dark">Highest Latency</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-cash-coin me-2"></i> Token Cost</strong></td>
+                            <td><span class="badge bg-success">Lowest Cost</span></td>
+                            <td><span class="badge bg-info text-dark">Balanced Cost</span></td>
+                            <td><span class="badge bg-warning text-dark">Highest Cost</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-patch-check-fill me-2"></i> Code Quality on Simple Tasks</strong></td>
+                            <td><span class="badge bg-success">100% Pass Rate</span></td>
+                            <td><span class="badge bg-success">100% Pass Rate</span></td>
+                            <td><span class="badge bg-success">100% Pass Rate</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-patch-check-fill me-2"></i> Code Quality on Complex Tasks</strong></td>
+                            <td>Potential edge-case misses or retries</td>
+                            <td>Good overall coverage</td>
+                            <td><span class="badge bg-success">Superior Architecture &amp; 2PC Rollback Handling</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-bullseye me-2"></i> Recommended Use Case</strong></td>
+                            <td>Simple scripts, formatting, basic CRUD</td>
+                            <td>Standard production microservices</td>
+                            <td>Complex distributed sagas &amp; mission-critical code</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="form-text text-muted mt-2">
-                <i class="bi bi-info-circle me-1"></i> All inputs automatically save to your browser's local storage.
-            </div>
-        </div>
-
-        <!-- Key Takeaways -->
-        <div class="lab-card" id="takeaways">
-            <h2><i class="bi bi-lightbulb-fill text-warning me-2"></i> Key Takeaways &amp; Architectural Guidance</h2>
-            <ul class="mb-0">
-                <li class="mb-2"><strong>Vertical Tiering:</strong> Move up or down within a single model family (`Luna` &rarr; `Terra` &rarr; `Sol` or `Haiku` &rarr; `Sonnet` &rarr; `Opus`) when the task requires more reasoning power or when cost reduction is needed for simpler tasks.</li>
-                <li class="mb-2"><strong>Horizontal Tiering:</strong> Switch across vendor families at comparable capability levels (`Sol` &leftrightarrow; `Opus` or `Terra` &leftrightarrow; `Haiku`) to maintain vendor neutrality, bypass rate limits, or leverage specific provider strengths.</li>
-                <li><strong>Evidence-Driven Decision Making:</strong> Always benchmark both vertical scaling and horizontal substitution using empirical metrics (latency, cost, test pass rate) rather than provider marketing claims.</li>
-            </ul>
         </div>
 
     </div>
@@ -550,85 +650,29 @@ Additionally, if multi-item stock reservation fails halfway through in `create_o
             });
         }
 
-        const tieringRuns = [
-            { strategy: "Vertical Tiering (Fast)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Luna / Terra", tier: "FAST" },
-            { strategy: "Vertical Tiering (Mid)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Terra", tier: "MID" },
-            { strategy: "Vertical Tiering (High)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Sol", tier: "HIGH" },
-            { strategy: "Horizontal Tiering (Vendor A)", vendor: "OpenAI / Bedrock", model: "GPT-5.6 Sol", tier: "HIGH" },
-            { strategy: "Horizontal Tiering (Vendor B)", vendor: "Anthropic Claude", model: "Claude Sonnet / Opus", tier: "HIGH" }
-        ];
+        // Interactive Quiz Handling with Instant Feedback
+        function selectOption(quizId, optionIdx, correctIdx, explanation) {
+            const quizCard = document.getElementById(quizId);
+            const options = quizCard.querySelectorAll('.quiz-option');
+            const feedbackDiv = quizCard.querySelector('.quiz-feedback');
 
-        function buildBenchmarkTable() {
-            const tbody = document.getElementById("benchmark_table_body");
-            let html = "";
-            tieringRuns.forEach((r, idx) => {
-                const prefix = `l7_r${idx + 1}`;
-                html += `
-                    <tr>
-                        <td class="text-start"><strong>${r.strategy}</strong></td>
-                        <td>${r.vendor}</td>
-                        <td><code>${r.model}</code></td>
-                        <td><span class="badge ${r.tier === 'FAST' ? 'bg-secondary' : r.tier === 'MID' ? 'bg-primary' : 'bg-danger'}">${r.tier}</span></td>
-                        <td><input type="text" class="table-input text-center" id="${prefix}_lat" placeholder="e.g. 12.5s" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${prefix}_cost" placeholder="e.g. $0.0042" oninput="saveData()"></td>
-                        <td><input type="text" class="table-input text-center" id="${prefix}_calls" placeholder="e.g. 3" oninput="saveData()"></td>
-                        <td>
-                            <select class="table-input text-center" id="${prefix}_pass" onchange="saveData()">
-                                <option value="">PASS / FAIL</option>
-                                <option value="PASS">PASS</option>
-                                <option value="FAIL">FAIL</option>
-                            </select>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        function saveData() {
-            for (let i = 1; i <= tieringRuns.length; i++) {
-                ['lat', 'cost', 'calls', 'pass'].forEach(k => {
-                    const id = `l7_r${i}_${k}`;
-                    const el = document.getElementById(id);
-                    if (el) localStorage.setItem(id, el.value);
-                });
-            }
-        }
-
-        function loadData() {
-            buildBenchmarkTable();
-            for (let i = 1; i <= tieringRuns.length; i++) {
-                ['lat', 'cost', 'calls', 'pass'].forEach(k => {
-                    const id = `l7_r${i}_${k}`;
-                    const val = localStorage.getItem(id);
-                    const el = document.getElementById(id);
-                    if (val && el) el.value = val;
-                });
-            }
-        }
-
-        function downloadBenchmarkCSV() {
-            let csvContent = "Tiering Strategy,Vendor / Ecosystem,Model Selected,Capability Tier,Latency (s),Total Cost ($),LLM Calls/Steps,Pass/Fail\n";
-            tieringRuns.forEach((r, idx) => {
-                const prefix = `l7_r${idx + 1}`;
-                const lat = (document.getElementById(prefix + "_lat")?.value || "").replace(/"/g, '""');
-                const cost = (document.getElementById(prefix + "_cost")?.value || "").replace(/"/g, '""');
-                const calls = (document.getElementById(prefix + "_calls")?.value || "").replace(/"/g, '""');
-                const pass = (document.getElementById(prefix + "_pass")?.value || "").replace(/"/g, '""');
-                csvContent += `"${r.strategy}","${r.vendor}","${r.model}","${r.tier}","${lat}","${cost}","${calls}","${pass}"\n`;
+            options.forEach((opt, idx) => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+                if (idx === optionIdx) {
+                    if (optionIdx === correctIdx) {
+                        opt.classList.add('correct');
+                    } else {
+                        opt.classList.add('incorrect');
+                    }
+                }
             });
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'lab7_tiering_benchmark_results.csv');
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            if (optionIdx === correctIdx) {
+                feedbackDiv.innerHTML = `<div class="callout callout-success my-2"><small class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Correct! ${explanation}</small></div>`;
+            } else {
+                feedbackDiv.innerHTML = `<div class="callout callout-danger my-2"><small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Incorrect. Try again!</small></div>`;
+            }
         }
-
-        window.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
