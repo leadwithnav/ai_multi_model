@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 10 — Automatic Prompt Optimization Evaluation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+            width: 270px;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .callout-purple {
+            border-left-color: var(--accent-purple);
+            background-color: rgba(137, 87, 229, 0.08);
+        }
+
+        .callout-danger {
+            border-left-color: var(--accent-red);
+            background-color: rgba(248, 81, 73, 0.08);
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .tier-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-color);
+        }
+
+        .quiz-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .quiz-option {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            background-color: #21262d;
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.12);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--accent-green) !important;
+            background-color: rgba(46, 160, 67, 0.15) !important;
+            color: #ffffff;
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent-red) !important;
+            background-color: rgba(248, 81, 73, 0.15) !important;
+            color: #ffffff;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 10 Walkthrough</h5>
+            <small class="text-muted">Auto Prompt Optimization</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#roster"><i class="bi bi-people-fill"></i> Subagent Team Roster</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-simple"><i class="bi bi-1-circle-fill"></i> Scenario 1: Simple Task</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-complex"><i class="bi bi-2-circle-fill"></i> Scenario 2: Complex Task</a></li>
+            <li class="nav-item"><a class="nav-link" href="#matrix"><i class="bi bi-diagram-3-fill"></i> Strategy Comparison</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-magic"></i> Lab 10</span>
+                    <h1 class="text-white mt-2 mb-1">Automatic Prompt Optimization Evaluation</h1>
+                    <p class="text-white mb-0">Evaluating the Impact of Automated Prompt Optimization on Code Quality, Token Costs, Latency &amp; Execution Metrics</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal & Overview -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Evaluate whether automated prompt optimization improves code quality for lower/mid-tier coding models, and quantify its trade-offs on latency, cost, and token usage:</p>
+
+            <div class="row g-3 my-3">
+                <div class="col-md-6">
+                    <div class="tier-card border-info">
+                        <span class="badge bg-info text-dark mb-2">Strategy 1</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-play-circle-fill text-info me-2"></i> BASELINE Strategy</h5>
+                        <p class="small text-muted mb-0">The <code>coordinator</code> delegates directly to <code>executor</code> using the un-optimized baseline prompt (<code>prompts/baseline_prompt.md</code>) to write <code>runs/baseline_solution.py</code>.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="tier-card border-purple" style="border-color: var(--accent-purple);">
+                        <span class="badge bg-purple text-white mb-2" style="background-color: var(--accent-purple);">Strategy 2</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-magic text-warning me-2"></i> TUNED Strategy</h5>
+                        <p class="small text-muted mb-0">The <code>coordinator</code> first invokes <code>prompt-optimizer</code> (using high-reasoning model) to rewrite <code>prompts/baseline_prompt.md</code> into <code>prompts/tuned_prompt.md</code>, which is then executed by <code>executor</code>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-purple">
+                <h6 class="text-white mb-2"><i class="bi bi-diagram-3 me-2"></i> Evaluation &amp; Metrics Pipeline</h6>
+                <p class="small text-white mb-0">After executing both strategies, the <code>run-analyzer</code> agent invokes <code>measure_metrics.py</code> to gather deterministic execution metrics (latency, token usage, cost) and performs static code quality evaluation across baseline and prompt-tuned implementations.</p>
+            </div>
+        </div>
+
+        <!-- Subagent Team Roster -->
+        <div class="lab-card" id="roster">
+            <h2><i class="bi bi-people-fill text-primary me-2"></i> Subagent Team Roster</h2>
+            <p>The 4 specialized agent definitions configured in <code>.opencode/agent/</code>:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Agent Name</th>
+                            <th>File Location</th>
+                            <th>Model Binding</th>
+                            <th>Primary Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-info"><i class="bi bi-gear-wide-connected me-2"></i> coordinator</strong></td>
+                            <td><code>.opencode/agent/coordinator.md</code></td>
+                            <td>—</td>
+                            <td>Orchestrates experiment strategy (<code>BASELINE</code> vs <code>TUNED</code>).</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-success"><i class="bi bi-code-square me-2"></i> executor</strong></td>
+                            <td><code>.opencode/agent/executor.md</code></td>
+                            <td><code>gpt-5.6-terra</code></td>
+                            <td>Implements engineering tasks following supplied execution prompts.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-warning"><i class="bi bi-magic me-2"></i> prompt-optimizer</strong></td>
+                            <td><code>.opencode/agent/prompt-optimizer.md</code></td>
+                            <td><code>gpt-5.6-sol</code></td>
+                            <td>Optimizes baseline prompts for requirement clarity, edge cases, and verification checklists.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-purple" style="color: var(--accent-purple);"><i class="bi bi-search me-2"></i> run-analyzer</strong></td>
+                            <td><code>.opencode/agent/run-analyzer.md</code></td>
+                            <td><code>gpt-5.6-terra</code></td>
+                            <td>Runs <code>measure_metrics.py</code> &amp; evaluates baseline vs. prompt-tuned code quality.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Scenario 1: Simple Task -->
+        <div class="lab-card" id="scenario-simple">
+            <h2><i class="bi bi-1-circle-fill text-info me-2"></i> Scenario 1 — Execution on Simple Task</h2>
+            <p>Execute BASELINE vs. TUNED flows on <code>task/simple_task.md</code> (Simple Input Validation &amp; Formatting), run quality &amp; metrics analysis, and answer knowledge check questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionSimpleTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headSimpleCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSimpleCommands" aria-expanded="false" aria-controls="collapseSimpleCommands">
+                            <i class="bi bi-terminal-fill text-info me-2"></i> View Execution Commands — task/simple_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseSimpleCommands" class="accordion-collapse collapse" aria-labelledby="headSimpleCommands" data-bs-parent="#accordionSimpleTask">
+                        <div class="accordion-body p-3">
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -f runs/* prompts/tuned_prompt.md</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Execute BASELINE Flow (Simple Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: BASELINE
+Task: task/simple_task.md" | python -u live_view.py runs/baseline.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Execute TUNED Flow (Simple Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json \
+"Strategy: TUNED Task: task/simple_task.md" | python -u live_view.py runs/tuned.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Execute Run Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent run-analyzer \
+"Task: task/simple_task.md
+Baseline Run: runs/baseline.jsonl
+Baseline Code: runs/baseline_solution.py
+Optimized Run: runs/tuned.jsonl
+Optimized Code: runs/tuned_solution.py"</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 1 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-info me-2"></i> Interactive Knowledge Check — Scenario 1 (Simple Task)</h5>
+
+                <!-- Question 1: Latency -->
+                <div class="quiz-card" id="s1_q1">
+                    <h6 class="text-white">Q1: Which strategy has lower total latency on simple tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 0, 0, 'BASELINE has lower latency because it executes directly without waiting for prompt-optimizer to run.')">A) BASELINE</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 1, 0, 'BASELINE has lower latency because it executes directly without waiting for prompt-optimizer to run.')">B) TUNED</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 2, 0, 'BASELINE has lower latency because it executes directly without waiting for prompt-optimizer to run.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 3, 0, 'BASELINE has lower latency because it executes directly without waiting for prompt-optimizer to run.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2: Cost -->
+                <div class="quiz-card" id="s1_q2">
+                    <h6 class="text-white">Q2: Which strategy incurs higher overall token cost?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 0, 1, 'TUNED incurs higher cost because prompt-optimizer (using SOL model) consumes extra reasoning and output tokens before executor runs.')">A) BASELINE</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 1, 1, 'TUNED incurs higher cost because prompt-optimizer (using SOL model) consumes extra reasoning and output tokens before executor runs.')">B) TUNED</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 2, 1, 'TUNED incurs higher cost because prompt-optimizer (using SOL model) consumes extra reasoning and output tokens before executor runs.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 3, 1, 'TUNED incurs higher cost because prompt-optimizer (using SOL model) consumes extra reasoning and output tokens before executor runs.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3: Code Quality -->
+                <div class="quiz-card" id="s1_q3">
+                    <h6 class="text-white">Q3: How does code quality compare between BASELINE and TUNED on simple tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 0, 2, 'On simple input formatting tasks, baseline prompts already provide sufficient guidance, yielding equal 100% test pass rates and identical code quality.')">A) TUNED is significantly better</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 1, 2, 'On simple input formatting tasks, baseline prompts already provide sufficient guidance, yielding equal 100% test pass rates and identical code quality.')">B) BASELINE fails all edge cases</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 2, 2, 'On simple input formatting tasks, baseline prompts already provide sufficient guidance, yielding equal 100% test pass rates and identical code quality.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 3, 2, 'On simple input formatting tasks, baseline prompts already provide sufficient guidance, yielding equal 100% test pass rates and identical code quality.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4: Optimal Strategy -->
+                <div class="quiz-card" id="s1_q4">
+                    <h6 class="text-white">Q4: Which strategy is optimal for simple engineering tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 0, 0, 'BASELINE is optimal for simple tasks because prompt optimization overhead is unnecessary when basic instructions already succeed.')">A) BASELINE</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 1, 0, 'BASELINE is optimal for simple tasks because prompt optimization overhead is unnecessary when basic instructions already succeed.')">B) TUNED</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 2, 0, 'BASELINE is optimal for simple tasks because prompt optimization overhead is unnecessary when basic instructions already succeed.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 3, 0, 'BASELINE is optimal for simple tasks because prompt optimization overhead is unnecessary when basic instructions already succeed.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Scenario 2: Complex Task -->
+        <div class="lab-card" id="scenario-complex">
+            <h2><i class="bi bi-2-circle-fill text-warning me-2"></i> Scenario 2 — Execution on Complex Task</h2>
+            <p>Execute BASELINE vs. TUNED flows on <code>task/complex_task.md</code> (Asynchronous Multi-Item Order Saga Orchestrator), run quality &amp; metrics analysis, and answer knowledge check questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionComplexTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headComplexCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComplexCommands" aria-expanded="false" aria-controls="collapseComplexCommands">
+                            <i class="bi bi-terminal-fill text-warning me-2"></i> View Execution Commands — task/complex_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseComplexCommands" class="accordion-collapse collapse" aria-labelledby="headComplexCommands" data-bs-parent="#accordionComplexTask">
+                        <div class="accordion-body p-3">
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -f runs/* prompts/tuned_prompt.md</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Execute BASELINE Flow (Complex Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: BASELINE
+Task: task/complex_task.md" | python -u live_view.py runs/baseline.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Execute TUNED Flow (Complex Task)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json \
+"Strategy: TUNED Task: task/complex_task.md" | python -u live_view.py runs/tuned.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Execute Run Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent run-analyzer \
+"Task: task/complex_task.md
+Baseline Run: runs/baseline.jsonl
+Baseline Code: runs/baseline_solution.py
+Optimized Run: runs/tuned.jsonl
+Optimized Code: runs/tuned_solution.py"</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 2 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i> Interactive Knowledge Check — Scenario 2 (Complex Task)</h5>
+
+                <!-- Question 1: Latency -->
+                <div class="quiz-card" id="s2_q1">
+                    <h6 class="text-white">Q1: Which strategy has higher total execution latency?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 0, 1, 'TUNED has higher latency because prompt-optimizer runs first to refine the prompt before executor starts code synthesis.')">A) BASELINE</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 1, 1, 'TUNED has higher latency because prompt-optimizer runs first to refine the prompt before executor starts code synthesis.')">B) TUNED</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 2, 1, 'TUNED has higher latency because prompt-optimizer runs first to refine the prompt before executor starts code synthesis.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 3, 1, 'TUNED has higher latency because prompt-optimizer runs first to refine the prompt before executor starts code synthesis.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2: Cost -->
+                <div class="quiz-card" id="s2_q2">
+                    <h6 class="text-white">Q2: What is the token cost trade-off when using the TUNED strategy on complex tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 0, 1, 'TUNED increases total token cost due to the prompt optimization step, but reduces execution retries by preventing architectural ambiguity.')">A) TUNED reduces token cost to zero</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 1, 1, 'TUNED increases total token cost due to the prompt optimization step, but reduces execution retries by preventing architectural ambiguity.')">B) TUNED adds prompt optimization token cost, but improves implementation guidance</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 2, 1, 'TUNED increases total token cost due to the prompt optimization step, but reduces execution retries by preventing architectural ambiguity.')">C) BASELINE costs 10x more than TUNED</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 3, 1, 'TUNED increases total token cost due to the prompt optimization step, but reduces execution retries by preventing architectural ambiguity.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3: Code Quality -->
+                <div class="quiz-card" id="s2_q3">
+                    <h6 class="text-white">Q3: Which strategy produces superior code quality and edge-case handling on complex tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 0, 1, 'TUNED produces higher code quality on complex tasks because prompt-optimizer adds explicit edge-case constraints, error handling rules, and verification checklists.')">A) BASELINE</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 1, 1, 'TUNED produces higher code quality on complex tasks because prompt-optimizer adds explicit edge-case constraints, error handling rules, and verification checklists.')">B) TUNED</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 2, 1, 'TUNED produces higher code quality on complex tasks because prompt-optimizer adds explicit edge-case constraints, error handling rules, and verification checklists.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 3, 1, 'TUNED produces higher code quality on complex tasks because prompt-optimizer adds explicit edge-case constraints, error handling rules, and verification checklists.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4: Optimal Strategy -->
+                <div class="quiz-card" id="s2_q4">
+                    <h6 class="text-white">Q4: When is automated prompt optimization (TUNED strategy) most valuable?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 0, 1, 'TUNED strategy is most valuable when deploying mid/lower-tier coding models on complex requirements, bridging the reasoning gap through structured prompt refinement.')">A) For trivial regex string formatting</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 1, 1, 'TUNED strategy is most valuable when deploying mid/lower-tier coding models on complex requirements, bridging the reasoning gap through structured prompt refinement.')">B) For complex engineering requirements executed by mid-tier models</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 2, 1, 'TUNED strategy is most valuable when deploying mid/lower-tier coding models on complex requirements, bridging the reasoning gap through structured prompt refinement.')">C) When zero latency is the primary goal</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 3, 1, 'TUNED strategy is most valuable when deploying mid/lower-tier coding models on complex requirements, bridging the reasoning gap through structured prompt refinement.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Strategy Allocation Matrix / Flow Comparison -->
+        <div class="lab-card" id="matrix">
+            <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Strategy Comparison &amp; Architecture Flow</h2>
+            <p>Understanding the trade-offs between un-optimized baseline execution and automated prompt tuning:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Metric / Dimension</th>
+                            <th><code>BASELINE</code> Strategy</th>
+                            <th><code>TUNED</code> Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-diagram-2 me-2"></i> Execution Flow</strong></td>
+                            <td><code>Coordinator</code> → <code>executor</code> → <code>baseline_solution.py</code></td>
+                            <td><code>Coordinator</code> → <code>prompt-optimizer</code> (<code>tuned_prompt.md</code>) → <code>executor</code> → <code>tuned_solution.py</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-clock-history me-2"></i> Latency &amp; Speed</strong></td>
+                            <td><span class="badge bg-success">Lowest Latency</span> (Single execution turn)</td>
+                            <td><span class="badge bg-warning text-dark">Higher Latency</span> (Optimization turn + Execution turn)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-cash-coin me-2"></i> Token Cost</strong></td>
+                            <td><span class="badge bg-success">Lowest Token Usage</span></td>
+                            <td><span class="badge bg-warning text-dark">Higher Token Usage</span> (Optimization prompt + Extended context)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-patch-check-fill me-2"></i> Code Quality on Simple Tasks</strong></td>
+                            <td><span class="badge bg-success">100% Pass Rate</span> (Equal Quality)</td>
+                            <td><span class="badge bg-success">100% Pass Rate</span> (Equal Quality)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-patch-check-fill me-2"></i> Code Quality on Complex Tasks</strong></td>
+                            <td>Risk of missing edge cases or error handling constraints</td>
+                            <td><span class="badge bg-success">Superior Modularity, Edge-Case &amp; Error Resilience</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-bullseye me-2"></i> Recommended Use Case</strong></td>
+                            <td>Simple scripts, rapid prototyping, straightforward tasks</td>
+                            <td>Complex multi-step tasks executed by mid/lower-tier models</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        // Interactive Quiz Handling with Instant Feedback
+        function selectOption(quizId, optionIdx, correctIdx, explanation) {
+            const quizCard = document.getElementById(quizId);
+            const options = quizCard.querySelectorAll('.quiz-option');
+            const feedbackDiv = quizCard.querySelector('.quiz-feedback');
+
+            options.forEach((opt, idx) => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+                if (idx === optionIdx) {
+                    if (optionIdx === correctIdx) {
+                        opt.classList.add('correct');
+                    } else {
+                        opt.classList.add('incorrect');
+                    }
+                }
+            });
+
+            if (optionIdx === correctIdx) {
+                feedbackDiv.innerHTML = `<div class="callout callout-success my-2"><small class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Correct! ${explanation}</small></div>`;
+            } else {
+                feedbackDiv.innerHTML = `<div class="callout callout-danger my-2"><small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Incorrect. Try again!</small></div>`;
+            }
+        }
+    </script>
+</body>
+</html>
