@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab 8 — Context Handoff: Cold vs Context-Aware Retry</title>
+    <title>Lab 8 — Direct Implementation vs. Design-First Strategy</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
@@ -39,12 +39,12 @@
             overflow-y: auto;
             border-right: 1px solid var(--border-color);
             background-color: #090d13;
-            width: 260px;
+            width: 270px;
         }
 
         .sidebar .nav-link {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             padding: 8px 12px;
             border-radius: 6px;
             margin-bottom: 4px;
@@ -62,7 +62,7 @@
         }
 
         .main-content {
-            margin-left: 260px;
+            margin-left: 270px;
             padding: 30px 40px;
         }
 
@@ -102,77 +102,158 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #1f242d;
+            background-color: #111827;
             padding: 8px 16px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
             border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
         }
 
         pre {
             margin: 0;
             padding: 16px;
-            color: #e6edf3;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 0.9rem;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
             overflow-x: auto;
         }
 
-        .btn-copy {
+        .copy-btn {
             background-color: #21262d;
-            border: 1px solid var(--border-color);
             color: var(--text-main);
-            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
             padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .callout-purple {
+            border-left-color: var(--accent-purple);
+            background-color: rgba(137, 87, 229, 0.08);
+        }
+
+        .callout-danger {
+            border-left-color: var(--accent-red);
+            background-color: rgba(248, 81, 73, 0.08);
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .strategy-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .strategy-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-color);
+        }
+
+        .agent-pill {
+            display: inline-block;
+            background-color: #21262d;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            font-size: 0.78rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin: 2px;
+            font-family: monospace;
+        }
+
+        .quiz-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .quiz-option {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .btn-copy:hover {
-            background-color: #30363d;
-            color: #ffffff;
-        }
-
-        .table-custom {
-            color: var(--text-main);
-            border-color: var(--border-color);
-        }
-
-        .table-custom th {
+        .quiz-option:hover {
             background-color: #21262d;
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        .table-custom td {
-            background-color: var(--card-bg);
-            vertical-align: middle;
-        }
-
-        .table-input {
-            background-color: #0d1117;
-            border: 1px solid var(--border-color);
-            color: #ffffff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            width: 100%;
-        }
-
-        .table-input:focus {
-            outline: none;
             border-color: var(--accent-color);
         }
 
-        .diagram-box {
-            background: #0d1117;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            font-family: monospace;
-            white-space: pre;
-            color: #58a6ff;
-            overflow-x: auto;
+        .quiz-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.12);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--accent-green) !important;
+            background-color: rgba(46, 160, 67, 0.15) !important;
+            color: #ffffff;
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent-red) !important;
+            background-color: rgba(248, 81, 73, 0.15) !important;
+            color: #ffffff;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
         }
     </style>
 </head>
@@ -180,195 +261,370 @@
 
     <!-- Sidebar Navigation -->
     <div class="sidebar">
-        <h5 class="text-white mb-4 px-2"><i class="bi bi-cpu text-primary"></i> AI Multi-Model</h5>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="../Lab0/Lab0.html"><i class="bi bi-check-circle"></i> Lab 0 — Setup</a>
-            <a class="nav-link" href="../Lab1/Lab1.html"><i class="bi bi-check-circle"></i> Lab 1 — Prompts</a>
-            <a class="nav-link" href="../Lab2/Lab2.html"><i class="bi bi-check-circle"></i> Lab 2 — Evaluation</a>
-            <a class="nav-link" href="../Lab3/Lab3.html"><i class="bi bi-check-circle"></i> Lab 3 — Routing</a>
-            <a class="nav-link" href="../Lab4/Lab4.html"><i class="bi bi-check-circle"></i> Lab 4 — Agents</a>
-            <a class="nav-link" href="../Lab5/Lab5.html"><i class="bi bi-check-circle"></i> Lab 5 — Task Classifier</a>
-            <a class="nav-link" href="../Lab6/Lab6.html"><i class="bi bi-check-circle"></i> Lab 6 — Recovery</a>
-            <a class="nav-link" href="../Lab7/Lab7.html"><i class="bi bi-check-circle"></i> Lab 7 — Tiering</a>
-            <a class="nav-link active" href="Lab8.html"><i class="bi bi-play-circle-fill"></i> Lab 8 — Context Handoff</a>
-        </nav>
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 8 Walkthrough</h5>
+            <small class="text-white">Direct Build vs. Design-First Strategy</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#roster"><i class="bi bi-people-fill"></i> Agent Team Roster</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-simple"><i class="bi bi-1-circle-fill"></i> Scenario 1: Simple Task</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-complex"><i class="bi bi-2-circle-fill"></i> Scenario 2: Complex Task</a></li>
+            <li class="nav-item"><a class="nav-link" href="#strategies"><i class="bi bi-diagram-3-fill"></i> Strategy Comparison</a></li>
+        </ul>
     </div>
 
     <!-- Main Content Area -->
     <div class="main-content">
-        
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <span class="badge-course mb-2 d-inline-block">AI Multi-Model Engineering</span>
-                <h1>Lab 8 — Context Handoff Experiment</h1>
-                <p class="text-secondary mb-0">Cold Retry vs. Context-Aware Failure Handoff Retry</p>
-            </div>
-        </div>
 
-        <!-- Overview Card -->
+        <!-- Header Hero -->
         <div class="lab-card">
-            <h2><i class="bi bi-diagram-3 text-info me-2"></i> Empirical Question</h2>
-            <p>
-                When an initial AI coding attempt fails, how does retrying <strong>cold</strong> (with only the original engineering request) 
-                compare to retrying with a <strong>structured failure handoff brief</strong> (root cause diagnosis, failed assumptions, suggested remedy)?
-            </p>
-            
-            <div class="alert alert-dark border-secondary mt-3 mb-0">
-                <i class="bi bi-info-circle text-accent me-2"></i>
-                <strong>Controlled Variables:</strong> Model (GPT-5.6 Terra), Coding Agent (`terra.md`), Target Repo (`order_flow_service`), Task (`request_01.md`), and Hidden Test Suite are held strictly constant across 3 trials per branch.
-            </div>
-        </div>
-
-        <!-- Flow Diagram Card -->
-        <div class="lab-card">
-            <h3><i class="bi bi-arrow-repeat text-warning me-2"></i> Experiment Pipeline Flow</h3>
-            <div class="diagram-box">
-                      ┌──────────────────────────────────────────────┐
-                      │              Attempt 1 Execution             │
-                      │          Model: GPT-5.6 Terra             │
-                      └──────────────────────┬───────────────────────┘
-                                             │
-                                             ▼
-                      ┌──────────────────────────────────────────────┐
-                      │       Acceptance Test: FAILED               │
-                      │       (INC-9204 TOCTOU Race Condition)       │
-                      └──────────────────────┬───────────────────────┘
-                                             │
-                                             ▼
-                      ┌──────────────────────────────────────────────┐
-                      │          Diagnostician Agent                 │
-                      │  Synthesizes artifacts/handoff_brief.json    │
-                      └──────────────────────┬───────────────────────┘
-                                             │
-             ┌───────────────────────────────┴───────────────────────────────┐
-             │                                                               │
-             ▼                                                               ▼
-┌───────────────────────────┐                               ┌───────────────────────────┐
-│   BRANCH A: COLD RETRY    │                               │  BRANCH B: HANDOFF RETRY  │
-│  (3 Trials x GPT-5.6)     │                               │  (3 Trials x GPT-5.6)     │
-│   Original Request Only   │                               │   Request + Handoff Brief │
-└────────────┬──────────────┘                               └────────────┬──────────────┘
-             │                                                           │
-             └───────────────────────────────┬───────────────────────────┘
-                                             │
-                                             ▼
-                      ┌──────────────────────────────────────────────┐
-                      │    Metrics & Side-by-Side Analysis Report    │
-                      │   (Pass Rate %, Latency, Token Cost)         │
-                      └──────────────────────────────────────────────┘
-            </div>
-        </div>
-
-        <!-- Execution Scenarios -->
-        <div class="lab-card">
-            <h3><i class="bi bi-terminal text-success me-2"></i> Execution Steps</h3>
-            
-            <h5 class="mt-4 text-white">Step 1 — Run Context Handoff Experiment Pipeline</h5>
-            <p class="text-secondary">Executes Attempt 1, triggers Diagnostician, and executes 3 Cold Trials vs 3 Handoff Trials.</p>
-            <div class="code-container">
-                <div class="code-header">
-                    <span>PowerShell / Bash</span>
-                    <button class="btn-copy" onclick="copyCode('cmd-1')"><i class="bi bi-clipboard"></i> Copy</button>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-diagram-3-fill"></i> Lab 8</span>
+                    <h1 class="text-white mt-2 mb-1">Direct Build vs. Design-First Strategy</h1>
+                    <p class="text-white mb-0">Evaluating Architectural Rigor, Code Quality, Token Costs &amp; Latency Trade-offs across Simple and Complex Tasks</p>
                 </div>
-                <pre id="cmd-1">python run_context_handoff.py task/request_01.md</pre>
-            </div>
-
-            <h5 class="mt-4 text-white">Step 2 — Measure & Analyze Metrics</h5>
-            <div class="code-container">
-                <div class="code-header">
-                    <span>PowerShell / Bash</span>
-                    <button class="btn-copy" onclick="copyCode('cmd-2')"><i class="bi bi-clipboard"></i> Copy</button>
-                </div>
-                <pre id="cmd-2">python measure_metrics.py runs/cold_trial_1.jsonl runs/handoff_trial_1.jsonl</pre>
-            </div>
-
-            <h5 class="mt-4 text-white">Step 3 — Clean & Reset Working Directory</h5>
-            <div class="code-container">
-                <div class="code-header">
-                    <span>PowerShell / Bash</span>
-                    <button class="btn-copy" onclick="copyCode('cmd-3')"><i class="bi bi-clipboard"></i> Copy</button>
-                </div>
-                <pre id="cmd-3">bash reset.sh</pre>
             </div>
         </div>
 
-        <!-- Student Fillable Benchmark Table -->
-        <div class="lab-card">
-            <h3><i class="bi bi-table text-primary me-2"></i> Student Experiment Benchmark Record</h3>
-            <p class="text-secondary">Fill in your empirical trial results from `artifacts/context_handoff_report.json` below:</p>
+        <!-- Goal & Overview -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Compare two fundamentally different software engineering execution strategies for autonomous AI agent workflows across simple and complex engineering tasks:</p>
+
+            <div class="row g-3 my-3">
+                <div class="col-md-6">
+                    <div class="strategy-card border-info">
+                        <span class="badge bg-info text-dark mb-2">Strategy 1</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> DIRECT (Direct Implementation)</h5>
+                        <p class="small text-white mb-0">The <code>coordinator</code> delegates directly to <code>direct-builder</code>, which writes <code>solution.py</code> in a single pass without prior architectural blueprinting.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="strategy-card border-purple" style="border-color: var(--accent-purple);">
+                        <span class="badge bg-purple text-white mb-2" style="background-color: var(--accent-purple);">Strategy 2</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-journal-text text-info me-2"></i> DESIGN_FIRST (Spec-Driven Architecture)</h5>
+                        <p class="small text-white mb-0">The <code>coordinator</code> delegates to <code>designer</code> first to generate an architectural blueprint (<code>design.md</code>), then invokes <code>design-builder</code> to synthesize <code>solution.py</code>.</p>
+                    </div>
+                </div>
+            </div>
             
-            <div class="table-responsive">
-                <table class="table table-custom table-bordered">
+            <div class="callout callout-purple">
+                <h6 class="text-white mb-2"><i class="bi bi-diagram-3 me-2"></i> Evaluation Pipeline</h6>
+                <p class="small text-white mb-0">After running both strategies against a task requirement, the <code>code-quality-analyzer</code> agent independently compares <code>design_first_solution.py</code> and <code>direct_solution.py</code> to produce an objective engineering evaluation report in <code>runs/quality_comparison.md</code>.</p>
+            </div>
+        </div>
+
+        <!-- Subagent Team Roster -->
+        <div class="lab-card" id="roster">
+            <h2><i class="bi bi-people-fill text-primary me-2"></i> Subagent Team Roster</h2>
+            <p>The 5 specialized agent definitions configured in <code>.opencode/agents/</code>:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
                     <thead>
                         <tr>
-                            <th>Retry Strategy</th>
-                            <th>Trial</th>
-                            <th>Model</th>
-                            <th>Test Status</th>
-                            <th>Latency (s)</th>
-                            <th>Input Tokens</th>
-                            <th>Output Tokens</th>
-                            <th>Cost ($)</th>
+                            <th>Agent Name</th>
+                            <th>File Location</th>
+                            <th>Role &amp; Responsibility</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td rowspan="2" class="fw-bold align-middle text-warning">Branch A: Cold Retry</td>
-                            <td>Trial 1</td>
-                            <td>GPT-5.6 Terra</td>
-                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 18.2"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 12500"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 840"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. $0.012"></td>
+                            <td><strong class="text-info"><i class="bi bi-gear-wide-connected me-2"></i> coordinator</strong></td>
+                            <td><code>.opencode/agents/coordinator.md</code></td>
+                            <td>Orchestrates strategy delegation based on prompt input (<code>DIRECT</code> vs <code>DESIGN_FIRST</code>).</td>
                         </tr>
                         <tr>
-                            <td>Trial 2</td>
-                            <td>GPT-5.6 Terra</td>
-                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 17.5"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 12100"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 810"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. $0.011"></td>
+                            <td><strong class="text-primary"><i class="bi bi-lightning-fill me-2"></i> direct-builder</strong></td>
+                            <td><code>.opencode/agents/direct-builder.md</code></td>
+                            <td>Synthesizes implementation code directly in a single pass without an upfront design phase.</td>
                         </tr>
                         <tr>
-                            <td rowspan="2" class="fw-bold align-middle text-success">Branch B: Context-Aware Handoff</td>
-                            <td>Trial 1</td>
-                            <td>GPT-5.6 Terra</td>
-                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 12.4"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 14200"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 620"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. $0.014"></td>
+                            <td><strong class="text-warning"><i class="bi bi-journal-text me-2"></i> designer</strong></td>
+                            <td><code>.opencode/agents/designer.md</code></td>
+                            <td>Analyzes requirements and creates a comprehensive architectural specification (<code>design.md</code>).</td>
                         </tr>
                         <tr>
-                            <td>Trial 2</td>
-                            <td>GPT-5.6 Terra</td>
-                            <td><input type="text" class="table-input" placeholder="PASS / FAIL"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 11.8"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 14000"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. 590"></td>
-                            <td><input type="text" class="table-input" placeholder="e.g. $0.013"></td>
+                            <td><strong class="text-success"><i class="bi bi-code-square me-2"></i> design-builder</strong></td>
+                            <td><code>.opencode/agents/design-builder.md</code></td>
+                            <td>Synthesizes clean implementation code guided strictly by the architectural specification in <code>design.md</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-purple" style="color: var(--accent-purple);"><i class="bi bi-search me-2"></i> code-quality-analyzer</strong></td>
+                            <td><code>.opencode/agents/code-quality-analyzer.md</code></td>
+                            <td>Independently inspects and evaluates both implementations to generate <code>runs/quality_comparison.md</code>.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <div class="alert alert-warning border-warning mt-3">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>Statistical Disclaimer:</strong> <em>n=3 per branch -- directional signal, not statistical proof...</em>
+        <!-- Scenario 1: Simple Task -->
+        <div class="lab-card" id="scenario-simple">
+            <h2><i class="bi bi-1-circle-fill text-info me-2"></i> Scenario 1 — Execution on Simple Task</h2>
+            <p>Execute both strategies against <code>task/simple_task.md</code> (Simple Input Validation &amp; Formatting), run code quality analysis, and answer knowledge questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionSimpleTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headSimpleCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSimpleCommands" aria-expanded="false" aria-controls="collapseSimpleCommands">
+                            <i class="bi bi-terminal-fill text-info me-2"></i> View Execution Commands — task/simple_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseSimpleCommands" class="accordion-collapse collapse" aria-labelledby="headSimpleCommands" data-bs-parent="#accordionSimpleTask">
+                        <div class="accordion-body p-3">
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd lab8;rm -rf .pytest_cache runs/* direct_solution.py design_first_solution.py design.md</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Run DIRECT Strategy — simple_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: DIRECT Task: task/simple_task.md" | python -u live_view.py runs/direct.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Run DESIGN_FIRST Strategy — simple_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: DESIGN_FIRST Task: task/simple_task.md" | python -u live_view.py runs/direct.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Run Code Quality Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent code-quality-analyzer "Engineering Task: task/simple_task.md
+Implementation A: design_first_solution.py Implementation B: direct_solution.py Output: runs/quality_comparison.md"</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 1 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-info me-2"></i> Interactive Knowledge Check — Scenario 1 (Simple Task)</h5>
+
+                <!-- Question 1 -->
+                <div class="quiz-card" id="s1_q1">
+                    <h6 class="text-white">Q1: Which strategy has more latency?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 0, 1, 'DESIGN_FIRST requires two sequential LLM turns (designer phase followed by design-builder phase), causing higher total wall-clock latency.')">A) DIRECT</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 1, 1, 'DESIGN_FIRST requires two sequential LLM turns (designer phase followed by design-builder phase), causing higher total wall-clock latency.')">B) DESIGN_FIRST</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 2, 1, 'DESIGN_FIRST requires two sequential LLM turns (designer phase followed by design-builder phase), causing higher total wall-clock latency.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 3, 1, 'DESIGN_FIRST requires two sequential LLM turns (designer phase followed by design-builder phase), causing higher total wall-clock latency.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-card" id="s1_q2">
+                    <h6 class="text-white">Q2: Which strategy will be more costly?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 0, 1, 'DESIGN_FIRST consumes more LLM tokens by generating design.md and passing it as prompt context to design-builder.')">A) DIRECT</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 1, 1, 'DESIGN_FIRST consumes more LLM tokens by generating design.md and passing it as prompt context to design-builder.')">B) DESIGN_FIRST</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 2, 1, 'DESIGN_FIRST consumes more LLM tokens by generating design.md and passing it as prompt context to design-builder.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 3, 1, 'DESIGN_FIRST consumes more LLM tokens by generating design.md and passing it as prompt context to design-builder.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-card" id="s1_q3">
+                    <h6 class="text-white">Q3: Which strategy builds better code quality on simple tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 0, 2, 'For simple input validation tasks, both DIRECT and DESIGN_FIRST achieve equal test pass rates and equivalent code quality.')">A) DIRECT</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 1, 2, 'For simple input validation tasks, both DIRECT and DESIGN_FIRST achieve equal test pass rates and equivalent code quality.')">B) DESIGN_FIRST</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 2, 2, 'For simple input validation tasks, both DIRECT and DESIGN_FIRST achieve equal test pass rates and equivalent code quality.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 3, 2, 'For simple input validation tasks, both DIRECT and DESIGN_FIRST achieve equal test pass rates and equivalent code quality.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="quiz-card" id="s1_q4">
+                    <h6 class="text-white">Q4: Which strategy is optimal for simple tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 0, 0, 'For simple tasks, DIRECT is optimal because it delivers full functionality at lower token cost and minimal latency.')">A) DIRECT</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 1, 0, 'For simple tasks, DIRECT is optimal because it delivers full functionality at lower token cost and minimal latency.')">B) DESIGN_FIRST</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 2, 0, 'For simple tasks, DIRECT is optimal because it delivers full functionality at lower token cost and minimal latency.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 3, 0, 'For simple tasks, DIRECT is optimal because it delivers full functionality at lower token cost and minimal latency.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Scenario 2: Complex Task -->
+        <div class="lab-card" id="scenario-complex">
+            <h2><i class="bi bi-2-circle-fill text-warning me-2"></i> Scenario 2 — Execution on Complex Task</h2>
+            <p>Execute both strategies against <code>task/complex_task.md</code> (Asynchronous Multi-Item Order Saga Orchestrator), run code quality analysis, and answer knowledge questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionComplexTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headComplexCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComplexCommands" aria-expanded="false" aria-controls="collapseComplexCommands">
+                            <i class="bi bi-terminal-fill text-warning me-2"></i> View Execution Commands — task/complex_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseComplexCommands" class="accordion-collapse collapse" aria-labelledby="headComplexCommands" data-bs-parent="#accordionComplexTask">
+                        <div class="accordion-body p-3">
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf .pytest_cache runs/* direct_solution.py design_first_solution.py design.md</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Run DIRECT Strategy — complex_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: DIRECT Task: task/complex_task.md" | python -u live_view.py runs/direct.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Run DESIGN_FIRST Strategy — complex_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: DESIGN_FIRST Task: task/complex_task.md" | python -u live_view.py runs/direct.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Run Code Quality Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent code-quality-analyzer "Engineering Task: task/complex_task.md
+Implementation A: design_first_solution.py Implementation B: direct_solution.py Output: runs/quality_comparison.md"</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 2 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i> Interactive Knowledge Check — Scenario 2 (Complex Task)</h5>
+
+                <!-- Question 1 -->
+                <div class="quiz-card" id="s2_q1">
+                    <h6 class="text-white">Q1: Which strategy has more latency?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 0, 1, 'DESIGN_FIRST requires two sequential LLM turns (Architecture Blueprint phase via designer followed by Implementation via design-builder), resulting in higher total wall-clock latency.')">A) DIRECT</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 1, 1, 'DESIGN_FIRST requires two sequential LLM turns (Architecture Blueprint phase via designer followed by Implementation via design-builder), resulting in higher total wall-clock latency.')">B) DESIGN_FIRST</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 2, 1, 'DESIGN_FIRST requires two sequential LLM turns (Architecture Blueprint phase via designer followed by Implementation via design-builder), resulting in higher total wall-clock latency.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 3, 1, 'DESIGN_FIRST requires two sequential LLM turns (Architecture Blueprint phase via designer followed by Implementation via design-builder), resulting in higher total wall-clock latency.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-card" id="s2_q2">
+                    <h6 class="text-white">Q2: Which strategy will be more costly?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 0, 1, 'DESIGN_FIRST consumes more tokens because it first generates design.md and then passes design.md as context to design-builder, incurring higher overall LLM token costs.')">A) DIRECT</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 1, 1, 'DESIGN_FIRST consumes more tokens because it first generates design.md and then passes design.md as context to design-builder, incurring higher overall LLM token costs.')">B) DESIGN_FIRST</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 2, 1, 'DESIGN_FIRST consumes more tokens because it first generates design.md and then passes design.md as context to design-builder, incurring higher overall LLM token costs.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 3, 1, 'DESIGN_FIRST consumes more tokens because it first generates design.md and then passes design.md as context to design-builder, incurring higher overall LLM token costs.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-card" id="s2_q3">
+                    <h6 class="text-white">Q3: Which strategy builds better code quality on complex tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 0, 1, 'DESIGN_FIRST yields superior code quality on complex tasks because upfront architectural planning forces modularity, edge-case coverage, and clear component isolation.')">A) DIRECT</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 1, 1, 'DESIGN_FIRST yields superior code quality on complex tasks because upfront architectural planning forces modularity, edge-case coverage, and clear component isolation.')">B) DESIGN_FIRST</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 2, 1, 'DESIGN_FIRST yields superior code quality on complex tasks because upfront architectural planning forces modularity, edge-case coverage, and clear component isolation.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 3, 1, 'DESIGN_FIRST yields superior code quality on complex tasks because upfront architectural planning forces modularity, edge-case coverage, and clear component isolation.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="quiz-card" id="s2_q4">
+                    <h6 class="text-white">Q4: When is the DESIGN_FIRST strategy essential over DIRECT?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 0, 1, 'DESIGN_FIRST is essential for complex distributed sagas, multi-service architectures, and mission-critical applications where design flaws are expensive to fix downstream.')">A) For simple regex formatting scripts</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 1, 1, 'DESIGN_FIRST is essential for complex distributed sagas, multi-service architectures, and mission-critical applications where design flaws are expensive to fix downstream.')">B) For complex distributed sagas &amp; multi-component system architectures</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 2, 1, 'DESIGN_FIRST is essential for complex distributed sagas, multi-service architectures, and mission-critical applications where design flaws are expensive to fix downstream.')">C) When zero latency is the sole performance metric</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 3, 1, 'DESIGN_FIRST is essential for complex distributed sagas, multi-service architectures, and mission-critical applications where design flaws are expensive to fix downstream.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
             </div>
         </div>
+
+        <!-- Strategy Allocation Matrix / Flow Comparison -->
+        <div class="lab-card" id="strategies">
+            <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Strategy Comparison &amp; Architecture Flow</h2>
+            <p>Understanding the architectural trade-offs between one-step execution and multi-stage spec-driven building:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Metric / Dimension</th>
+                            <th><code>DIRECT</code> Strategy</th>
+                            <th><code>DESIGN_FIRST</code> Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-diagram-2 me-2"></i> Execution Flow</strong></td>
+                            <td><code>Coordinator</code> → <code>direct-builder</code> → <code>solution.py</code></td>
+                            <td><code>Coordinator</code> → <code>designer</code> (<code>design.md</code>) → <code>design-builder</code> → <code>solution.py</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-clock-history me-2"></i> Latency &amp; Speed</strong></td>
+                            <td><span class="badge bg-success">Lowest Latency</span> (Single turn execution)</td>
+                            <td><span class="badge bg-warning text-dark">Higher Latency</span> (Two sequential LLM reasoning turns)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-cash-coin me-2"></i> Token Cost</strong></td>
+                            <td><span class="badge bg-success">Lowest Token Usage</span></td>
+                            <td><span class="badge bg-warning text-dark">Higher Token Usage</span> (Blueprint + Implementation context)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-patch-check-fill me-2"></i> Code Quality &amp; Structure</strong></td>
+                            <td>Monolithic or rapid synthesis; potential edge-case misses on complex tasks.</td>
+                            <td>Modular, well-structured, superior separation of concerns &amp; robust error handling.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-bullseye me-2"></i> Best Suited For</strong></td>
+                            <td>Simple scripts, quick prototypes, well-bounded bug fixes.</td>
+                            <td>Complex distributed sagas, multi-component microservices, mission-critical systems.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function copyCode(id) {
-            const el = document.getElementById(id);
-            const text = el.innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied command to clipboard!');
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
             });
+        }
+
+        // Interactive Quiz Handling with Instant Feedback
+        function selectOption(quizId, optionIdx, correctIdx, explanation) {
+            const quizCard = document.getElementById(quizId);
+            const options = quizCard.querySelectorAll('.quiz-option');
+            const feedbackDiv = quizCard.querySelector('.quiz-feedback');
+
+            options.forEach((opt, idx) => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+                if (idx === optionIdx) {
+                    if (optionIdx === correctIdx) {
+                        opt.classList.add('correct');
+                    } else {
+                        opt.classList.add('incorrect');
+                    }
+                }
+            });
+
+            if (optionIdx === correctIdx) {
+                feedbackDiv.innerHTML = `<div class="callout callout-success my-2"><small class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Correct! ${explanation}</small></div>`;
+            } else {
+                feedbackDiv.innerHTML = `<div class="callout callout-danger my-2"><small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Incorrect. Try again!</small></div>`;
+            }
         }
     </script>
 </body>
