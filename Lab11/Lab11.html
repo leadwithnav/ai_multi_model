@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 11 — Context Continuity vs. Handoff Architectures</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+            width: 270px;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .callout-purple {
+            border-left-color: var(--accent-purple);
+            background-color: rgba(137, 87, 229, 0.08);
+        }
+
+        .callout-danger {
+            border-left-color: var(--accent-red);
+            background-color: rgba(248, 81, 73, 0.08);
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .flow-diagram {
+            background-color: #011627;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            color: #58a6ff;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .strategy-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .strategy-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-color);
+        }
+
+        .quiz-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .quiz-option {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            background-color: #21262d;
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.12);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--accent-green) !important;
+            background-color: rgba(46, 160, 67, 0.15) !important;
+            color: #ffffff;
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent-red) !important;
+            background-color: rgba(248, 81, 73, 0.15) !important;
+            color: #ffffff;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 11 Walkthrough</h5>
+            <small class="text-muted">Context Continuity vs. Handoff</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#flow"><i class="bi bi-diagram-3-fill"></i> Architecture Topology</a></li>
+            <li class="nav-item"><a class="nav-link" href="#roster"><i class="bi bi-people-fill"></i> Subagent Team Roster</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-explicit"><i class="bi bi-1-circle-fill"></i> Scenario 1: Explicit Tasks</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-ambiguous"><i class="bi bi-2-circle-fill"></i> Scenario 2: Ambiguous Tasks</a></li>
+            <li class="nav-item"><a class="nav-link" href="#strategies"><i class="bi bi-table"></i> Strategy Comparison</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-diagram-3"></i> Lab 11</span>
+                    <h1 class="text-white mt-2 mb-1">Context Continuity vs. Handoff Architectures</h1>
+                    <p class="text-white mb-0">Evaluating Uncoordinated Parallel Execution (<code>NO_HANDOFF</code>) vs. Contract-Driven Architecture Handoff (<code>HANDOFF</code>)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal & Overview -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Compare independent parallel execution against spec-driven contract handoffs between builder and QA subagents across explicit vs. ambiguous task requirements:</p>
+
+            <div class="row g-3 my-3">
+                <div class="col-md-6">
+                    <div class="strategy-card border-info">
+                        <span class="badge bg-info text-dark mb-2">Strategy 1</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> NO_HANDOFF (Independent Execution)</h5>
+                        <p class="small text-muted mb-0">The <code>coordinator</code> invokes <code>TERRA Builder</code> and <code>LUNA QA</code> independently directly from raw requirements. No shared architectural contract (<code>design.md</code>) is generated.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="strategy-card border-purple" style="border-color: var(--accent-purple);">
+                        <span class="badge bg-purple text-white mb-2" style="background-color: var(--accent-purple);">Strategy 2</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-journal-check text-success me-2"></i> HANDOFF (Shared Spec Contract)</h5>
+                        <p class="small text-muted mb-0">The <code>coordinator</code> first delegates to <code>SOL Architect</code> to create an explicit specification (<code>design.md</code>). Both <code>TERRA Builder</code> and <code>LUNA QA</code> then build and test against the shared blueprint.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-purple">
+                <h6 class="text-white mb-2"><i class="bi bi-diagram-3 me-2"></i> Evaluation &amp; Metrics Pipeline</h6>
+                <p class="small text-white mb-0">After running both strategies, <code>run-analyzer</code> calls <code>measure_metrics.py</code> for execution telemetry and evaluates whether lack of handoff causes contract drift and test suite failures between Builder implementation and QA tests.</p>
+            </div>
+        </div>
+
+        <!-- Architecture Flow Topology -->
+        <div class="lab-card" id="flow">
+            <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Architecture Flow Topology</h2>
+            <p>Visualizing uncoordinated parallel subagent dispatch vs. contract-driven handoff:</p>
+
+            <div class="flow-diagram">NO_HANDOFF                         HANDOFF
+─────────────────                  ─────────────────
+
+       TASK                               TASK
+      /    \                                │
+     /      \                               ▼
+    ▼        ▼                         SOL Architect
+ TERRA      LUNA                            │
+Builder     QA                              ▼
+    │        │                         design.md
+    ▼        ▼                           /      \
+solution   tests                         /        \
+                                      ▼            ▼
+                                   TERRA          LUNA
+                                  Builder          QA
+                                     │              │
+                                     ▼              ▼
+                                  solution         tests</div>
+        </div>
+
+        <!-- Subagent Team Roster -->
+        <div class="lab-card" id="roster">
+            <h2><i class="bi bi-people-fill text-primary me-2"></i> Subagent Team Roster</h2>
+            <p>The 5 specialized agent definitions configured in <code>.opencode/agent/</code>:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Agent Name</th>
+                            <th>File Location</th>
+                            <th>Model Binding</th>
+                            <th>Primary Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-info"><i class="bi bi-gear-wide-connected me-2"></i> coordinator</strong></td>
+                            <td><code>.opencode/agent/coordinator.md</code></td>
+                            <td>—</td>
+                            <td>Orchestrates strategy delegation (<code>NO_HANDOFF</code> vs <code>HANDOFF</code>).</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-warning"><i class="bi bi-journal-text me-2"></i> architect</strong></td>
+                            <td><code>.opencode/agent/architect.md</code></td>
+                            <td><code>gpt-5.6-sol</code></td>
+                            <td>High-reasoning architect creating the shared engineering blueprint (<code>design.md</code>).</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-success"><i class="bi bi-code-square me-2"></i> builder</strong></td>
+                            <td><code>.opencode/agent/builder.md</code></td>
+                            <td><code>gpt-5.6-terra</code></td>
+                            <td>Implements feature code in <code>solution.py</code> using provided task &amp; design contract.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="bi bi-check-circle-fill me-2"></i> qa</strong></td>
+                            <td><code>.opencode/agent/qa.md</code></td>
+                            <td><code>gpt-5.6-luna</code></td>
+                            <td>Generates unit tests in <code>test.py</code> using provided task &amp; design contract.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-purple" style="color: var(--accent-purple);"><i class="bi bi-search me-2"></i> run-analyzer</strong></td>
+                            <td><code>.opencode/agent/run-analyzer.md</code></td>
+                            <td><code>gpt-5.6-sol</code></td>
+                            <td>Executes <code>measure_metrics.py</code> &amp; evaluates contract alignment &amp; test pass rates.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Scenario 1: Explicit Requirements -->
+        <div class="lab-card" id="scenario-explicit">
+            <h2><i class="bi bi-1-circle-fill text-info me-2"></i> Scenario 1 — Execution on Explicit Requirements</h2>
+            <p>Execute <code>NO_HANDOFF</code> vs. <code>HANDOFF</code> flows on <code>task/explicit_task.md</code> (Strict API Contracts &amp; Data Schemas), run quality &amp; metrics analysis, and answer knowledge check questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionExplicitTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headExplicitCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExplicitCommands" aria-expanded="false" aria-controls="collapseExplicitCommands">
+                            <i class="bi bi-terminal-fill text-info me-2"></i> View Execution Commands — task/explicit_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseExplicitCommands" class="accordion-collapse collapse" aria-labelledby="headExplicitCommands" data-bs-parent="#accordionExplicitTask">
+                        <div class="accordion-body p-3">
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>cd Lab11;rm -rf runs/* .pytest_cache</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Run NO_HANDOFF Strategy (Explicit Requirements)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json \
+"Strategy: NO_HANDOFF
+Task: task/explicit_task.md" \
+| python -u live_view.py runs/no_handoff.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Run HANDOFF Strategy (Explicit Requirements)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json \
+"Strategy: HANDOFF
+Task: task/explicit_task.md" \
+| python -u live_view.py runs/handoff.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Run Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent run-analyzer \
+"Engineering Task: task/explicit_task.md
+
+NO_HANDOFF:
+Run: runs/no_handoff.jsonl
+Code: runs/no_handoff_solution.py
+Tests: runs/no_handoff_test.py
+
+HANDOFF:
+Run: runs/handoff.jsonl
+Code: runs/handoff_solution.py
+Tests: runs/handoff_test.py"</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 1 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-info me-2"></i> Interactive Knowledge Check — Scenario 1 (Explicit Requirements)</h5>
+
+                <!-- Question 1: Latency -->
+                <div class="quiz-card" id="s1_q1">
+                    <h6 class="text-white">Q1: Which strategy has lower total execution latency on explicit tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 0, 0, 'NO_HANDOFF has lower latency because Builder and QA execute directly without waiting for SOL Architect to create design.md.')">A) NO_HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 1, 0, 'NO_HANDOFF has lower latency because Builder and QA execute directly without waiting for SOL Architect to create design.md.')">B) HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 2, 0, 'NO_HANDOFF has lower latency because Builder and QA execute directly without waiting for SOL Architect to create design.md.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 3, 0, 'NO_HANDOFF has lower latency because Builder and QA execute directly without waiting for SOL Architect to create design.md.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2: Cost -->
+                <div class="quiz-card" id="s1_q2">
+                    <h6 class="text-white">Q2: Which strategy consumes lower token cost on explicit tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 0, 0, 'NO_HANDOFF avoids SOL Architect reasoning tokens and design blueprint overhead, consuming minimum tokens.')">A) NO_HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 1, 0, 'NO_HANDOFF avoids SOL Architect reasoning tokens and design blueprint overhead, consuming minimum tokens.')">B) HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 2, 0, 'NO_HANDOFF avoids SOL Architect reasoning tokens and design blueprint overhead, consuming minimum tokens.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 3, 0, 'NO_HANDOFF avoids SOL Architect reasoning tokens and design blueprint overhead, consuming minimum tokens.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3: Contract Alignment -->
+                <div class="quiz-card" id="s1_q3">
+                    <h6 class="text-white">Q3: How do code and tests align when task requirements are fully explicit?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 0, 2, 'When specifications are explicit and detailed, both NO_HANDOFF and HANDOFF achieve 100% contract alignment and matching test suites.')">A) NO_HANDOFF fails all tests</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 1, 2, 'When specifications are explicit and detailed, both NO_HANDOFF and HANDOFF achieve 100% contract alignment and matching test suites.')">B) HANDOFF causes contract drift</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 2, 2, 'When specifications are explicit and detailed, both NO_HANDOFF and HANDOFF achieve 100% contract alignment and matching test suites.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 3, 2, 'When specifications are explicit and detailed, both NO_HANDOFF and HANDOFF achieve 100% contract alignment and matching test suites.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4: Optimal Choice -->
+                <div class="quiz-card" id="s1_q4">
+                    <h6 class="text-white">Q4: Which strategy is optimal for explicit, well-defined requirements?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 0, 0, 'NO_HANDOFF is optimal for explicit requirements because upfront blueprinting is redundant when specifications are already complete.')">A) NO_HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 1, 0, 'NO_HANDOFF is optimal for explicit requirements because upfront blueprinting is redundant when specifications are already complete.')">B) HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 2, 0, 'NO_HANDOFF is optimal for explicit requirements because upfront blueprinting is redundant when specifications are already complete.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 3, 0, 'NO_HANDOFF is optimal for explicit requirements because upfront blueprinting is redundant when specifications are already complete.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Scenario 2: Ambiguous Requirements -->
+        <div class="lab-card" id="scenario-ambiguous">
+            <h2><i class="bi bi-2-circle-fill text-warning me-2"></i> Scenario 2 — Execution on Ambiguous Requirements</h2>
+            <p>Execute <code>NO_HANDOFF</code> vs. <code>HANDOFF</code> flows on <code>task/ambiguous_task.md</code> (Underspecified Interfaces &amp; Edge Cases), run quality &amp; metrics analysis, and answer knowledge check questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionAmbiguousTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headAmbiguousCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAmbiguousCommands" aria-expanded="false" aria-controls="collapseAmbiguousCommands">
+                            <i class="bi bi-terminal-fill text-warning me-2"></i> View Execution Commands — task/ambiguous_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseAmbiguousCommands" class="accordion-collapse collapse" aria-labelledby="headAmbiguousCommands" data-bs-parent="#accordionAmbiguousTask">
+                        <div class="accordion-body p-3">
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 0: Workspace Cleanup</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf runs/* .pytest_cache</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 1: Run NO_HANDOFF Strategy (Ambiguous Requirements)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json \
+"Strategy: NO_HANDOFF
+Task: task/ambiguous_task.md" \
+| python -u live_view.py runs/no_handoff.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 2: Run HANDOFF Strategy (Ambiguous Requirements)</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json \
+"Strategy: HANDOFF
+Task: task/ambiguous_task.md" \
+| python -u live_view.py runs/handoff.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Step 3: Run Analyzer Agent</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent run-analyzer \
+"Engineering Task: task/ambiguous_task.md
+
+NO_HANDOFF:
+Run: runs/no_handoff.jsonl
+Code: runs/no_handoff_solution.py
+Tests: runs/no_handoff_test.py
+
+HANDOFF:
+Run: runs/handoff.jsonl
+Code: runs/handoff_solution.py
+Tests: runs/handoff_test.py"</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 2 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i> Interactive Knowledge Check — Scenario 2 (Ambiguous Requirements)</h5>
+
+                <!-- Question 1: Latency -->
+                <div class="quiz-card" id="s2_q1">
+                    <h6 class="text-white">Q1: Which strategy has higher wall-clock execution latency?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 0, 1, 'HANDOFF has higher latency because SOL Architect must first resolve ambiguous requirements into design.md before Builder and QA run.')">A) NO_HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 1, 1, 'HANDOFF has higher latency because SOL Architect must first resolve ambiguous requirements into design.md before Builder and QA run.')">B) HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 2, 1, 'HANDOFF has higher latency because SOL Architect must first resolve ambiguous requirements into design.md before Builder and QA run.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 3, 1, 'HANDOFF has higher latency because SOL Architect must first resolve ambiguous requirements into design.md before Builder and QA run.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2: Cost -->
+                <div class="quiz-card" id="s2_q2">
+                    <h6 class="text-white">Q2: Which strategy incurs higher total token cost?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 0, 1, 'HANDOFF consumes higher token cost due to SOL Architect reasoning tokens and design.md blueprint passed to downstream subagents.')">A) NO_HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 1, 1, 'HANDOFF consumes higher token cost due to SOL Architect reasoning tokens and design.md blueprint passed to downstream subagents.')">B) HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 2, 1, 'HANDOFF consumes higher token cost due to SOL Architect reasoning tokens and design.md blueprint passed to downstream subagents.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 3, 1, 'HANDOFF consumes higher token cost due to SOL Architect reasoning tokens and design.md blueprint passed to downstream subagents.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3: Contract Alignment & Drift -->
+                <div class="quiz-card" id="s2_q3">
+                    <h6 class="text-white">Q3: Why does NO_HANDOFF suffer from contract drift on ambiguous requirements?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 0, 1, 'Without shared design.md handoff, Builder and QA make different uncoordinated assumptions about function signatures, exception classes, and return formats.')">A) LUNA QA generates invalid syntax</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 1, 1, 'Without shared design.md handoff, Builder and QA make different uncoordinated assumptions about function signatures, exception classes, and return formats.')">B) Builder and QA interpret underspecified requirements differently, causing interface contract drift</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 2, 1, 'Without shared design.md handoff, Builder and QA make different uncoordinated assumptions about function signatures, exception classes, and return formats.')">C) TERRA Builder skips solution implementation</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 3, 1, 'Without shared design.md handoff, Builder and QA make different uncoordinated assumptions about function signatures, exception classes, and return formats.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4: Optimal Choice -->
+                <div class="quiz-card" id="s2_q4">
+                    <h6 class="text-white">Q4: Which strategy is essential when requirement specifications are ambiguous?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 0, 1, 'HANDOFF is essential for ambiguous requirements because SOL Architect locks down an explicit design contract before code and test synthesis.')">A) NO_HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 1, 1, 'HANDOFF is essential for ambiguous requirements because SOL Architect locks down an explicit design contract before code and test synthesis.')">B) HANDOFF</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 2, 1, 'HANDOFF is essential for ambiguous requirements because SOL Architect locks down an explicit design contract before code and test synthesis.')">C) BOTH_EQUAL</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 3, 1, 'HANDOFF is essential for ambiguous requirements because SOL Architect locks down an explicit design contract before code and test synthesis.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Strategy Allocation Matrix / Flow Comparison -->
+        <div class="lab-card" id="strategies">
+            <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Strategy Comparison &amp; Architecture Flow</h2>
+            <p>Understanding the trade-offs between uncoordinated parallel execution and contract-driven architecture handoffs:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Metric / Dimension</th>
+                            <th><code>NO_HANDOFF</code> Strategy</th>
+                            <th><code>HANDOFF</code> Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-diagram-2 me-2"></i> Execution Flow</strong></td>
+                            <td><code>Coordinator</code> → Parallel (<code>TERRA Builder</code> &amp; <code>LUNA QA</code>)</td>
+                            <td><code>Coordinator</code> → <code>SOL Architect</code> (<code>design.md</code>) → (<code>TERRA Builder</code> &amp; <code>LUNA QA</code>)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-clock-history me-2"></i> Latency &amp; Speed</strong></td>
+                            <td><span class="badge bg-success">Lowest Latency</span> (Skips Architect phase)</td>
+                            <td><span class="badge bg-warning text-dark">Higher Latency</span> (Sequential Architect turn required)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-cash-coin me-2"></i> Token Cost</strong></td>
+                            <td><span class="badge bg-success">Lowest Token Usage</span></td>
+                            <td><span class="badge bg-warning text-dark">Higher Token Usage</span> (Blueprint generation + prompt context)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-patch-check-fill me-2"></i> Contract Alignment (Explicit Tasks)</strong></td>
+                            <td><span class="badge bg-success">100% Pass Rate</span> (Equal Alignment)</td>
+                            <td><span class="badge bg-success">100% Pass Rate</span> (Equal Alignment)</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-patch-check-fill me-2"></i> Contract Alignment (Ambiguous Tasks)</strong></td>
+                            <td><span class="badge bg-danger">High Risk of Contract Drift</span> (Code/Test mismatch)</td>
+                            <td><span class="badge bg-success">100% Contract Alignment &amp; High Pass Rate</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-white"><i class="bi bi-bullseye me-2"></i> Recommended Use Case</strong></td>
+                            <td>Explicit tasks with unambiguous API schemas</td>
+                            <td>Ambiguous requirements needing upfront architectural clarification</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        // Interactive Quiz Handling with Instant Feedback
+        function selectOption(quizId, optionIdx, correctIdx, explanation) {
+            const quizCard = document.getElementById(quizId);
+            const options = quizCard.querySelectorAll('.quiz-option');
+            const feedbackDiv = quizCard.querySelector('.quiz-feedback');
+
+            options.forEach((opt, idx) => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+                if (idx === optionIdx) {
+                    if (optionIdx === correctIdx) {
+                        opt.classList.add('correct');
+                    } else {
+                        opt.classList.add('incorrect');
+                    }
+                }
+            });
+
+            if (optionIdx === correctIdx) {
+                feedbackDiv.innerHTML = `<div class="callout callout-success my-2"><small class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Correct! ${explanation}</small></div>`;
+            } else {
+                feedbackDiv.innerHTML = `<div class="callout callout-danger my-2"><small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Incorrect. Try again!</small></div>`;
+            }
+        }
+    </script>
+</body>
+</html>
