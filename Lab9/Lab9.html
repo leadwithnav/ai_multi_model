@@ -239,6 +239,18 @@
             background-color: rgba(88, 166, 255, 0.12);
         }
 
+        .quiz-option.correct {
+            border-color: var(--accent-green) !important;
+            background-color: rgba(46, 160, 67, 0.15) !important;
+            color: #ffffff;
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent-red) !important;
+            background-color: rgba(248, 81, 73, 0.15) !important;
+            color: #ffffff;
+        }
+
         @media (max-width: 992px) {
             .sidebar { display: none; }
             .main-content { margin-left: 0; padding: 20px; }
@@ -483,32 +495,42 @@ Read the engineering requirement from task/simple_task.md and execute the config
                 <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-info me-2"></i> Interactive Knowledge Check — Scenario 1 (Simple Task)</h5>
 
                 <!-- Question 1 -->
-                <div class="quiz-card" id="q1">
-                    <h6 class="text-white">Q1: For <code>task/simple_task.md</code>, which strategy yields the best balance of cost and speed without sacrificing quality?</h6>
-                    <div class="quiz-option" onclick="selectOption('q1', 0)">A) ALL_HIGH</div>
-                    <div class="quiz-option" onclick="selectOption('q1', 1)">B) ALL_LOW</div>
-                    <div class="quiz-option" onclick="selectOption('q1', 2)">C) TIERED</div>
-                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q1', 1, 'Correct! For simple tasks with straightforward validation contracts, ALL_LOW passes all tests with minimum token cost and latency.')">Check Answer</button>
+                <div class="quiz-card" id="s1_q1">
+                    <h6 class="text-white">Q1: Which strategy uses minimum token?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 0, 0, 'ALL_LOW uses small lightweight models across all roles, consuming the lowest total tokens for simple tasks.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 1, 0, 'ALL_LOW uses small lightweight models across all roles, consuming the lowest total tokens for simple tasks.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 2, 0, 'ALL_LOW uses small lightweight models across all roles, consuming the lowest total tokens for simple tasks.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q1', 3, 0, 'ALL_LOW uses small lightweight models across all roles, consuming the lowest total tokens for simple tasks.')">D) ALL_OF_ABOVE</div>
                     <div class="quiz-feedback mt-2"></div>
                 </div>
 
                 <!-- Question 2 -->
-                <div class="quiz-card" id="q2">
-                    <h6 class="text-white">Q2: What is the main drawback of running <code>ALL_HIGH</code> on a simple input formatting task?</h6>
-                    <div class="quiz-option" onclick="selectOption('q2', 0)">A) The task fails to pass unit tests.</div>
-                    <div class="quiz-option" onclick="selectOption('q2', 1)">B) It unnecessarily consumes expensive reasoning tokens and increases wall-clock latency without improving quality.</div>
-                    <div class="quiz-option" onclick="selectOption('q2', 2)">C) The coordinator agent refuses to execute the task.</div>
-                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q2', 1, 'Correct! High reasoning models on simple tasks waste money and time because basic models are already sufficient.')">Check Answer</button>
+                <div class="quiz-card" id="s1_q2">
+                    <h6 class="text-white">Q2: Which strategy took minimum time?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 0, 0, 'ALL_LOW models feature the lowest response latency, completing simple tasks in minimum total time.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 1, 0, 'ALL_LOW models feature the lowest response latency, completing simple tasks in minimum total time.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 2, 0, 'ALL_LOW models feature the lowest response latency, completing simple tasks in minimum total time.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q2', 3, 0, 'ALL_LOW models feature the lowest response latency, completing simple tasks in minimum total time.')">D) ALL_OF_ABOVE</div>
                     <div class="quiz-feedback mt-2"></div>
                 </div>
 
                 <!-- Question 3 -->
-                <div class="quiz-card" id="q3">
-                    <h6 class="text-white">Q3: Why does `ALL_LOW` achieve a 100% pass rate on `simple_task.md`?</h6>
-                    <div class="quiz-option" onclick="selectOption('q3', 0)">A) Simple tasks have low architectural complexity and well-defined Regex/formatting bounds that low-cost models easily handle.</div>
-                    <div class="quiz-option" onclick="selectOption('q3', 1)">B) Low-cost models bypass the QA phase completely.</div>
-                    <div class="quiz-option" onclick="selectOption('q3', 2)">C) The coordinator agent writes the code itself.</div>
-                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q3', 0, 'Correct! When problem complexity is low, low-cost model capabilities match the task requirements perfectly.')">Check Answer</button>
+                <div class="quiz-card" id="s1_q3">
+                    <h6 class="text-white">Q3: Which strategy processed minimum token?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 0, 0, 'ALL_LOW processes minimal prompt context without generating heavy reasoning tokens.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 1, 0, 'ALL_LOW processes minimal prompt context without generating heavy reasoning tokens.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 2, 0, 'ALL_LOW processes minimal prompt context without generating heavy reasoning tokens.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q3', 3, 0, 'ALL_LOW processes minimal prompt context without generating heavy reasoning tokens.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="quiz-card" id="s1_q4">
+                    <h6 class="text-white">Q4: Which strategy was best as per Analyzer?</h6>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 0, 0, 'For simple tasks, ALL_LOW is best as per Analyzer because it achieves 100% pass rate at minimal cost and time.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 1, 0, 'For simple tasks, ALL_LOW is best as per Analyzer because it achieves 100% pass rate at minimal cost and time.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 2, 0, 'For simple tasks, ALL_LOW is best as per Analyzer because it achieves 100% pass rate at minimal cost and time.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s1_q4', 3, 0, 'For simple tasks, ALL_LOW is best as per Analyzer because it achieves 100% pass rate at minimal cost and time.')">D) ALL_OF_ABOVE</div>
                     <div class="quiz-feedback mt-2"></div>
                 </div>
             </div>
@@ -584,32 +606,42 @@ Read the engineering requirement from task/complex_task.md and execute the confi
                 <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i> Interactive Knowledge Check — Scenario 2 (Complex Task)</h5>
 
                 <!-- Question 1 -->
-                <div class="quiz-card" id="q4">
-                    <h6 class="text-white">Q1: When executing <code>task/complex_task.md</code> (Distributed Order Saga), how does <code>ALL_LOW</code> perform compared to <code>TIERED</code>?</h6>
-                    <div class="quiz-option" onclick="selectOption('q4', 0)">A) ALL_LOW passes faster than TIERED on the first attempt.</div>
-                    <div class="quiz-option" onclick="selectOption('q4', 1)">B) ALL_LOW fails architectural edge cases or requires multiple corrective retry loops due to insufficient reasoning depth.</div>
-                    <div class="quiz-option" onclick="selectOption('q4', 2)">C) ALL_LOW uses more cost than ALL_HIGH.</div>
-                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q4', 1, 'Correct! Complex sagas require high reasoning for two-phase commit & rollback design. ALL_LOW frequently fails QA or needs extra loops.')">Check Answer</button>
+                <div class="quiz-card" id="s2_q1">
+                    <h6 class="text-white">Q1: Which strategy uses minimum token?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 0, 0, 'ALL_LOW uses small models per request, resulting in lower token overhead per turn.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 1, 0, 'ALL_LOW uses small models per request, resulting in lower token overhead per turn.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 2, 0, 'ALL_LOW uses small models per request, resulting in lower token overhead per turn.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q1', 3, 0, 'ALL_LOW uses small models per request, resulting in lower token overhead per turn.')">D) ALL_OF_ABOVE</div>
                     <div class="quiz-feedback mt-2"></div>
                 </div>
 
                 <!-- Question 2 -->
-                <div class="quiz-card" id="q5">
-                    <h6 class="text-white">Q2: Why is the <code>TIERED</code> strategy (High Architect + Mid Builder + Fast QA) the optimal team allocation for complex engineering tasks?</h6>
-                    <div class="quiz-option" onclick="selectOption('q5', 0)">A) It concentrates high reasoning budget on Architecture (where design flaws are most expensive), while leveraging cost-effective subagents for building and QA.</div>
-                    <div class="quiz-option" onclick="selectOption('q5', 1)">B) It skips the QA phase to save money.</div>
-                    <div class="quiz-option" onclick="selectOption('q5', 2)">C) It runs all subagents in parallel without coordination.</div>
-                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q5', 0, 'Correct! Tiered allocation places high intelligence where decisions are critical (Architecture), saving up to 60% token cost compared to ALL_HIGH.')">Check Answer</button>
+                <div class="quiz-card" id="s2_q2">
+                    <h6 class="text-white">Q2: Which strategy took minimum time?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 0, 0, 'ALL_LOW models feature the fastest per-token model execution latency.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 1, 0, 'ALL_LOW models feature the fastest per-token model execution latency.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 2, 0, 'ALL_LOW models feature the fastest per-token model execution latency.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q2', 3, 0, 'ALL_LOW models feature the fastest per-token model execution latency.')">D) ALL_OF_ABOVE</div>
                     <div class="quiz-feedback mt-2"></div>
                 </div>
 
                 <!-- Question 3 -->
-                <div class="quiz-card" id="q3_comp">
-                    <h6 class="text-white">Q3: What artifact is generated when running <code>opencode run --agent runs-analyzer "analyze"</code>?</h6>
-                    <div class="quiz-option" onclick="selectOption('q3_comp', 0)">A) <code>solution.py</code></div>
-                    <div class="quiz-option" onclick="selectOption('q3_comp', 1)">B) <code>comparison.md</code> — an evidence-based markdown report comparing cost, latency, and step efficiency across all strategies.</div>
-                    <div class="quiz-option" onclick="selectOption('q3_comp', 2)">C) <code>design.md</code></div>
-                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q3_comp', 1, 'Correct! runs-analyzer aggregates telemetry across strategy runs to create comparison.md.')">Check Answer</button>
+                <div class="quiz-card" id="s2_q3">
+                    <h6 class="text-white">Q3: Which strategy processed minimum token?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 0, 0, 'ALL_LOW processes minimal prompt context without deep reasoning chains.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 1, 0, 'ALL_LOW processes minimal prompt context without deep reasoning chains.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 2, 0, 'ALL_LOW processes minimal prompt context without deep reasoning chains.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q3', 3, 0, 'ALL_LOW processes minimal prompt context without deep reasoning chains.')">D) ALL_OF_ABOVE</div>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="quiz-card" id="s2_q4">
+                    <h6 class="text-white">Q4: Which strategy was best as per Analyzer?</h6>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 0, 2, 'For complex tasks, TIERED is best as per Analyzer because high reasoning on Architecture prevents costly architectural failures while saving token cost on Builder and QA.')">A) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 1, 2, 'For complex tasks, TIERED is best as per Analyzer because high reasoning on Architecture prevents costly architectural failures while saving token cost on Builder and QA.')">B) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 2, 2, 'For complex tasks, TIERED is best as per Analyzer because high reasoning on Architecture prevents costly architectural failures while saving token cost on Builder and QA.')">C) TIERED</div>
+                    <div class="quiz-option" onclick="selectOption('s2_q4', 3, 2, 'For complex tasks, TIERED is best as per Analyzer because high reasoning on Architecture prevents costly architectural failures while saving token cost on Builder and QA.')">D) ALL_OF_ABOVE</div>
                     <div class="quiz-feedback mt-2"></div>
                 </div>
             </div>
@@ -634,36 +666,27 @@ Read the engineering requirement from task/complex_task.md and execute the confi
             });
         }
 
-        // Quiz Selection and Checking
-        const quizSelections = {};
-
-        function selectOption(quizId, optionIdx) {
-            quizSelections[quizId] = optionIdx;
+        // Interactive Quiz Handling with Instant Feedback
+        function selectOption(quizId, optionIdx, correctIdx, explanation) {
             const quizCard = document.getElementById(quizId);
             const options = quizCard.querySelectorAll('.quiz-option');
+            const feedbackDiv = quizCard.querySelector('.quiz-feedback');
+
             options.forEach((opt, idx) => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
                 if (idx === optionIdx) {
-                    opt.classList.add('selected');
-                } else {
-                    opt.classList.remove('selected');
+                    if (optionIdx === correctIdx) {
+                        opt.classList.add('correct');
+                    } else {
+                        opt.classList.add('incorrect');
+                    }
                 }
             });
-        }
 
-        function checkAnswer(quizId, correctIdx, explanation) {
-            const selected = quizSelections[quizId];
-            const quizCard = document.getElementById(quizId);
-            const feedbackDiv = quizCard.querySelector('.quiz-feedback');
-            
-            if (selected === undefined) {
-                feedbackDiv.innerHTML = '<div class="callout callout-warning my-2"><small class="text-warning">Please select an option before checking!</small></div>';
-                return;
-            }
-
-            if (selected === correctIdx) {
-                feedbackDiv.innerHTML = `<div class="callout callout-success my-2"><small class="text-success"><i class="bi bi-check-circle-fill me-1"></i> ${explanation}</small></div>`;
+            if (optionIdx === correctIdx) {
+                feedbackDiv.innerHTML = `<div class="callout callout-success my-2"><small class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Correct! ${explanation}</small></div>`;
             } else {
-                feedbackDiv.innerHTML = `<div class="callout callout-danger my-2"><small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Incorrect. Try again! Hint: ${explanation}</small></div>`;
+                feedbackDiv.innerHTML = `<div class="callout callout-danger my-2"><small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Incorrect. Try again!</small></div>`;
             }
         }
     </script>
