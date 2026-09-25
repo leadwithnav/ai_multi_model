@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 9 — Workflow Orchestration Strategies</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-purple: #8957e5;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #011627;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            background-color: #090d13;
+            width: 270px;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #21262d;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 30px 40px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-card h2, .lab-card h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .badge-course {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            color: #d6deeb;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: #21262d;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #30363d;
+            color: #fff;
+        }
+
+        .callout {
+            padding: 16px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-warning {
+            border-left-color: var(--accent-orange);
+            background-color: rgba(210, 153, 34, 0.08);
+        }
+
+        .callout-success {
+            border-left-color: var(--accent-green);
+            background-color: rgba(46, 160, 67, 0.08);
+        }
+
+        .callout-purple {
+            border-left-color: var(--accent-purple);
+            background-color: rgba(137, 87, 229, 0.08);
+        }
+
+        .callout-danger {
+            border-left-color: var(--accent-red);
+            background-color: rgba(248, 81, 73, 0.08);
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #21262d !important;
+            color: var(--accent-color) !important;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--accent-color);
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .strategy-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .strategy-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-color);
+        }
+
+        .agent-pill {
+            display: inline-block;
+            background-color: #21262d;
+            color: #ffffff;
+            border: 1px solid #30363d;
+            font-size: 0.78rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin: 2px;
+            font-family: monospace;
+        }
+
+        .quiz-card {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .quiz-option {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            background-color: #21262d;
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.12);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="mb-4">
+            <span class="badge-course"><i class="bi bi-cpu-fill"></i> Multi-Model AI</span>
+            <h5 class="text-white mt-2 mb-0">Lab 9 Walkthrough</h5>
+            <small class="text-muted">Workflow Orchestration Strategies</small>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-info-circle"></i> Overview &amp; Goal</a></li>
+            <li class="nav-item"><a class="nav-link" href="#strategies"><i class="bi bi-diagram-3-fill"></i> Strategy Matrix</a></li>
+            <li class="nav-item"><a class="nav-link" href="#roster"><i class="bi bi-people-fill"></i> Subagent Team Roster</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-simple"><i class="bi bi-1-circle-fill"></i> Scenario 1: Simple Task</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scenario-complex"><i class="bi bi-2-circle-fill"></i> Scenario 2: Complex Task</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Header Hero -->
+        <div class="lab-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge-course"><i class="bi bi-diagram-3-fill"></i> Lab 9</span>
+                    <h1 class="text-white mt-2 mb-1">Workflow Orchestration Strategies</h1>
+                    <p class="text-white mb-0">Evaluating <code>ALL_LOW</code> vs <code>ALL_HIGH</code> vs <code>TIERED</code> Team Strategies on Simple &amp; Complex Tasks</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal & Overview -->
+        <div class="lab-card" id="overview">
+            <h2><i class="bi bi-bullseye text-warning me-2"></i> Goal</h2>
+            <p class="fs-5 text-white">Evaluate three workflow orchestration strategies (<code>ALL_LOW</code>, <code>ALL_HIGH</code>, <code>TIERED</code>) across two distinct complexity levels: <code>task/simple_task.md</code> and <code>task/complex_task.md</code>.</p>
+            
+            <div class="callout callout-purple">
+                <h6 class="text-white mb-2"><i class="bi bi-diagram-3 me-2"></i> Multi-Agent Orchestration Flow</h6>
+                <p class="small text-white mb-0">The <code>coordinator</code> agent reads the selected strategy prompt, orchestrates the 3-stage lifecycle (Architecture <code>design.md</code> → Implementation <code>solution.py</code> → Verification <code>test_solution.py</code>), collects run telemetry into <code>runs/</code>, and invokes the <code>runs-analyzer</code> agent to produce <code>comparison.md</code>.</p>
+            </div>
+        </div>
+
+        <!-- Strategy Allocation Matrix -->
+        <div class="lab-card" id="strategies">
+            <h2><i class="bi bi-diagram-3-fill text-primary me-2"></i> Strategy Allocation Matrix</h2>
+            <p>Each strategy configures different model capability tiers for the Architect, Builder, and QA roles:</p>
+
+            <div class="row g-3 my-3">
+                <div class="col-md-4">
+                    <div class="strategy-card border-info">
+                        <span class="badge bg-info text-dark mb-2">Strategy A</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> ALL_LOW</h5>
+                        <p class="small text-muted mb-3">Low-cost / fast agents across all roles to minimize cost and latency.</p>
+                        <div class="mb-1"><strong class="text-white">Architect:</strong> <span class="agent-pill">low-architect</span></div>
+                        <div class="mb-1"><strong class="text-white">Builder:</strong> <span class="agent-pill">low-builder</span></div>
+                        <div><strong class="text-white">QA:</strong> <span class="agent-pill">low-qa</span></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="strategy-card border-warning">
+                        <span class="badge bg-warning text-dark mb-2">Strategy B</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-stars text-warning me-2"></i> ALL_HIGH</h5>
+                        <p class="small text-muted mb-3">Maximum reasoning capability across all roles for peak quality.</p>
+                        <div class="mb-1"><strong class="text-white">Architect:</strong> <span class="agent-pill">high-architect</span></div>
+                        <div class="mb-1"><strong class="text-white">Builder:</strong> <span class="agent-pill">high-builder</span></div>
+                        <div><strong class="text-white">QA:</strong> <span class="agent-pill">high-qa</span></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="strategy-card border-success">
+                        <span class="badge bg-success mb-2">Strategy C</span>
+                        <h5 class="text-white mb-2"><i class="bi bi-diagram-2-fill text-success me-2"></i> TIERED (Optimal)</h5>
+                        <p class="small text-muted mb-3">High reasoning for architecture, balanced builder, and fast QA.</p>
+                        <div class="mb-1"><strong class="text-white">Architect:</strong> <span class="agent-pill">high-architect</span></div>
+                        <div class="mb-1"><strong class="text-white">Builder:</strong> <span class="agent-pill">mid-builder</span></div>
+                        <div><strong class="text-white">QA:</strong> <span class="agent-pill">low-qa</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subagent Team Roster -->
+        <div class="lab-card" id="roster">
+            <h2><i class="bi bi-people-fill text-primary me-2"></i> Multi-Agent Team Roster</h2>
+            <p>Exact 11 specialized agent definitions in <code>.opencode/agent/</code> orchestrating the workflow:</p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-dark table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Agent Role</th>
+                            <th>Agent File</th>
+                            <th>Model Binding</th>
+                            <th>Primary Responsibility</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-info"><i class="bi bi-gear-wide-connected me-2"></i> Coordinator</strong></td>
+                            <td><code>coordinator.md</code></td>
+                            <td><code>gpt-5-6-luna</code></td>
+                            <td>Orchestrates strategy delegation, manages workflow steps &amp; retry loops.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-warning"><i class="bi bi-layers-fill me-2"></i> High Architect</strong></td>
+                            <td><code>high-architect.md</code></td>
+                            <td><code>gpt-5-6-sol</code></td>
+                            <td>High-reasoning analysis of requirements; generates architectural <code>design.md</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-warning"><i class="bi bi-code-slash me-2"></i> High Builder</strong></td>
+                            <td><code>high-builder.md</code></td>
+                            <td><code>gpt-5-6-sol</code></td>
+                            <td>High-reasoning code synthesis; implements design into <code>solution.py</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-warning"><i class="bi bi-check-circle-fill me-2"></i> High QA</strong></td>
+                            <td><code>high-qa.md</code></td>
+                            <td><code>gpt-5-6-sol</code></td>
+                            <td>High-reasoning verification; generates <code>test_solution.py</code> and runs pytest.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-success"><i class="bi bi-tools me-2"></i> Mid Architect</strong></td>
+                            <td><code>mid-architect.md</code></td>
+                            <td><code>gpt-5-6-terra</code></td>
+                            <td>Balanced architecture analysis &amp; system design.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-success"><i class="bi bi-tools me-2"></i> Mid Builder</strong></td>
+                            <td><code>mid-builder.md</code></td>
+                            <td><code>gpt-5-6-terra</code></td>
+                            <td>Balanced code synthesis for production feature implementations.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-success"><i class="bi bi-tools me-2"></i> Mid QA</strong></td>
+                            <td><code>mid-qa.md</code></td>
+                            <td><code>gpt-5-6-terra</code></td>
+                            <td>Balanced unit test verification &amp; regression checks.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="bi bi-lightning-fill me-2"></i> Low Architect</strong></td>
+                            <td><code>low-architect.md</code></td>
+                            <td><code>gpt-5-6-luna</code></td>
+                            <td>Fast, cost-optimized architectural design for basic requirements.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="bi bi-lightning-fill me-2"></i> Low Builder</strong></td>
+                            <td><code>low-builder.md</code></td>
+                            <td><code>gpt-5-6-luna</code></td>
+                            <td>Fast, cost-optimized code generation for simple logic.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="bi bi-lightning-fill me-2"></i> Low QA</strong></td>
+                            <td><code>low-qa.md</code></td>
+                            <td><code>gpt-5-6-luna</code></td>
+                            <td>Fast, cost-optimized test suite execution &amp; verification.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-purple" style="color: var(--accent-purple);"><i class="bi bi-bar-chart-fill me-2"></i> Runs Analyzer</strong></td>
+                            <td><code>runs-analyzer.md</code></td>
+                            <td><code>gpt-5-6-terra</code></td>
+                            <td>Analyzes JSONL runs &amp; JSON metrics across all strategies; creates <code>comparison.md</code>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Scenario 1: Simple Task -->
+        <div class="lab-card" id="scenario-simple">
+            <h2><i class="bi bi-1-circle-fill text-info me-2"></i> Scenario 1 — Workflow Execution on Simple Task</h2>
+            <p>Execute all 3 strategies against <code>task/simple_task.md</code> (Simple Input Validation &amp; Formatting), followed by analyzer agent execution and knowledge questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionSimpleTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headSimpleCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSimpleCommands" aria-expanded="false" aria-controls="collapseSimpleCommands">
+                            <i class="bi bi-terminal-fill text-info me-2"></i> View Execution Commands — task/simple_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseSimpleCommands" class="accordion-collapse collapse show" aria-labelledby="headSimpleCommands" data-bs-parent="#accordionSimpleTask">
+                        <div class="accordion-body p-3">
+                            
+                            <div class="code-container">
+                                <div class="code-header"><span>1. Run ALL_LOW Strategy — simple_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: ALL_LOW
+Read the engineering requirement from task/simple_task.md and execute the configured workflow." | python -u live_view.py runs/all_low.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Cleanup Transient Workspace Artifacts</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf solution.py test_solution.py design.md .pytest_cache</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>2. Run ALL_HIGH Strategy — simple_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: ALL_HIGH
+Read the engineering requirement from task/simple_task.md and execute the configured workflow." | python -u live_view.py runs/all_high.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Cleanup Transient Workspace Artifacts</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf solution.py test_solution.py design.md .pytest_cache</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>3. Run TIERED Strategy — simple_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: TIERED
+Read the engineering requirement from task/simple_task.md and execute the configured workflow." | python -u live_view.py runs/tiered.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Cleanup Transient Workspace Artifacts</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf solution.py test_solution.py design.md .pytest_cache</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Run Analyzer for Scenario 1 -->
+            <div class="my-4">
+                <h5 class="text-white"><i class="bi bi-bar-chart-line-fill text-info me-2"></i> Run Analyzer Agent (Scenario 1)</h5>
+                
+                <div class="code-container">
+                    <div class="code-header"><span>Run Analyzer Agent to Produce comparison.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>opencode run --agent runs-analyzer "analyze"</pre>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 1 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-info me-2"></i> Interactive Knowledge Check — Scenario 1 (Simple Task)</h5>
+
+                <!-- Question 1 -->
+                <div class="quiz-card" id="q1">
+                    <h6 class="text-white">Q1: For <code>task/simple_task.md</code>, which strategy yields the best balance of cost and speed without sacrificing quality?</h6>
+                    <div class="quiz-option" onclick="selectOption('q1', 0)">A) ALL_HIGH</div>
+                    <div class="quiz-option" onclick="selectOption('q1', 1)">B) ALL_LOW</div>
+                    <div class="quiz-option" onclick="selectOption('q1', 2)">C) TIERED</div>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q1', 1, 'Correct! For simple tasks with straightforward validation contracts, ALL_LOW passes all tests with minimum token cost and latency.')">Check Answer</button>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-card" id="q2">
+                    <h6 class="text-white">Q2: What is the main drawback of running <code>ALL_HIGH</code> on a simple input formatting task?</h6>
+                    <div class="quiz-option" onclick="selectOption('q2', 0)">A) The task fails to pass unit tests.</div>
+                    <div class="quiz-option" onclick="selectOption('q2', 1)">B) It unnecessarily consumes expensive reasoning tokens and increases wall-clock latency without improving quality.</div>
+                    <div class="quiz-option" onclick="selectOption('q2', 2)">C) The coordinator agent refuses to execute the task.</div>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q2', 1, 'Correct! High reasoning models on simple tasks waste money and time because basic models are already sufficient.')">Check Answer</button>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-card" id="q3">
+                    <h6 class="text-white">Q3: Why does `ALL_LOW` achieve a 100% pass rate on `simple_task.md`?</h6>
+                    <div class="quiz-option" onclick="selectOption('q3', 0)">A) Simple tasks have low architectural complexity and well-defined Regex/formatting bounds that low-cost models easily handle.</div>
+                    <div class="quiz-option" onclick="selectOption('q3', 1)">B) Low-cost models bypass the QA phase completely.</div>
+                    <div class="quiz-option" onclick="selectOption('q3', 2)">C) The coordinator agent writes the code itself.</div>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q3', 0, 'Correct! When problem complexity is low, low-cost model capabilities match the task requirements perfectly.')">Check Answer</button>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Scenario 2: Complex Task -->
+        <div class="lab-card" id="scenario-complex">
+            <h2><i class="bi bi-2-circle-fill text-warning me-2"></i> Scenario 2 — Workflow Execution on Complex Task</h2>
+            <p>Execute all 3 strategies against <code>task/complex_task.md</code> (Asynchronous Multi-Item Order Saga Orchestrator), followed by analyzer agent execution and knowledge questions:</p>
+
+            <!-- Collapsible Execution Commands -->
+            <div class="accordion accordion-flush my-3" id="accordionComplexTask">
+                <div class="accordion-item bg-dark border text-main rounded mb-2">
+                    <h2 class="accordion-header" id="headComplexCommands">
+                        <button class="accordion-button collapsed bg-dark text-white fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComplexCommands" aria-expanded="false" aria-controls="collapseComplexCommands">
+                            <i class="bi bi-terminal-fill text-warning me-2"></i> View Execution Commands — task/complex_task.md
+                        </button>
+                    </h2>
+                    <div id="collapseComplexCommands" class="accordion-collapse collapse show" aria-labelledby="headComplexCommands" data-bs-parent="#accordionComplexTask">
+                        <div class="accordion-body p-3">
+                            
+                            <div class="code-container">
+                                <div class="code-header"><span>1. Run ALL_LOW Strategy — complex_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: ALL_LOW
+Read the engineering requirement from task/complex_task.md and execute the configured workflow." | python -u live_view.py runs/all_low.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Cleanup Transient Workspace Artifacts</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf solution.py test_solution.py design.md .pytest_cache</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>2. Run ALL_HIGH Strategy — complex_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: ALL_HIGH
+Read the engineering requirement from task/complex_task.md and execute the configured workflow." | python -u live_view.py runs/all_high.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Cleanup Transient Workspace Artifacts</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf solution.py test_solution.py design.md .pytest_cache</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>3. Run TIERED Strategy — complex_task.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>opencode run --agent coordinator --format json "Strategy: TIERED
+Read the engineering requirement from task/complex_task.md and execute the configured workflow." | python -u live_view.py runs/tiered.jsonl</pre>
+                            </div>
+
+                            <div class="code-container">
+                                <div class="code-header"><span>Cleanup Transient Workspace Artifacts</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                                <pre>rm -rf solution.py test_solution.py design.md .pytest_cache</pre>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Run Analyzer for Scenario 2 -->
+            <div class="my-4">
+                <h5 class="text-white"><i class="bi bi-bar-chart-line-fill text-warning me-2"></i> Run Analyzer Agent (Scenario 2)</h5>
+                
+                <div class="code-container">
+                    <div class="code-header"><span>Run Analyzer Agent to Produce comparison.md</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+                    <pre>opencode run --agent runs-analyzer "analyze"</pre>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz for Scenario 2 -->
+            <div class="callout callout-purple my-4">
+                <h5 class="text-white mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i> Interactive Knowledge Check — Scenario 2 (Complex Task)</h5>
+
+                <!-- Question 1 -->
+                <div class="quiz-card" id="q4">
+                    <h6 class="text-white">Q1: When executing <code>task/complex_task.md</code> (Distributed Order Saga), how does <code>ALL_LOW</code> perform compared to <code>TIERED</code>?</h6>
+                    <div class="quiz-option" onclick="selectOption('q4', 0)">A) ALL_LOW passes faster than TIERED on the first attempt.</div>
+                    <div class="quiz-option" onclick="selectOption('q4', 1)">B) ALL_LOW fails architectural edge cases or requires multiple corrective retry loops due to insufficient reasoning depth.</div>
+                    <div class="quiz-option" onclick="selectOption('q4', 2)">C) ALL_LOW uses more cost than ALL_HIGH.</div>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q4', 1, 'Correct! Complex sagas require high reasoning for two-phase commit & rollback design. ALL_LOW frequently fails QA or needs extra loops.')">Check Answer</button>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-card" id="q5">
+                    <h6 class="text-white">Q2: Why is the <code>TIERED</code> strategy (High Architect + Mid Builder + Fast QA) the optimal team allocation for complex engineering tasks?</h6>
+                    <div class="quiz-option" onclick="selectOption('q5', 0)">A) It concentrates high reasoning budget on Architecture (where design flaws are most expensive), while leveraging cost-effective subagents for building and QA.</div>
+                    <div class="quiz-option" onclick="selectOption('q5', 1)">B) It skips the QA phase to save money.</div>
+                    <div class="quiz-option" onclick="selectOption('q5', 2)">C) It runs all subagents in parallel without coordination.</div>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q5', 0, 'Correct! Tiered allocation places high intelligence where decisions are critical (Architecture), saving up to 60% token cost compared to ALL_HIGH.')">Check Answer</button>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-card" id="q3_comp">
+                    <h6 class="text-white">Q3: What artifact is generated when running <code>opencode run --agent runs-analyzer "analyze"</code>?</h6>
+                    <div class="quiz-option" onclick="selectOption('q3_comp', 0)">A) <code>solution.py</code></div>
+                    <div class="quiz-option" onclick="selectOption('q3_comp', 1)">B) <code>comparison.md</code> — an evidence-based markdown report comparing cost, latency, and step efficiency across all strategies.</div>
+                    <div class="quiz-option" onclick="selectOption('q3_comp', 2)">C) <code>design.md</code></div>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="checkAnswer('q3_comp', 1, 'Correct! runs-analyzer aggregates telemetry across strategy runs to create comparison.md.')">Check Answer</button>
+                    <div class="quiz-feedback mt-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(button) {
+            const pre = button.parentElement.nextElementSibling;
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+                button.classList.add('btn-success');
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                }, 2000);
+            });
+        }
+
+        // Quiz Selection and Checking
+        const quizSelections = {};
+
+        function selectOption(quizId, optionIdx) {
+            quizSelections[quizId] = optionIdx;
+            const quizCard = document.getElementById(quizId);
+            const options = quizCard.querySelectorAll('.quiz-option');
+            options.forEach((opt, idx) => {
+                if (idx === optionIdx) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+
+        function checkAnswer(quizId, correctIdx, explanation) {
+            const selected = quizSelections[quizId];
+            const quizCard = document.getElementById(quizId);
+            const feedbackDiv = quizCard.querySelector('.quiz-feedback');
+            
+            if (selected === undefined) {
+                feedbackDiv.innerHTML = '<div class="callout callout-warning my-2"><small class="text-warning">Please select an option before checking!</small></div>';
+                return;
+            }
+
+            if (selected === correctIdx) {
+                feedbackDiv.innerHTML = `<div class="callout callout-success my-2"><small class="text-success"><i class="bi bi-check-circle-fill me-1"></i> ${explanation}</small></div>`;
+            } else {
+                feedbackDiv.innerHTML = `<div class="callout callout-danger my-2"><small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Incorrect. Try again! Hint: ${explanation}</small></div>`;
+            }
+        }
+    </script>
+</body>
+</html>
