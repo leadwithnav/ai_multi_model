@@ -1,29 +1,52 @@
 #!/usr/bin/env python3
 """
-OpenCode JSONL Metrics Aggregator
+Lab 6 - OpenCode Workflow Metrics
 
-Aggregates one complete `opencode run --format json` execution.
+Reads OpenCode JSONL files and reports:
 
-Reports:
-- End-to-end latency from JSONL event timestamps
-- Number of LLM steps
-- Token usage
-- Cache read/write tokens
-- Effective input/context tokens
-- Output/reasoning tokens
-- Total cost reported by OpenCode
+- LLM steps
+- direct input tokens
+- cache read tokens
+- cache write tokens
+- output tokens
+- reasoning tokens
+- OpenCode event-span latency
+- OpenCode-reported cost
+
+Examples:
+
+Single file:
+
+    python measure_metrics.py \
+        runs/request_01_attempt1_terra-low.jsonl
+
+
+Whole workflow:
+
+    python measure_metrics.py \
+        runs/request_01_classifier.jsonl \
+        runs/request_01_attempt1_terra-low.jsonl \
+        runs/request_01_diagnostician.jsonl \
+        runs/request_01_attempt2_terra-low.jsonl
 """
 
-import sys
 import json
+import sys
+from pathlib import Path
 
 
-def parse_jsonl(stream, agent_name=None):
+# ============================================================
+# PARSE ONE JSONL FILE
+# ============================================================
+
+def parse_jsonl(path):
+
     llm_steps = 0
 
     direct_input_tokens = 0
     cache_read_tokens = 0
     cache_write_tokens = 0
+
     output_tokens = 0
     reasoning_tokens = 0
 
@@ -32,120 +55,362 @@ def parse_jsonl(stream, agent_name=None):
     first_timestamp = None
     last_timestamp = None
 
-    for line in stream:
-        line = line.strip()
+    with open(
+        path,
+        "r",
+        encoding="utf-8"
+    ) as stream:
 
-        if not line:
-            continue
+        for line in stream:
 
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
+            line = line.strip()
 
-        # ---------------------------------------------------------
-        # Capture timestamps from ALL events for end-to-end latency
-        # ---------------------------------------------------------
-        timestamp = event.get("timestamp")
+            if not line:
+                continue
 
-        if isinstance(timestamp, (int, float)):
-            if first_timestamp is None:
-                first_timestamp = timestamp
+            try:
+                event = json.loads(line)
 
-            last_timestamp = timestamp
+            except json.JSONDecodeError:
+                continue
 
-        # ---------------------------------------------------------
-        # Only step_finish contains LLM usage/cost information
-        # ---------------------------------------------------------
-        if event.get("type") != "step_finish":
-            continue
+            # ------------------------------------------------
+            # Event-span latency
+            # ------------------------------------------------
 
-        llm_steps += 1
+            timestamp = event.get(
+                "timestamp"
+            )
 
-        part = event.get("part", {})
-        tokens = part.get("tokens", {}) or {}
-        cache = tokens.get("cache", {}) or {}
+            if isinstance(
+                timestamp,
+                (int, float)
+            ):
 
-        direct_input_tokens += tokens.get("input", 0) or 0
-        output_tokens += tokens.get("output", 0) or 0
-        reasoning_tokens += tokens.get("reasoning", 0) or 0
+                if first_timestamp is None:
+                    first_timestamp = (
+                        timestamp
+                    )
 
-        cache_read_tokens += cache.get("read", 0) or 0
-        cache_write_tokens += cache.get("write", 0) or 0
+                last_timestamp = timestamp
 
-        # Use OpenCode's actual reported cost
-        total_cost += part.get("cost", 0.0) or 0.0
+            # ------------------------------------------------
+            # Usage exists on step_finish
+            # ------------------------------------------------
 
-    # ---------------------------------------------------------
-    # End-to-end latency
-    # OpenCode timestamps are milliseconds
-    # ---------------------------------------------------------
-    if first_timestamp is not None and last_timestamp is not None:
-        latency_seconds = (last_timestamp - first_timestamp) / 1000.0
+            if (
+                event.get("type")
+                != "step_finish"
+            ):
+                continue
+
+            llm_steps += 1
+
+            part = (
+                event.get(
+                    "part",
+                    {}
+                )
+                or {}
+            )
+
+            tokens = (
+                part.get(
+                    "tokens",
+                    {}
+                )
+                or {}
+            )
+
+            cache = (
+                tokens.get(
+                    "cache",
+                    {}
+                )
+                or {}
+            )
+
+            direct_input_tokens += (
+                tokens.get(
+                    "input",
+                    0
+                )
+                or 0
+            )
+
+            output_tokens += (
+                tokens.get(
+                    "output",
+                    0
+                )
+                or 0
+            )
+
+            reasoning_tokens += (
+                tokens.get(
+                    "reasoning",
+                    0
+                )
+                or 0
+            )
+
+            cache_read_tokens += (
+                cache.get(
+                    "read",
+                    0
+                )
+                or 0
+            )
+
+            cache_write_tokens += (
+                cache.get(
+                    "write",
+                    0
+                )
+                or 0
+            )
+
+            total_cost += (
+                part.get(
+                    "cost",
+                    0.0
+                )
+                or 0.0
+            )
+
+    # --------------------------------------------------------
+    # OpenCode event-span latency
+    # --------------------------------------------------------
+
+    if (
+        first_timestamp is not None
+        and last_timestamp is not None
+    ):
+
+        event_latency = (
+            last_timestamp
+            - first_timestamp
+        ) / 1000.0
+
     else:
-        latency_seconds = 0.0
 
-    # ---------------------------------------------------------
-    # Effective input/context processed
-    #
-    # direct input + cache reads + cache writes
-    # ---------------------------------------------------------
-    effective_input_tokens = (
+        event_latency = 0.0
+
+    effective_input = (
         direct_input_tokens
         + cache_read_tokens
         + cache_write_tokens
     )
 
-    # Generated tokens
-    generated_tokens = output_tokens + reasoning_tokens
-
-    # Useful overall workload-token number
-    total_processed_tokens = (
-        effective_input_tokens
-        + generated_tokens
+    generated_tokens = (
+        output_tokens
+        + reasoning_tokens
     )
 
     return {
-        "agent": agent_name or "unknown",
 
-        "llm_steps": llm_steps,
+        "file":
+            Path(path).name,
+
+        "llm_steps":
+            llm_steps,
 
         "tokens": {
-            "direct_input": direct_input_tokens,
-            "cache_read": cache_read_tokens,
-            "cache_write": cache_write_tokens,
-            "effective_input": effective_input_tokens,
 
-            "output": output_tokens,
-            "reasoning": reasoning_tokens,
+            "direct_input":
+                direct_input_tokens,
 
-            "total_processed": total_processed_tokens
+            "cache_read":
+                cache_read_tokens,
+
+            "cache_write":
+                cache_write_tokens,
+
+            "effective_input":
+                effective_input,
+
+            "output":
+                output_tokens,
+
+            "reasoning":
+                reasoning_tokens,
+
+            "generated":
+                generated_tokens,
         },
 
-        "latency_seconds": round(latency_seconds, 2),
+        "event_latency_seconds":
+            round(
+                event_latency,
+                2
+            ),
 
-        "cost_usd": round(total_cost, 6)
+        "cost_usd":
+            round(
+                total_cost,
+                6
+            ),
     }
 
 
+# ============================================================
+# AGGREGATE
+# ============================================================
+
+def aggregate(results):
+
+    return {
+
+        "files":
+            len(results),
+
+        "llm_steps":
+            sum(
+                r["llm_steps"]
+                for r in results
+            ),
+
+        "tokens": {
+
+            "direct_input":
+                sum(
+                    r["tokens"]
+                    ["direct_input"]
+                    for r in results
+                ),
+
+            "cache_read":
+                sum(
+                    r["tokens"]
+                    ["cache_read"]
+                    for r in results
+                ),
+
+            "cache_write":
+                sum(
+                    r["tokens"]
+                    ["cache_write"]
+                    for r in results
+                ),
+
+            "effective_input":
+                sum(
+                    r["tokens"]
+                    ["effective_input"]
+                    for r in results
+                ),
+
+            "output":
+                sum(
+                    r["tokens"]
+                    ["output"]
+                    for r in results
+                ),
+
+            "reasoning":
+                sum(
+                    r["tokens"]
+                    ["reasoning"]
+                    for r in results
+                ),
+
+            "generated":
+                sum(
+                    r["tokens"]
+                    ["generated"]
+                    for r in results
+                ),
+        },
+
+        # Do not call this wall-clock latency.
+        # These are summed OpenCode event spans.
+        "summed_event_latency_seconds":
+            round(
+                sum(
+                    r[
+                        "event_latency_seconds"
+                    ]
+                    for r in results
+                ),
+                2
+            ),
+
+        "cost_usd":
+            round(
+                sum(
+                    r["cost_usd"]
+                    for r in results
+                ),
+                6
+            ),
+    }
+
+
+# ============================================================
+# MAIN
+# ============================================================
+
 def main():
-    agent_name = sys.argv[1] if len(sys.argv) > 1 else None
-    input_file = sys.argv[2] if len(sys.argv) > 2 else None
 
-    if input_file:
-        with open(input_file, "r", encoding="utf-8") as f:
-            metrics = parse_jsonl(f, agent_name)
-    else:
-        metrics = parse_jsonl(sys.stdin, agent_name)
+    if len(sys.argv) < 2:
 
-    print(json.dumps(metrics, indent=2))
+        print(
+            "Usage:\n"
+            "  python measure_metrics.py "
+            "<jsonl> [jsonl ...]"
+        )
+
+        sys.exit(1)
+
+    results = []
+
+    for filename in sys.argv[1:]:
+
+        path = Path(filename)
+
+        if not path.exists():
+
+            print(
+                f"WARNING: skipping "
+                f"missing file: {path}",
+                file=sys.stderr,
+            )
+
+            continue
+
+        metrics = parse_jsonl(
+            path
+        )
+
+        results.append(
+            metrics
+        )
+
+    if not results:
+
+        print(
+            "No valid JSONL files found.",
+            file=sys.stderr,
+        )
+
+        sys.exit(1)
+
+    report = {
+
+        "runs":
+            results,
+
+        "workflow_total":
+            aggregate(results),
+    }
+
+    print(
+        json.dumps(
+            report,
+            indent=2
+        )
+    )
 
 
 if __name__ == "__main__":
-    print("metrics_helper started", flush=True)
-
-    agent_name = sys.argv[1] if len(sys.argv) > 1 else None
-    input_file = sys.argv[2] if len(sys.argv) > 2 else None
-
-    print(f"Reading: {input_file}", flush=True)
     main()
