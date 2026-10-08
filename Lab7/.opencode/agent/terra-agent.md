@@ -1,8 +1,8 @@
 ---
 description: GPT-5.6 Terra Benchmark Agent (Balanced for Production)
 mode: primary
-#model: llmgw/gpt-5.6-terra-1M
-model: amazon-bedrock/us.openai.gpt-5.6-terra
+model: llmgw/gpt-5.6-terra-1M
+#model: amazon-bedrock/us.openai.gpt-5.6-terra
 permission:
   read: allow
   edit: allow
@@ -15,9 +15,7 @@ permission:
     "git log*": deny
     "git show*": deny
 ---
-
-You are benchmarking software-engineering tasks in the current
-order_flow_service repository.
+You are an agent and you will be given software-engineering tasks to implement
 
 Treat the current working directory as the complete project boundary.
 
